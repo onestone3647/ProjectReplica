@@ -5,6 +5,7 @@
 #include "Characters/PRBaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "AnimCharacterMovementLibrary.h"
 
 UPRBaseAnimInstance::UPRBaseAnimInstance()
 {
@@ -24,6 +25,7 @@ UPRBaseAnimInstance::UPRBaseAnimInstance()
 	LocomotionStartAngle = 0.0f;
 	MovementDirection = EPRDirection::Direction_Forward;
 	PlayRate = 0.0f;
+	DistanceToMatch = 0.0f;
 	
 	bTrackIdleStateEnterExecuted = false;
 	bTrackIdleStateExitExecuted = false;
@@ -74,6 +76,8 @@ void UPRBaseAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 	Super::NativeThreadSafeUpdateAnimation(DeltaSeconds);
 
 	SetupEssentialProperties();
+	
+	DistanceToMatch = GetPredictedStopDistance();
 }
 
 bool UPRBaseAnimInstance::IsEqualLocomotionState(EPRLocomotionState NewLocomotionState) const
@@ -277,6 +281,25 @@ void UPRBaseAnimInstance::UpdateLocomotionPlayRate()
 {
 	float DivideSpeed = UKismetMathLibrary::SafeDivide(Speed, GetCurveValue(TEXT("MovingSpeed")));
 	PlayRate = UKismetMathLibrary::FClamp(DivideSpeed, 0.5f, 1.75f);	
+}
+
+float UPRBaseAnimInstance::GetPredictedStopDistance() const
+{
+	float NewDistanceToMatch = 0.0f;
+	
+	if(GetCharacterMovement())
+	{
+		FVector MovementStopLocation = UAnimCharacterMovementLibrary::PredictGroundMovementStopLocation(GetCharacterMovement()->Velocity,
+																										GetCharacterMovement()->bUseSeparateBrakingFriction,
+																										GetCharacterMovement()->BrakingFriction,
+																										GetCharacterMovement()->GroundFriction,
+																										GetCharacterMovement()->BrakingFrictionFactor,
+																										GetCharacterMovement()->BrakingDecelerationWalking);
+
+		NewDistanceToMatch = MovementStopLocation.Length();
+	}
+	
+	return NewDistanceToMatch;
 }
 
 // void UPRBaseAnimInstance::UpdateCharacterRotation()

@@ -94,6 +94,10 @@ protected:
 
 	/** Locomotion의 재생 속도를 최신화하는 함수입니다. */
 	void UpdateLocomotionPlayRate();
+
+	/** 예상 정지 거리를 반환하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance")
+	float GetPredictedStopDistance() const;
 	
 protected:
 	/** 이전 프레임과 현재 프레임 사이의 시간 간격입니다. */
@@ -147,6 +151,10 @@ protected:
 	/** 애니메이션의 재생 속도입니다. */	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	float PlayRate;
+
+	/** Distance Matching에서 사용하는 일치하는 거리입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	float DistanceToMatch;
 	
 private:
 	/** 이 AnimInstance를 사용하는 PRBaseCharacter입니다. */
