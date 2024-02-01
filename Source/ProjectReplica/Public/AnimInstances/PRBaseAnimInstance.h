@@ -112,9 +112,17 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	FVector Velocity;
 
+	// /** 가속 여부입니다. */
+	// UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	// bool bHasAcceleration;
+
 	/** 가속도입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	FVector Acceleration;
+
+	// /** 2D상의 가속도입니다. */
+	// UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	// FVector2D Acceleration2D;
 
 	/** 속도입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")

@@ -56,7 +56,7 @@ APRBaseCharacter::APRBaseCharacter()
 	StateSystem = CreateDefaultSubobject<UPRStateSystemComponent>(TEXT("StateSystem"));
 
 	// Locomotion
-	WalkSpeed = 225.0f;
+	WalkSpeed = 240.0f;
 	RunSpeed = 550.0f;
 	SprintSpeed = 700.0f;
 }

@@ -15,7 +15,9 @@ UPRBaseAnimInstance::UPRBaseAnimInstance()
 	DeltaTime = 0.0f;
 	LocomotionState = EPRLocomotionState::LocomotionState_Idle;
 	Velocity = FVector::ZeroVector;
+	// bHasAcceleration = false;
 	Acceleration = FVector::ZeroVector;
+	// Acceleration2D = FVector2D::ZeroVector;
 	Speed = 0.0f;
 	WalkSpeed = 0.0f;
 	InputVector = FVector::ZeroVector;
@@ -91,6 +93,9 @@ void UPRBaseAnimInstance::SetupEssentialProperties()
 	{
 		Velocity = GetCharacterMovement()->Velocity;
 		Acceleration = GetCharacterMovement()->GetCurrentAcceleration();
+		// Acceleration2D = FVector2D(Acceleration.X, Acceleration.Y);
+		// bHasAcceleration = !Acceleration.IsNearlyZero();
+		// bHasAcceleration = !Acceleration2D.IsNearlyZero();
 		Speed = Velocity.Size();
 		InputVector = GetCharacterMovement()->GetLastInputVector();
 	}
@@ -116,7 +121,7 @@ void UPRBaseAnimInstance::UpdateLocomotionState()
 		{
 			// 속도와 가속도에 기반하여 Locomotion 상태를 결정합니다.
 			if(Speed > KINDA_SMALL_NUMBER			// or 1.0f
-				&& Acceleration.Size() > 400.0f	
+				&& Acceleration.Size() > 400.0f		// 걷는 속도 이상
 				&& GetCharacterMovement()->MaxWalkSpeed > WalkSpeed + 5.0f)
 			{
 				LocomotionState = EPRLocomotionState::LocomotionState_Run;
