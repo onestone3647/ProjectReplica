@@ -34,6 +34,16 @@ enum class EPRTrackState : uint8
 };
 
 /**
+ * 발을 나타내는 열거형입니다.
+ */
+UENUM(BlueprintType)
+enum class EPRFoot : uint8
+{
+	EPRFoot_Left			UMETA(DisplayName = "LeftFoot"),
+	EPRFoot_Right			UMETA(DisplayName = "RightFoot")
+};
+
+/**
  * 캐릭터의 기본 AnimInstance 클래스입니다.
  */
 UCLASS()
@@ -59,7 +69,7 @@ protected:
 	/**
 	 * 필수 속성을 설정하는 함수입니다.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance")
+	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance", meta = (BlueprintThreadSafe))
 	void SetupEssentialProperties();
 
 	/** Locomotion의 상태를 최신화하는 함수입니다. */
@@ -96,7 +106,7 @@ protected:
 	void UpdateLocomotionPlayRate();
 
 	/** 예상 정지 거리를 반환하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance")
+	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance", meta = (BlueprintThreadSafe))
 	float GetPredictedStopDistance() const;
 	
 protected:
@@ -119,6 +129,10 @@ protected:
 	/** 가속도입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	FVector Acceleration;
+
+	/** 달리기 상태의 최소 가속도입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	float MinAccelerationToRunState;	
 
 	// /** 2D상의 가속도입니다. */
 	// UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
@@ -163,6 +177,10 @@ protected:
 	/** Distance Matching에서 사용하는 일치하는 거리입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	float DistanceToMatch;
+
+	/** 마지막으로 바닥에 닿은 발입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	EPRFoot LastFootOnLand;
 	
 private:
 	/** 이 AnimInstance를 사용하는 PRBaseCharacter입니다. */
@@ -191,4 +209,8 @@ public:
 
 	/** PROwner의 CharacterMovementComponent를 반환하는 함수입니다. */
 	class UCharacterMovementComponent* GetCharacterMovement() const;
+
+	/** 입력받은 인자로 LastFootOnLand를 설정하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance")
+	void SetLastFootOnLand(EPRFoot NewLastFootOnLand);
 };

@@ -17,6 +17,7 @@ UPRBaseAnimInstance::UPRBaseAnimInstance()
 	Velocity = FVector::ZeroVector;
 	// bHasAcceleration = false;
 	Acceleration = FVector::ZeroVector;
+	MinAccelerationToRunState = 400.0f;
 	// Acceleration2D = FVector2D::ZeroVector;
 	Speed = 0.0f;
 	WalkSpeed = 0.0f;
@@ -28,6 +29,7 @@ UPRBaseAnimInstance::UPRBaseAnimInstance()
 	MovementDirection = EPRDirection::Direction_Forward;
 	PlayRate = 0.0f;
 	DistanceToMatch = 0.0f;
+	LastFootOnLand = EPRFoot::EPRFoot_Left;
 	
 	bTrackIdleStateEnterExecuted = false;
 	bTrackIdleStateExitExecuted = false;
@@ -79,7 +81,7 @@ void UPRBaseAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 
 	SetupEssentialProperties();
 	
-	DistanceToMatch = GetPredictedStopDistance();
+	// DistanceToMatch = GetPredictedStopDistance();
 }
 
 bool UPRBaseAnimInstance::IsEqualLocomotionState(EPRLocomotionState NewLocomotionState) const
@@ -121,7 +123,7 @@ void UPRBaseAnimInstance::UpdateLocomotionState()
 		{
 			// 속도와 가속도에 기반하여 Locomotion 상태를 결정합니다.
 			if(Speed > KINDA_SMALL_NUMBER			// or 1.0f
-				&& Acceleration.Size() > 400.0f		// 걷는 속도 이상
+				&& Acceleration.Size() > MinAccelerationToRunState
 				&& GetCharacterMovement()->MaxWalkSpeed > WalkSpeed + 5.0f)
 			{
 				LocomotionState = EPRLocomotionState::LocomotionState_Run;
@@ -340,4 +342,9 @@ UCharacterMovementComponent* UPRBaseAnimInstance::GetCharacterMovement() const
 	}
 
 	return nullptr;
+}
+
+void UPRBaseAnimInstance::SetLastFootOnLand(EPRFoot NewLastFootOnLand)
+{
+	LastFootOnLand = NewLastFootOnLand;
 }

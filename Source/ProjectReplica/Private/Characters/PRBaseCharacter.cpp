@@ -22,9 +22,10 @@ APRBaseCharacter::APRBaseCharacter()
 	// CharacterMovement
 	GetCharacterMovement()->MaxAcceleration = 1000.0f;
 	GetCharacterMovement()->BrakingFrictionFactor = 0.5f;
+	// GetCharacterMovement()->BrakingFrictionFactor = 1.0f;
 	GetCharacterMovement()->GroundFriction = 5.0f;
-	// GetCharacterMovement()->MaxWalkSpeed = 550.0f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.0f;
+	// GetCharacterMovement()->MinAnalogWalkSpeed = 180.0f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 1000.0f;
 	
 	// Advanced Movement System 용
