@@ -4,41 +4,68 @@
 #include "AnimInstances/PRBaseAnimInstance.h"
 #include "Characters/PRBaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "AnimCharacterMovementLibrary.h"
+#include "KismetAnimationLibrary.h"
+#include "Components/PRMovementSystemComponent.h"
 
 UPRBaseAnimInstance::UPRBaseAnimInstance()
 {
 	PROwner = nullptr;
 	CharacterMovement = nullptr;
-	
-	DeltaTime = 0.0f;
-	LocomotionState = EPRLocomotionState::LocomotionState_Idle;
+
+	Gait = EPRGait::Gait_Idle;
 	Velocity = FVector::ZeroVector;
-	// bHasAcceleration = false;
+	VelocityXY = FVector::ZeroVector;
+	GroundSpeed = 0.0f;
 	Acceleration = FVector::ZeroVector;
-	MinAccelerationToRunState = 400.0f;
-	// Acceleration2D = FVector2D::ZeroVector;
-	Speed = 0.0f;
-	WalkSpeed = 0.0f;
-	InputVector = FVector::ZeroVector;
-	StartRotation = FRotator::ZeroRotator;
-	PrimaryRotation = FRotator::ZeroRotator;
-	SecondaryRotation = FRotator::ZeroRotator;
-	LocomotionStartAngle = 0.0f;
-	MovementDirection = EPRDirection::Direction_Forward;
-	PlayRate = 0.0f;
-	DistanceToMatch = 0.0f;
-	LastFootOnLand = EPRFoot::EPRFoot_Left;
+	AccelerationXY = FVector::ZeroVector;
+	ActorRotation = FRotator::ZeroRotator;
+	Direction = 0.0f;
+	bShouldMove = false;
+	bIsFalling = false;
+	bIsInAir = false;
+	bIsJumping = false;
+	bIsOnGround = true;
+	ActorYaw = 0.0f;
+	ActorYawDelta = 0.0f;
+	LeanAngle = 0.0f;
+	ApexJumpTime = 0.0f;
+	RootYawOffset = 0.0f;
+	LastRootYawOffset = 0.0f;
+	RootYawMode = EPRRootYawMode::RootYawMode_Accumulate;
+	SpringState = FFloatSpringState();
+	TurnYawCurveValue = 0.0f;
+	LastTurnYawCurveValue = 0.0f;
+	TurnYawCurveName = TEXT("TurnYawWeight");
+	RemainingTurnYawCurveName = TEXT("RemainingTurnYaw");
 	
-	bTrackIdleStateEnterExecuted = false;
-	bTrackIdleStateExitExecuted = false;
-
-	bTrackRunStateEnterExecuted = false;
-	bTrackRunStateExitExecuted = false;
-
-	bTrackWalkStateEnterExecuted = false;
-	bTrackWalkStateExitExecuted = false;
+	// DeltaTime = 0.0f;
+	// LocomotionState = EPRLocomotionState::LocomotionState_Idle;
+	// Velocity = FVector::ZeroVector;
+	// // bHasAcceleration = false;
+	// Acceleration = FVector::ZeroVector;
+	// MinAccelerationToRunState = 400.0f;
+	// // Acceleration2D = FVector2D::ZeroVector;
+	// Speed = 0.0f;
+	// WalkSpeed = 0.0f;
+	// InputVector = FVector::ZeroVector;
+	// StartRotation = FRotator::ZeroRotator;
+	// PrimaryRotation = FRotator::ZeroRotator;
+	// SecondaryRotation = FRotator::ZeroRotator;
+	// LocomotionStartAngle = 0.0f;
+	// MovementDirection = EPRDirection::Direction_Forward;
+	// PlayRate = 0.0f;
+	// DistanceToMatch = 0.0f;
+	// LastFootOnLand = EPRFoot::EPRFoot_Left;
+	//
+	// bTrackIdleStateEnterExecuted = false;
+	// bTrackIdleStateExitExecuted = false;
+	//
+	// bTrackRunStateEnterExecuted = false;
+	// bTrackRunStateExitExecuted = false;
+	//
+	// bTrackWalkStateEnterExecuted = false;
+	// bTrackWalkStateExitExecuted = false;
 }
 
 void UPRBaseAnimInstance::NativeInitializeAnimation()
@@ -67,21 +94,131 @@ void UPRBaseAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	
 	DeltaTime = DeltaSeconds;
 
-	// LocomotionState 최신화
-	UpdateLocomotionState();
-
-	UpdateIdleState();
-	UpdateRunState();
-	UpdateWalkState();
+	// // LocomotionState 최신화
+	// UpdateLocomotionState();
+	//
+	// UpdateIdleState();
+	// UpdateRunState();
+	// UpdateWalkState();
 }
 
 void UPRBaseAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeThreadSafeUpdateAnimation(DeltaSeconds);
 
-	SetupEssentialProperties();
+	UpdateProperties(DeltaSeconds);
+	UpdateRootYawOffset(DeltaSeconds);
+
+	// SetupEssentialProperties();
 	
 	// DistanceToMatch = GetPredictedStopDistance();
+}
+
+bool UPRBaseAnimInstance::ReceiveGait(EPRGait NewGait)
+{
+	Gait = NewGait;
+	
+	return true;
+}
+
+void UPRBaseAnimInstance::UpdateProperties(float DeltaSeconds)
+{
+	if(GetCharacterMovement())
+	{
+		Acceleration = GetCharacterMovement()->GetCurrentAcceleration();
+		Velocity = GetCharacterMovement()->Velocity;
+		GroundSpeed = Velocity.Length();
+		ActorRotation = TryGetPawnOwner()->GetActorRotation();
+		Direction = UKismetAnimationLibrary::CalculateDirection(Velocity, ActorRotation);
+		VelocityXY = Velocity * FVector(1.0f, 1.0f, 0.0f);
+
+		bShouldMove = GroundSpeed > KINDA_SMALL_NUMBER && Acceleration != FVector::ZeroVector;		// 3.0f
+		bIsFalling = GetCharacterMovement()->IsFalling();
+		bIsOnGround = GetCharacterMovement()->IsMovingOnGround();
+		
+		AccelerationXY = Acceleration * FVector(1.0f, 1.0f, 0.0f);
+
+		LastActorYaw = ActorYaw;
+		ActorYaw = ActorRotation.Yaw;
+		ActorYawDelta = ActorYaw - LastActorYaw;
+
+		float MovementDirectionValue = 0.0f;
+		switch(MovementDirection)
+		{
+		case EPRDirection::Direction_Forward:
+		case EPRDirection::Direction_Left:
+			MovementDirectionValue = 1.0f;
+			break;
+			
+		case EPRDirection::Direction_Backward:
+		case EPRDirection::Direction_Right:
+			MovementDirectionValue = -1.0f;
+			break;
+			
+		default:
+			MovementDirectionValue = 0.0f;
+			break;
+		}
+		
+		LeanAngle = UKismetMathLibrary::ClampAngle(UKismetMathLibrary::SafeDivide(ActorYawDelta, DeltaTime) / 4.0f * MovementDirectionValue,
+																					-45.0f, 45.0f);
+
+		bIsInAir = GetCharacterMovement()->MovementMode == MOVE_Falling;
+		bIsJumping = bIsInAir && Velocity.Z > 0.0f;
+		bIsFalling = bIsInAir && Velocity.Z < 0.0f;
+		if(bIsJumping)
+		{
+			ApexJumpTime = (0.0f - Velocity.Z) / (GetCharacterMovement()->GetGravityZ() * GetCharacterMovement()->GravityScale);
+		}
+		else
+		{
+			ApexJumpTime = 0.0f;
+		}
+	}
+}
+
+void UPRBaseAnimInstance::SetRootYawOffset(float Angle)
+{
+	LastRootYawOffset = RootYawOffset;
+	RootYawOffset = UKismetMathLibrary::NormalizeAxis(Angle);
+}
+
+void UPRBaseAnimInstance::UpdateRootYawOffset(float DeltaSeconds)
+{
+	if(RootYawMode == EPRRootYawMode::RootYawMode_Accumulate)
+	{
+		const float NewAngle = RootYawOffset + (ActorYawDelta * -1.0f);
+		SetRootYawOffset(NewAngle);
+	}
+
+	if(RootYawMode == EPRRootYawMode::RootYawMode_BlendOut)
+	{
+		const float SpringInterp = UKismetMathLibrary::FloatSpringInterp(RootYawOffset, 0.0f, SpringState,
+																		80.0f, 1.0f, DeltaSeconds,
+																		1.0f, 0.5);
+		SetRootYawOffset(SpringInterp);
+	}
+
+	RootYawMode = EPRRootYawMode::RootYawMode_BlendOut;
+}
+
+void UPRBaseAnimInstance::ProcessTurnYawCurve()
+{
+	LastTurnYawCurveValue = TurnYawCurveValue;
+	if(GetCurveValue(TurnYawCurveName) < KINDA_SMALL_NUMBER)		// 1.0f
+	{
+		TurnYawCurveValue = 0.0f;
+		LastTurnYawCurveValue = 0.0f;
+	}
+	else
+	{
+		TurnYawCurveValue = UKismetMathLibrary::SafeDivide(GetCurveValue(RemainingTurnYawCurveName), GetCurveValue(TurnYawCurveName));
+
+		if(LastTurnYawCurveValue != 0.0f)
+		{
+			SetRootYawOffset(RootYawOffset - (TurnYawCurveValue - LastTurnYawCurveValue));
+		}
+	}
 }
 
 bool UPRBaseAnimInstance::IsEqualLocomotionState(EPRLocomotionState NewLocomotionState) const

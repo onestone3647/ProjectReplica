@@ -20,7 +20,8 @@ public class ProjectReplica : ModuleRules
 			"NavigationSystem",
 			"AIModule",
 			"GameplayTasks",
-			"AnimationLocomotionLibraryRuntime"
+			"AnimationLocomotionLibraryRuntime",
+			"AnimGraphRuntime"
 		});
 	}
 }

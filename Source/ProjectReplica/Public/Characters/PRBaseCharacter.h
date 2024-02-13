@@ -11,6 +11,7 @@
 class UPRDamageSystemComponent;
 class UPRStatSystemComponent;
 class UPRStateSystemComponent;
+class UPRMovementSystemComponent;
 
 // 임시
 class UNiagaraSystem;
@@ -58,6 +59,17 @@ public:
 	 */
 	virtual bool TakeDamage_Implementation(FPRDamageInfo DamageInfo) override;
 #pragma endregion
+
+#pragma region MovementSystem
+private:
+	/** 캐릭터의 움직임에 관련된 정보를 관리하는 ActorComponent 클래스입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MovementSystem", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPRMovementSystemComponent> MovementSystem;
+
+public:
+	/** MovementSystem을 반환하는 함수입니다. */
+	FORCEINLINE class UPRMovementSystemComponent* GetMovementSystem() const { return MovementSystem; }
+#pragma endregion	
 
 #pragma region DamageSystem
 public:

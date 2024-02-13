@@ -3,6 +3,7 @@
 
 #include "Characters/PRBaseCharacter.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/PRMovementSystemComponent.h"
 #include "Components/PRDamageSystemComponent.h"
 #include "Components/PRStatSystemComponent.h"
 #include "Components/PRStateSystemComponent.h"
@@ -20,16 +21,22 @@ APRBaseCharacter::APRBaseCharacter()
 	GetCapsuleComponent()->InitCapsuleSize(30.0f, 94.0f);
 
 	// CharacterMovement
-	GetCharacterMovement()->MaxAcceleration = 1000.0f;
-	GetCharacterMovement()->BrakingFrictionFactor = 0.5f;
-	// GetCharacterMovement()->BrakingFrictionFactor = 1.0f;
-	GetCharacterMovement()->GroundFriction = 5.0f;
-	GetCharacterMovement()->MinAnalogWalkSpeed = 20.0f;
-	// GetCharacterMovement()->MinAnalogWalkSpeed = 180.0f;
-	GetCharacterMovement()->BrakingDecelerationWalking = 1000.0f;
+	// GetCharacterMovement()->MaxAcceleration = 1000.0f;
+	// GetCharacterMovement()->BrakingFrictionFactor = 0.5f;
+	// GetCharacterMovement()->GroundFriction = 5.0f;
+	// GetCharacterMovement()->MinAnalogWalkSpeed = 20.0f;
+	// GetCharacterMovement()->BrakingDecelerationWalking = 1000.0f;
 	
 	// Advanced Movement System 용
 	// GetCharacterMovement()->RotationRate = FRotator::ZeroRotator;
+
+	// LockOn일 때
+	GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+
+	// LockOn이 아닐 때
+	// GetCharacterMovement()->bUseControllerDesiredRotation = false;
+	// GetCharacterMovement()->bOrientRotationToMovement = true;
 
 	// Pawn
 	// 컨트롤러가 회전할 때 캐릭터가 같이 회전하지 않도록 설정합니다.
@@ -46,6 +53,9 @@ APRBaseCharacter::APRBaseCharacter()
 	// {
 	// 	GetMesh()->SetSkeletalMesh(SK_Mannequin.Object);
 	// }
+
+	// MovementSystem
+	MovementSystem = CreateDefaultSubobject<UPRMovementSystemComponent>(TEXT("MovementSystem"));
 
 	// DamageSystem
 	DamageSystem = CreateDefaultSubobject<UPRDamageSystemComponent>(TEXT("DamageSystem"));
@@ -68,6 +78,9 @@ void APRBaseCharacter::PostInitializeComponents()
 
 	// CharacterMovement
 	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+
+	// MovementSystem
+	GetMovementSystem()->UpdateGait(EPRGait::Gait_Run);
 
 	// DamageSystem
 	GetDamageSystem()->OnDeathDelegate.AddDynamic(this, &APRBaseCharacter::Death);
