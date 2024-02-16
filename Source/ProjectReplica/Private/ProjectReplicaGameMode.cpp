@@ -3,6 +3,7 @@
 #include "ProjectReplicaGameMode.h"
 // #include "ProjectReplicaCharacter.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Components/PRObjectPoolSystemComponent.h"
 
 AProjectReplicaGameMode::AProjectReplicaGameMode()
 {
@@ -12,4 +13,15 @@ AProjectReplicaGameMode::AProjectReplicaGameMode()
 	// {
 	// 	DefaultPawnClass = PlayerPawnBPClass.Class;
 	// }
+
+	// ObjectPoolSystem
+	ObjectPoolSystem = CreateDefaultSubobject<UPRObjectPoolSystemComponent>(TEXT("ObjectPoolSystem"));
+}
+
+void AProjectReplicaGameMode::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	// ObjectPoolSystem
+	GetObjectPoolSystem()->InitializeObjectPool();
 }

@@ -3,10 +3,11 @@
 
 #include "Characters/PRBaseCharacter.h"
 #include "Components/CapsuleComponent.h"
-#include "Components/PRMovementSystemComponent.h"
 #include "Components/PRDamageSystemComponent.h"
 #include "Components/PRStatSystemComponent.h"
 #include "Components/PRStateSystemComponent.h"
+#include "Components/PRObjectPoolSystemComponent.h"
+#include "Components/PRMovementSystemComponent.h"
 
 // 임시
 #include "NiagaraComponent.h"
@@ -54,9 +55,6 @@ APRBaseCharacter::APRBaseCharacter()
 	// 	GetMesh()->SetSkeletalMesh(SK_Mannequin.Object);
 	// }
 
-	// MovementSystem
-	MovementSystem = CreateDefaultSubobject<UPRMovementSystemComponent>(TEXT("MovementSystem"));
-
 	// DamageSystem
 	DamageSystem = CreateDefaultSubobject<UPRDamageSystemComponent>(TEXT("DamageSystem"));
 	
@@ -65,6 +63,12 @@ APRBaseCharacter::APRBaseCharacter()
 
 	// StateSystem
 	StateSystem = CreateDefaultSubobject<UPRStateSystemComponent>(TEXT("StateSystem"));
+
+	// ObjectPoolSystem
+	ObjectPoolSystem = CreateDefaultSubobject<UPRObjectPoolSystemComponent>(TEXT("ObjectPoolSystem"));
+
+	// MovementSystem
+	MovementSystem = CreateDefaultSubobject<UPRMovementSystemComponent>(TEXT("MovementSystem"));
 
 	// Locomotion
 	WalkSpeed = 240.0f;
@@ -79,13 +83,16 @@ void APRBaseCharacter::PostInitializeComponents()
 	// CharacterMovement
 	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
 
-	// MovementSystem
-	GetMovementSystem()->UpdateGait(EPRGait::Gait_Run);
-
 	// DamageSystem
 	GetDamageSystem()->OnDeathDelegate.AddDynamic(this, &APRBaseCharacter::Death);
 	GetDamageSystem()->OnBlockedDelegate.AddDynamic(this, &APRBaseCharacter::Blocked);
 	GetDamageSystem()->OnDamageResponseDelegate.AddDynamic(this, &APRBaseCharacter::DamageResponse);
+
+	// ObjectPoolSystem
+	GetObjectPoolSystem()->InitializeObjectPool();
+
+	// MovementSystem
+	GetMovementSystem()->UpdateGait(EPRGait::Gait_Run);
 }
 
 void APRBaseCharacter::BeginPlay()

@@ -3,9 +3,12 @@
 
 #include "Components/PRDamageSystemComponent.h"
 #include "ProjectReplicaGameInstance.h"
+#include "ProjectReplicaGameMode.h"
 #include "Components/PRStatSystemComponent.h"
 #include "Components/PRStateSystemComponent.h"
+#include "Components/PRObjectPoolSystemComponent.h"
 #include "Characters/PRBaseCharacter.h"
+#include "Kismet/GameplayStatics.h"
 #include "Objects/PRDamageAmount.h"
 
 UPRDamageSystemComponent::UPRDamageSystemComponent()
@@ -81,35 +84,37 @@ bool UPRDamageSystemComponent::TakeDamage(FPRDamageInfo DamageInfo)
 		break;
 		
 	case EPRCanBeDamaged::CanBeDamaged_DoDamage:
-		// DamageAmount Spawn
-		if(DamageAmount && GetWorld())
 		{
-			APRDamageAmount* DamageAmountInstance = GetWorld()->SpawnActor<APRDamageAmount>(DamageAmount);
-			if(DamageAmountInstance)
+			AProjectReplicaGameMode* PRGameMode = Cast<AProjectReplicaGameMode>(UGameplayStatics::GetGameMode(GetWorld()));	
+			if(PRGameMode != nullptr)
 			{
-				DamageAmountInstance->Initialize(DamageInfo.ImpactLocation, DamageInfo.Amount, DamageInfo.bIsCritical, DamageInfo.DamageElement);
-			}
-		}
-		
-		StatSystem->SetHealth(CharacterStat.Health -= DamageInfo.Amount);
-		if(CharacterStat.Health <= 0.0f)
-		{
-			// 캐릭터의 체력이 0이하(사망)일 경우 OnDeathDelegate를 실행합니다.
-			if(OnDeathDelegate.IsBound())
-			{
-				OnDeathDelegate.Broadcast();
-			}
-		}
-		else
-		{
-			// 동작을 강제로 중단할 수 있는 상태이거나 동작을 강제로 중단해야하는 대미지일 경우
-			// OnDamageResponseDelegate를 실행합니다.
-			if(StateSystem->IsInterruptible() || DamageInfo.bShouldForceInterrupt)
-			{
-				if(OnDamageResponseDelegate.IsBound())
+				APRDamageAmount* DamageAmountInstance = Cast<APRDamageAmount>(PRGameMode->GetObjectPoolSystem()->ActivatePooledObject(DamageAmount));
+				if(DamageAmountInstance)
 				{
-					OnDamageResponseDelegate.Broadcast(DamageInfo.DamageResponse);
-					return true;
+					DamageAmountInstance->Initialize(DamageInfo.ImpactLocation, DamageInfo.Amount, DamageInfo.bIsCritical, DamageInfo.DamageElement);
+				}
+			}
+		
+			StatSystem->SetHealth(CharacterStat.Health -= DamageInfo.Amount);
+			if(CharacterStat.Health <= 0.0f)
+			{
+				// 캐릭터의 체력이 0이하(사망)일 경우 OnDeathDelegate를 실행합니다.
+				if(OnDeathDelegate.IsBound())
+				{
+					OnDeathDelegate.Broadcast();
+				}
+			}
+			else
+			{
+				// 동작을 강제로 중단할 수 있는 상태이거나 동작을 강제로 중단해야하는 대미지일 경우
+				// OnDamageResponseDelegate를 실행합니다.
+				if(StateSystem->IsInterruptible() || DamageInfo.bShouldForceInterrupt)
+				{
+					if(OnDamageResponseDelegate.IsBound())
+					{
+						OnDamageResponseDelegate.Broadcast(DamageInfo.DamageResponse);
+						return true;
+					}
 				}
 			}
 		}

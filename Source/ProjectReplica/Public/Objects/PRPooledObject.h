@@ -26,8 +26,8 @@ protected:
 public:
 	/** 오브젝트를 초기화하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "PRPooledObject")
-	void Initialize();
-	virtual void Initialize_Implementation();
+	void InitializeObject(AActor* NewObjectOwner = nullptr, int32 NewPoolIndex = -1);
+	virtual void InitializeObject_Implementation(AActor* NewObjectOwner = nullptr, int32 NewPoolIndex = -1);
 	
 	/** 오브젝트가 활성화 되었는지 판별하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PRPooledObject")
@@ -85,8 +85,8 @@ public:
 
 public:
 	/** 오브젝트가 비활성화될 때 실행하는 델리게이트입니다. */
-	FOnPooledObjectDeactivate OnPooledObjectDeactivate;
+	FOnPooledObjectDeactivate OnPooledObjectDeactivateDelegate;
 
-	/** 동적으로 생성한 오브젝트가 비활성화될 때 실행하는 델리게이트입니다. */
-	FOnDynamicPooledObjectDeactivate OnDynamicPooledObjectDeactivate;
+	// /** 동적으로 생성한 오브젝트가 비활성화될 때 실행하는 델리게이트입니다. */
+	// FOnDynamicPooledObjectDeactivate OnDynamicPooledObjectDeactivate;
 };

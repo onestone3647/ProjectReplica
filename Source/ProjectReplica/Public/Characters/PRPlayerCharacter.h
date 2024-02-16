@@ -7,8 +7,12 @@
 #include "PRPlayerCharacter.generated.h"
 
 class UPRInputConfigDataAsset;
+class UInputMappingContext;
+class UInputAction;
 class USpringArmComponent;
 class UCameraComponent;
+
+struct FInputActionValue;
 
 /**
  * 플레이어 캐릭터 클래스입니다.
@@ -63,14 +67,14 @@ protected:
 	 * @param Value 마우스를 사용한 좌우 회전값입니다.
 	 */
 	void Turn(const FInputActionValue& Value);
-
+	
 	/**
 	 * 마우스를 사용할 때 사용하는 카메라 상하 회전 함수입니다.
 	 *
 	 * @param Value 마우스를 사용한 상하 회전값입니다.
 	 */
 	void LookUp(const FInputActionValue& Value);
-
+	
 	/**
 	 * 게임패드를 사용할 때 사용하는 카메라 좌우 회전 함수입니다.
 	 *

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "ProjectReplica.h"
-#include "GameFramework/Actor.h"
+#include "PRPooledObject.h"
 #include "PRDamageAmount.generated.h"
 
 class UPRDamageAmountWidget;
@@ -13,7 +13,7 @@ class UWidgetComponent;
  * 대미지를 나타내는 Actor 클래스입니다.
  */
 UCLASS()
-class PROJECTREPLICA_API APRDamageAmount : public AActor
+class PROJECTREPLICA_API APRDamageAmount : public APRPooledObject
 {
 	GENERATED_BODY()
 	
@@ -38,10 +38,6 @@ public:
 private:
 	/** DamageAmount 위젯을 생성하는 함수입니다. */
 	class UPRDamageAmountWidget* CreateDamageAmountWidget();
-
-	/** DamageAmountWidgetInstance의 FadeOutWidgetAnim이 끝났을 때 실행하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, Category = "DamageAmount")
-	void OnFadeOutAnimFinish();
 
 protected:
 	/** DamageAmount 위젯의 클래스 레퍼런스입니다. */
