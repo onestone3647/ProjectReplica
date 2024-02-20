@@ -40,7 +40,54 @@ void UPRObjectPoolSystemComponent::InitializeObjectPool()
 	}
 }
 
-APRPooledObject* UPRObjectPoolSystemComponent::ActivatePooledObject(TSubclassOf<APRPooledObject> PooledObjectClass,	FVector NewLocation, FRotator NewRotation)
+APRPooledObject* UPRObjectPoolSystemComponent::ActivatePooledObjectFromClass(TSubclassOf<APRPooledObject> PooledObjectClass, FVector NewLocation, FRotator NewRotation)
+{
+	// 활성화할 오브젝트입니다.
+	APRPooledObject* ActivateablePooledObject = ActivatePooledObject(GetActivateablePooledObject(PooledObjectClass), NewLocation, NewRotation);
+	if(IsValid(ActivateablePooledObject))
+	{
+		return ActivateablePooledObject;
+	}
+	
+	return nullptr;
+}
+
+APRPooledObject* UPRObjectPoolSystemComponent::ActivatePooledObject(APRPooledObject* PooledObject, FVector NewLocation,	FRotator NewRotation)
+{
+	// 이미 활성화되었거나 ObjectPool이 생성되있지 않다면 nullptr을 반환합니다.
+	if(PooledObject->IsActivate() || !IsCreateObjectPool(PooledObject->GetClass()))
+	{
+		return nullptr;
+	}
+	
+	// 동적으로 생성한 오브젝트일 경우 DynamicObjectDestroyTimer가 작동 중이라면 DynamicObjectDestroyTimer를 정지합니다.
+	FPRDynamicDestroyObjectList* DynamicDestroyPair = DynamicDestroyObjectList.Find(PooledObject->GetClass());
+	if(DynamicDestroyPair != nullptr)
+	{
+		FTimerHandle* DynamicObjectDestroyTimer = DynamicDestroyPair->Objects.Find(PooledObject);
+		if(DynamicObjectDestroyTimer != nullptr)
+		{
+			GetWorld()->GetTimerManager().ClearTimer(*DynamicObjectDestroyTimer);
+		}
+	}
+
+	// 오브젝트를 Spawn할 위치와 회전 값을 적용하고 활성화합니다.
+	PooledObject->SetActorLocationAndRotation(NewLocation, NewRotation);
+	PooledObject->Activate();
+	
+	// 해당 오브젝트 클래스를 처음 활성화하는 경우 ActivateObjectIndexList를 생성합니다.
+	if(!IsCreateActivateObjectIndexList(PooledObject->GetClass()))
+	{
+		CreateActivateObjectIndexList(PooledObject->GetClass());
+	}
+
+	// 활성화된 오브젝트의 Index를 ActivateObjectIndexList에 추가합니다.
+	ActivateObjectIndexList.Find(PooledObject->GetClass())->Indexes.AddUnique(PooledObject->GetPoolIndex());
+	
+	return PooledObject;
+}
+
+APRPooledObject* UPRObjectPoolSystemComponent::GetActivateablePooledObject(TSubclassOf<APRPooledObject> PooledObjectClass)
 {
 	// 해당 오브젝트 클래스의 ObjectPool이 생성되었는지 확인하고, 없으면 생성합니다.
 	if(!IsCreateObjectPool(PooledObjectClass))
@@ -56,23 +103,35 @@ APRPooledObject* UPRObjectPoolSystemComponent::ActivatePooledObject(TSubclassOf<
 		// 지정된 오브젝트 클래스가 없습니다.
 		return nullptr;
 	}
-
+	
 	// 활성화할 오브젝트입니다.
 	APRPooledObject* ActivateablePooledObject = nullptr;
 
-	// Pair에서 활성화 되지 않은 오브젝트를 찾아 활성화합니다.
+	// Pair에서 활성화 되지 않은 오브젝트를 찾습니다.
 	for(const auto& PooledObject : Pair->Objects)
 	{
 		if(IsValid(PooledObject) && !IsActivatePooledObject(PooledObject))
 		{
 			ActivateablePooledObject = PooledObject;
+		
 			break;
 		}
 	}
 
-	// Pair의 모든 오브젝트가 활성화 되었거나 활성화할 오브젝트가 없을 경우 새로운 오브젝트를 생성합니다.
-	if(!IsValid(ActivateablePooledObject))
+	if(IsValid(ActivateablePooledObject))
 	{
+		// 활성화할 오브젝트가 있을 경우 초기화합니다.
+		
+		int32 Index = ActivateablePooledObject->GetPoolIndex();
+		
+		// 오브젝트를 초기화하고 OnPooledObjectDeactivate 함수를 바인딩합니다.
+		ActivateablePooledObject->InitializeObject(GetOwner(), Index);
+		ActivateablePooledObject->OnPooledObjectDeactivateDelegate.AddDynamic(this, &UPRObjectPoolSystemComponent::OnPooledObjectDeactivate);
+	}
+	else
+	{
+		// Pair의 모든 오브젝트가 활성화 되었거나 활성화할 오브젝트가 없을 경우 새로운 오브젝트를 생성합니다.
+		
 		// Critical Section 시작
 		FCriticalSection CriticalSection;
 		CriticalSection.Lock();
@@ -87,9 +146,9 @@ APRPooledObject* UPRObjectPoolSystemComponent::ActivatePooledObject(TSubclassOf<
 				{
 					UsedIndexList.Indexes.Add(PooledObject->GetPoolIndex());
 				}
-
-				UsedObjectIndexList.Emplace(PooledObjectClass, UsedIndexList);
 			}
+
+			UsedObjectIndexList.Emplace(PooledObjectClass, UsedIndexList);
 		}
 
 		// UsedObjectIndexList에서 해당 오브젝트 클래스의 UsedIndexList를 얻습니다.
@@ -110,46 +169,28 @@ APRPooledObject* UPRObjectPoolSystemComponent::ActivatePooledObject(TSubclassOf<
 
 		// 새로운 오브젝트를 생성하고 사용 가능한 Index로 초기화합니다.
 		ActivateablePooledObject = SpawnAndInitializeObject(PooledObjectClass, NewIndex);
+		
 		// OnDynamicObjectDeactivate 함수를 바인딩합니다.
 		ActivateablePooledObject->OnPooledObjectDeactivateDelegate.AddDynamic(this, &UPRObjectPoolSystemComponent::OnDynamicObjectDeactivate);
 
 		// 새로 생성한 오브젝트를 Pair에 추가합니다.
 		Pair->Objects.Emplace(ActivateablePooledObject);
 	}
-
-	// 동적으로 생성한 오브젝트일 경우 DynamicObjectDestroyTimer가 작동 중이라면 DynamicObjectDestroyTimer를 정지합니다.
-	FPRDynamicDestroyObjectList* DynamicDestroyPair = DynamicDestroyObjectList.Find(ActivateablePooledObject->GetClass());
-	if(DynamicDestroyPair != nullptr)
-	{
-		FTimerHandle* DynamicObjectDestroyTimer = DynamicDestroyPair->Objects.Find(ActivateablePooledObject);
-		if(DynamicObjectDestroyTimer != nullptr)
-		{
-			GetWorld()->GetTimerManager().ClearTimer(*DynamicObjectDestroyTimer);
-		}
-	}
-
-	// 오브젝트를 Spawn할 위치와 회전 값을 적용하고 활성화합니다.
-	ActivateablePooledObject->SetActorLocationAndRotation(NewLocation, NewRotation);
-	ActivateablePooledObject->Activate();
 	
-	// 해당 오브젝트 클래스를 처음 활성화하는 경우 ActivateObjectIndexList를 생성합니다.
-	if(!IsCreateActivateObjectIndexList(PooledObjectClass))
-	{
-		CreateActivateObjectIndexList(PooledObjectClass);
-	}
-
-	// 활성화된 오브젝트의 Index를 ActivateObjectIndexList에 추가합니다.
-	ActivateObjectIndexList.Find(PooledObjectClass)->Indexes.AddUnique(ActivateablePooledObject->GetPoolIndex());
-
 	return ActivateablePooledObject;
 }
 
 bool UPRObjectPoolSystemComponent::IsActivatePooledObject(APRPooledObject* PooledObject) const
 {
+	if(!IsValid(PooledObject))
+	{
+		return false;
+	}
+	
 	const FPRActivateIndexList* ActivateObjectIndexes = ActivateObjectIndexList.Find(PooledObject->GetClass());
 	if(ActivateObjectIndexes != nullptr)
 	{
-		return ActivateObjectIndexes->Indexes.Contains(PooledObject->GetPoolIndex()) && PooledObject->IsActivate();
+		return ActivateObjectIndexes->Indexes.Contains(PooledObject->GetPoolIndex()) || PooledObject->IsActivate();
 	}
 	
 	return false;
@@ -254,10 +295,19 @@ void UPRObjectPoolSystemComponent::CreateActivateObjectIndexList(TSubclassOf<APR
 
 void UPRObjectPoolSystemComponent::OnPooledObjectDeactivate(APRPooledObject* PooledObject)
 {
+	if(!IsValid(PooledObject))
+	{
+		return;
+	}
+	
 	if(IsActivatePooledObject(PooledObject))
 	{
-		// 비활성화된 오브젝트의 Index를 ActivateObjectIndexList에서 제거합니다.
-		ActivateObjectIndexList.Find(PooledObject->GetClass())->Indexes.Remove(PooledObject->GetPoolIndex());
+		FPRActivateIndexList* IndexList = ActivateObjectIndexList.Find(PooledObject->GetClass());
+		if(IndexList != nullptr)
+		{
+			// 비활성화된 오브젝트의 Index를 ActivateObjectIndexList에서 제거합니다.
+			IndexList->Indexes.Remove(PooledObject->GetPoolIndex());
+		}
 	}
 }
 

@@ -208,8 +208,6 @@ void APRBaseCharacter::DoDamage()
 				&& HitResult.GetActor()->GetClass()->ImplementsInterface(UInterface_PRDamageable::StaticClass())
 				&& UniqueActors.Find(HitResult.GetActor()) == nullptr)
 			{
-				PR_LOG_SCREEN("Hit Actor Name: %s", *HitResult.GetActor()->GetName());
-				
 				UniqueActors.Emplace(HitResult.GetActor());
 				FPRDamageInfo DamageInfo;
 				DamageInfo.DamageType = EPRDamageType::DamageType_Melee;

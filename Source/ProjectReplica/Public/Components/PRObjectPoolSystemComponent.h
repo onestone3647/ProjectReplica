@@ -113,7 +113,30 @@ public:
 	 * @return ObjectPool에서 찾아 활성화한 오브젝트
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PRObjectPoolSystem")
-	APRPooledObject* ActivatePooledObject(TSubclassOf<APRPooledObject> PooledObjectClass, FVector NewLocation = FVector::ZeroVector, FRotator NewRotation = FRotator::ZeroRotator);
+	APRPooledObject* ActivatePooledObjectFromClass(TSubclassOf<APRPooledObject> PooledObjectClass, FVector NewLocation = FVector::ZeroVector, FRotator NewRotation = FRotator::ZeroRotator);
+
+	/**
+	 * 인자로 받은 비활성화된 오브젝트가 ObjectPool에 존재하면 활성화하고 좌표와 회전 값을 적용하는 함수입니다.
+	 * 인자로 받은 오브젝트가 이미 활성화된 상태일 경우 nullptr을 반환합니다.
+	 * 
+	 * @param PooledObject 활성화할 비활성화된 오브젝트
+	 * @param NewLocation 적용할 오브젝트의 좌표
+	 * @param NewRotation 적용할 오브젝틔 회전 값
+	 * @return 활성화한 오브젝트
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PRObjectPoolSystem")
+	APRPooledObject* ActivatePooledObject(APRPooledObject* PooledObject, FVector NewLocation = FVector::ZeroVector, FRotator NewRotation = FRotator::ZeroRotator);
+	
+	/**
+	 * 인자로 받은 오브젝트 클래스에 해당하는 ObjectPool에서 활성화할 수 있는 오브젝트를 반환하는 함수입니다.
+	 * 인자로 받은 오브젝트 클래스에서 해당하는 ObjectPool이 없을 경우, 동적으로 ObjectPool을 생성하고 비활성화된 오브젝트를 반환합니다.
+ 	 * ObjectPool에서 활성화할 수 있는 오브젝트가 없을 경우, 동적으로 오브젝트를 생성하여 반환합니다.
+	 *
+	 * @param PooledObjectClass ObjectPool에서 찾을 오브젝트의 클래스
+	 * @return 활성화할 수 있는 오브젝트
+	 */	
+	UFUNCTION(BlueprintCallable, Category = "PRObjectPoolSystem")
+	APRPooledObject* GetActivateablePooledObject(TSubclassOf<APRPooledObject> PooledObjectClass);
 
 	/**
 	 * 인자로 받은 오브젝트가 ObjectPool에서 활성화 되었는지 판별하는 함수입니다.
@@ -248,6 +271,6 @@ protected:
 	float DynamicDestroyDelay;
 
 	/** 동적으로 생성하는 ObjectPool의 PoolSize입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRObjectPoolSystem")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRObjectPoolSystem", meta = (ClampMin = "1"))
 	int32 DynamicPoolSize;
 };

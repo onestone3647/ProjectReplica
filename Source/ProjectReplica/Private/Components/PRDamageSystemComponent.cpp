@@ -85,14 +85,9 @@ bool UPRDamageSystemComponent::TakeDamage(FPRDamageInfo DamageInfo)
 		
 	case EPRCanBeDamaged::CanBeDamaged_DoDamage:
 		{
-			AProjectReplicaGameMode* PRGameMode = Cast<AProjectReplicaGameMode>(UGameplayStatics::GetGameMode(GetWorld()));	
-			if(PRGameMode != nullptr)
+			if(GetPRGameMode() != nullptr)
 			{
-				APRDamageAmount* DamageAmountInstance = Cast<APRDamageAmount>(PRGameMode->GetObjectPoolSystem()->ActivatePooledObject(DamageAmount));
-				if(DamageAmountInstance)
-				{
-					DamageAmountInstance->Initialize(DamageInfo.ImpactLocation, DamageInfo.Amount, DamageInfo.bIsCritical, DamageInfo.DamageElement);
-				}
+				GetPRGameMode()->ActivateDamageAmount(DamageInfo.ImpactLocation, DamageInfo.Amount, DamageInfo.bIsCritical, DamageInfo.DamageElement);
 			}
 		
 			StatSystem->SetHealth(CharacterStat.Health -= DamageInfo.Amount);

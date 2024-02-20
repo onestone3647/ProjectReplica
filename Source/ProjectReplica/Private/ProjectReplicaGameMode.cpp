@@ -4,6 +4,7 @@
 // #include "ProjectReplicaCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Components/PRObjectPoolSystemComponent.h"
+#include "Objects/PRDamageAmount.h"
 
 AProjectReplicaGameMode::AProjectReplicaGameMode()
 {
@@ -16,6 +17,9 @@ AProjectReplicaGameMode::AProjectReplicaGameMode()
 
 	// ObjectPoolSystem
 	ObjectPoolSystem = CreateDefaultSubobject<UPRObjectPoolSystemComponent>(TEXT("ObjectPoolSystem"));
+
+	// DamageAmount
+	DamageAmountClass = nullptr;
 }
 
 void AProjectReplicaGameMode::PostInitializeComponents()
@@ -24,4 +28,23 @@ void AProjectReplicaGameMode::PostInitializeComponents()
 
 	// ObjectPoolSystem
 	GetObjectPoolSystem()->InitializeObjectPool();
+}
+
+APRDamageAmount* AProjectReplicaGameMode::ActivateDamageAmount(FVector SpawnLocation, float DamageAmount, bool bIsCritical, EPRElement Element)
+{
+	if(GetWorld()
+		&& DamageAmountClass != nullptr)
+	{
+		APRDamageAmount* DamageAmountObject = Cast<APRDamageAmount>(GetObjectPoolSystem()->GetActivateablePooledObject(DamageAmountClass));
+		if(IsValid(DamageAmountObject))
+		{
+			DamageAmountObject->Initialize(SpawnLocation, DamageAmount, bIsCritical, Element);
+			if(GetObjectPoolSystem()->ActivatePooledObject(DamageAmountObject, SpawnLocation) != nullptr)
+			{
+				return DamageAmountObject;
+			}
+		}
+	}
+
+	return nullptr;
 }
