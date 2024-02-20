@@ -22,7 +22,6 @@ public:
 protected:
 	/** 액터에 속한 모든 컴포넌트의 세팅이 완료되면 호출되는 함수입니다. */
 	virtual void PostInitializeComponents() override;
-	
 	virtual void BeginPlay() override;
 
 protected:
@@ -49,6 +48,14 @@ public:
 
 	/** 최대 체력을 반환하는 함수입니다. */
 	virtual float GetMaxHealth_Implementation() override;
+
+	/**
+	 * 대미지를 받는 함수입니다.
+	 *
+	 * @param DamageInfo 대미지의 정보
+	 * @return 대미지 적용 여부
+	 */
+	virtual bool TakeDamage_Implementation(FPRDamageInfo DamageInfo) override;
 #pragma endregion
 	
 #pragma region HealthBar

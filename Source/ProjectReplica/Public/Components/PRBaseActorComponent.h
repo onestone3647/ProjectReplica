@@ -8,6 +8,7 @@
 
 class APRBaseCharacter;
 class UProjectReplicaGameInstance;
+class AProjectReplicaGameMode;
 
 /**
  * PRBaseCharacter가 사용하는 ActorComponent의 부모 클래스입니다.
@@ -34,6 +35,13 @@ protected:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PRBaseActorComponent|PRGameInstance")
 	class UProjectReplicaGameInstance* GetPRGameInstance() const;
+
+	/**
+	 * ProjectReplicaGameMode를 반환하는 함수입니다.
+	 * PROwner가 월드에 속해야합니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PRBaseActorComponent|PRGameMode")
+	class AProjectReplicaGameMode* GetPRGameMode() const;
 
 private:
 	/** 이 ActorComponent를 소유하고 있는 PRBaseCharacter입니다. */

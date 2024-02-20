@@ -10,6 +10,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "InputActionValue.h"
 
 APRPlayerCharacter::APRPlayerCharacter()
 {
@@ -73,11 +74,11 @@ void APRPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		{
 			// 이동
 			EnhancedInputComponent->BindAction(InputActions->InputMove, ETriggerEvent::Triggered, this, &APRPlayerCharacter::Move);
-		
+			
 			// 마우스 시선
 			EnhancedInputComponent->BindAction(InputActions->InputTurn, ETriggerEvent::Triggered, this, &APRPlayerCharacter::Turn);
 			EnhancedInputComponent->BindAction(InputActions->InputLookUp, ETriggerEvent::Triggered, this, &APRPlayerCharacter::LookUp);
-
+			
 			// 게임패드 시선
 			EnhancedInputComponent->BindAction(InputActions->InputTurnRate, ETriggerEvent::Triggered, this, &APRPlayerCharacter::TurnRate);
 			EnhancedInputComponent->BindAction(InputActions->InputLookUpRate, ETriggerEvent::Triggered, this, &APRPlayerCharacter::LookUpRate);

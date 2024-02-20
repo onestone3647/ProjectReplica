@@ -44,8 +44,8 @@ void APRDamageAmount::Initialize(FVector SpawnLocation, float DamageAmount, bool
 
 	if(IsValid(DamageAmountWidgetInstance))
 	{
-		// WidgetAnimation이 종료되었을 때 OnFadeOutAnimFinish 함수를 실행하기 위해 Delegate에 함수를 바인딩합니다.
-		DamageAmountWidgetInstance->OnFadeOutWidgetAnimFinishedDelegate.BindUFunction(this, TEXT("OnFadeOutAnimFinish"));
+		// WidgetAnimation이 종료되었을 때 Deactivate 함수를 실행하기 위해 Delegate에 함수를 바인딩합니다.
+		DamageAmountWidgetInstance->OnFadeOutWidgetAnimFinishedDelegate.BindDynamic(this, &APRPooledObject::Deactivate);
 		
 		DamageAmountWidgetInstance->InitializeDamageAmountWidget(DamageAmount, bIsCritical, Element);
 	}
@@ -65,10 +65,5 @@ UPRDamageAmountWidget* APRDamageAmount::CreateDamageAmountWidget()
 	}
 
 	return nullptr;
-}
-
-void APRDamageAmount::OnFadeOutAnimFinish()
-{
-	Destroy();
 }
 
