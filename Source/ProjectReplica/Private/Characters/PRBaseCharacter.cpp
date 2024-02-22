@@ -32,12 +32,12 @@ APRBaseCharacter::APRBaseCharacter()
 	// GetCharacterMovement()->RotationRate = FRotator::ZeroRotator;
 
 	// LockOn일 때
-	GetCharacterMovement()->bUseControllerDesiredRotation = true;
-	GetCharacterMovement()->bOrientRotationToMovement = false;
+	// GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	// GetCharacterMovement()->bOrientRotationToMovement = false;
 
 	// LockOn이 아닐 때
-	// GetCharacterMovement()->bUseControllerDesiredRotation = false;
-	// GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->bUseControllerDesiredRotation = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 
 	// Pawn
 	// 컨트롤러가 회전할 때 캐릭터가 같이 회전하지 않도록 설정합니다.

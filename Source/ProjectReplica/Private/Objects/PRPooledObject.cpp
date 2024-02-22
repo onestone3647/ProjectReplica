@@ -63,8 +63,6 @@ void APRPooledObject::Deactivate_Implementation()
 	// 오브젝트에 설정된 모든 타이머를 초기화합니다.
 	GetWorldTimerManager().ClearAllTimersForObject(this);
 
-	PR_LOG_SCREEN("Object Deactivate %s", *GetName());
-	
 	OnPooledObjectDeactivateDelegate.Broadcast(this);
 }
 

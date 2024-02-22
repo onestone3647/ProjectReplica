@@ -97,6 +97,7 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance", meta = (BlueprintThreadSafe))
 	void UpdateRootYawOffset(float DeltaSeconds);
 
+	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance", meta = (BlueprintThreadSafe))
 	void ProcessTurnYawCurve();
 
 protected:
