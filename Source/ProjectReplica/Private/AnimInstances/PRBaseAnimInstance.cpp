@@ -7,11 +7,26 @@
 #include "AnimCharacterMovementLibrary.h"
 #include "KismetAnimationLibrary.h"
 #include "Components/PRMovementSystemComponent.h"
+#include "Dataflow/DataflowSelection.h"
 
 UPRBaseAnimInstance::UPRBaseAnimInstance()
 {
 	PROwner = nullptr;
 	CharacterMovement = nullptr;
+
+	Velocity = FVector::ZeroVector;
+	Speed = 0.0f;
+	bIsMoving = false;
+
+
+
+
+
+
+
+
+
+	
 
 	Gait = EPRGait::Gait_Idle;
 	Velocity = FVector::ZeroVector;
@@ -107,8 +122,8 @@ void UPRBaseAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 	Super::NativeThreadSafeUpdateAnimation(DeltaSeconds);
 
 	UpdateProperties(DeltaSeconds);
-	UpdateRootYawOffset(DeltaSeconds);
-
+	// UpdateRootYawOffset(DeltaSeconds);
+	//
 	// SetupEssentialProperties();
 	
 	// DistanceToMatch = GetPredictedStopDistance();
@@ -121,59 +136,93 @@ bool UPRBaseAnimInstance::ReceiveGait(EPRGait NewGait)
 	return true;
 }
 
+void UPRBaseAnimInstance::SetRootLock(bool bRootLock)
+{
+	if(bRootLock)
+	{
+		EnableRootLock();
+	}
+	else
+	{
+		DisableRootLock();
+	}
+}
+
+void UPRBaseAnimInstance::EnableRootLock()
+{
+	SetRootMotionMode(ERootMotionMode::RootMotionFromEverything);
+}
+
+void UPRBaseAnimInstance::DisableRootLock()
+{
+	SetRootMotionMode(ERootMotionMode::RootMotionFromMontagesOnly);
+}
+
 void UPRBaseAnimInstance::UpdateProperties(float DeltaSeconds)
 {
 	if(GetCharacterMovement())
 	{
-		Acceleration = GetCharacterMovement()->GetCurrentAcceleration();
 		Velocity = GetCharacterMovement()->Velocity;
-		GroundSpeed = Velocity.Length();
-		ActorRotation = TryGetPawnOwner()->GetActorRotation();
-		Direction = UKismetAnimationLibrary::CalculateDirection(Velocity, ActorRotation);
-		VelocityXY = Velocity * FVector(1.0f, 1.0f, 0.0f);
-
-		bShouldMove = GroundSpeed > KINDA_SMALL_NUMBER && Acceleration != FVector::ZeroVector;		// 3.0f
-		bIsFalling = GetCharacterMovement()->IsFalling();
-		bIsOnGround = GetCharacterMovement()->IsMovingOnGround();
+		Speed = Velocity.Size();
+		Acceleration = GetCharacterMovement()->GetCurrentAcceleration();
+		bShouldMove = Speed > KINDA_SMALL_NUMBER && Acceleration != FVector::ZeroVector;		// 3.0f
+		Direction = UKismetAnimationLibrary::CalculateDirection(Velocity, TryGetPawnOwner()->GetActorRotation());
 		
-		AccelerationXY = Acceleration * FVector(1.0f, 1.0f, 0.0f);
-
-		LastActorYaw = ActorYaw;
-		ActorYaw = ActorRotation.Yaw;
-		ActorYawDelta = ActorYaw - LastActorYaw;
-
-		float MovementDirectionValue = 0.0f;
-		switch(MovementDirection)
-		{
-		case EPRDirection::Direction_Forward:
-		case EPRDirection::Direction_Left:
-			MovementDirectionValue = 1.0f;
-			break;
-			
-		case EPRDirection::Direction_Backward:
-		case EPRDirection::Direction_Right:
-			MovementDirectionValue = -1.0f;
-			break;
-			
-		default:
-			MovementDirectionValue = 0.0f;
-			break;
-		}
-		
-		LeanAngle = UKismetMathLibrary::ClampAngle(UKismetMathLibrary::SafeDivide(ActorYawDelta, DeltaTime) / 4.0f * MovementDirectionValue,
-																					-45.0f, 45.0f);
-
-		bIsInAir = GetCharacterMovement()->MovementMode == MOVE_Falling;
-		bIsJumping = bIsInAir && Velocity.Z > 0.0f;
-		bIsFalling = bIsInAir && Velocity.Z < 0.0f;
-		if(bIsJumping)
-		{
-			ApexJumpTime = (0.0f - Velocity.Z) / (GetCharacterMovement()->GetGravityZ() * GetCharacterMovement()->GravityScale);
-		}
-		else
-		{
-			ApexJumpTime = 0.0f;
-		}
+		// Velocity = GetCharacterMovement()->Velocity;
+		// GroundSpeed = Velocity.Size();
+		// ActorRotation = TryGetPawnOwner()->GetActorRotation();
+		// Direction = UKismetAnimationLibrary::CalculateDirection(Velocity, ActorRotation);
+		// VelocityXY = Velocity * FVector(1.0f, 1.0f, 0.0f);
+		//
+		// bShouldMove = GroundSpeed > KINDA_SMALL_NUMBER && Acceleration != FVector::ZeroVector;		// 3.0f
+		// // if(!bShouldMove)
+		// // {
+		// // 	DisableRootLock();
+		// // }
+		//
+		// bIsFalling = GetCharacterMovement()->IsFalling();
+		// bIsOnGround = GetCharacterMovement()->IsMovingOnGround();
+		//
+		// AccelerationXY = Acceleration * FVector(1.0f, 1.0f, 0.0f);
+		//
+		// LastActorYaw = ActorYaw;
+		// ActorYaw = ActorRotation.Yaw;
+		// ActorYawDelta = ActorYaw - LastActorYaw;
+		//
+		// float MovementDirectionValue = 0.0f;
+		// switch(MovementDirection)
+		// {
+		// case EPRDirection::Direction_Forward:
+		// case EPRDirection::Direction_Left:
+		// 	MovementDirectionValue = 1.0f;
+		// 	break;
+		// 	
+		// case EPRDirection::Direction_Backward:
+		// case EPRDirection::Direction_Right:
+		// 	MovementDirectionValue = -1.0f;
+		// 	break;
+		// 	
+		// default:
+		// 	MovementDirectionValue = 0.0f;
+		// 	break;
+		// }
+		//
+		// LeanAngle = UKismetMathLibrary::ClampAngle(UKismetMathLibrary::SafeDivide(ActorYawDelta, DeltaTime) / 4.0f * MovementDirectionValue,
+		// 																			-45.0f, 45.0f);
+		//
+		// bIsInAir = GetCharacterMovement()->MovementMode == MOVE_Falling;
+		// bIsJumping = bIsInAir && Velocity.Z > 0.0f;
+		// bIsFalling = bIsInAir && Velocity.Z < 0.0f;
+		// if(bIsJumping)
+		// {
+		// 	ApexJumpTime = (0.0f - Velocity.Z) / (GetCharacterMovement()->GetGravityZ() * GetCharacterMovement()->GravityScale);
+		// }
+		// else
+		// {
+		// 	ApexJumpTime = 0.0f;
+		// }
+		//
+		// bAttemptTurn = UKismetMathLibrary::Dot_VectorVector(UKismetMathLibrary::Normal(Velocity), UKismetMathLibrary::Normal(Acceleration)) < 0.0f;
 	}
 }
 
@@ -218,6 +267,15 @@ void UPRBaseAnimInstance::ProcessTurnYawCurve()
 		{
 			SetRootYawOffset(RootYawOffset - (TurnYawCurveValue - LastTurnYawCurveValue));
 		}
+	}
+}
+
+void UPRBaseAnimInstance::SetOwnerRotation(FRotator NewRotation)
+{
+	if(GetPROwner())
+	{
+		FRotator CurrentRotation = GetPROwner()->GetActorRotation();
+		GetPROwner()->SetActorRotation(CurrentRotation + NewRotation);
 	}
 }
 

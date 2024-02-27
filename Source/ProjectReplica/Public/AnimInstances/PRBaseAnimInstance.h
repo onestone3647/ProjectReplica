@@ -8,6 +8,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "PRBaseAnimInstance.generated.h"
 
+enum class EPRGait : uint8;
 class APRBaseCharacter;
 class UCharacterMovementComponent;
 class UPRMovementSystemComponent;
@@ -85,6 +86,29 @@ public:
 	UFUNCTION(Blueprintable, Category = "PRBaseAnimInstance")
 	bool ReceiveGait(EPRGait NewGait);
 
+	/**
+	 * RootLock을 설정하는 함수입니다.
+	 * RootLock이 true일 경우 RootLock을 활성화합니다.
+	 * RootLock이 false일 경우 RootLock을 비활성화합니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance", meta = (BlueprintThreadSafe))
+	void SetRootLock(bool bRootLock);
+
+	/**
+	 * RootLock을 활성화하는 함수입니다.
+	 * 모든 애니메이션의 RootMotion을 실행합니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance", meta = (BlueprintThreadSafe))
+	void EnableRootLock();
+
+	/**
+	 * RootLock을 비활성화하는 함수입니다.
+	 * 애님몽타주만 RootMotion을 실행합니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance", meta = (BlueprintThreadSafe))
+	void DisableRootLock();	
+	
+
 protected:
 	/** 프로퍼티들을 최신화하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance", meta = (BlueprintThreadSafe))
@@ -100,6 +124,9 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance", meta = (BlueprintThreadSafe))
 	void ProcessTurnYawCurve();
 
+	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance", meta = (BlueprintThreadSafe))
+	void SetOwnerRotation(FRotator NewRotation);
+	
 protected:
 	/** 걸음걸이입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
@@ -135,7 +162,11 @@ protected:
 
 	/** 움직이는지 나타내는 변수입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	bool bShouldMove;	
+	bool bShouldMove;
+
+	/** 움직이는지 나타내는 변수입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	bool bIsMoving;	
 
 	/** 공중에서 떨어지고 있는지 나타내는 변수입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
@@ -203,7 +234,20 @@ protected:
 
 	/** 남은 Yaw의 회전값 커브의 이름입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	FName RemainingTurnYawCurveName;	
+	FName RemainingTurnYawCurveName;
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	float ForwardValue;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	float BackwardValue;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	float LeftValue;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	float RightValue;
 	
 #pragma region Before
 public:
@@ -323,6 +367,10 @@ protected:
 	/** 마지막으로 바닥에 닿은 발입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	EPRFoot LastFootOnLand;
+
+	/** 회전 시도 여부입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	bool bAttemptTurn;
 
 #pragma endregion 
 	
