@@ -166,7 +166,12 @@ void UPRBaseAnimInstance::UpdateProperties(float DeltaSeconds)
 		Speed = Velocity.Size();
 		Acceleration = GetCharacterMovement()->GetCurrentAcceleration();
 		bShouldMove = Speed > KINDA_SMALL_NUMBER && Acceleration != FVector::ZeroVector;		// 3.0f
-		Direction = UKismetAnimationLibrary::CalculateDirection(Velocity, TryGetPawnOwner()->GetActorRotation());
+		// Direction = UKismetAnimationLibrary::CalculateDirection(Velocity, TryGetPawnOwner()->GetActorRotation());
+
+		bIsFalling = GetCharacterMovement()->IsFalling();
+		
+		bAttemptTurn = UKismetMathLibrary::Dot_VectorVector(UKismetMathLibrary::Normal(Velocity), UKismetMathLibrary::Normal(Acceleration)) < 0.0f;
+
 		
 		// Velocity = GetCharacterMovement()->Velocity;
 		// GroundSpeed = Velocity.Size();
@@ -222,7 +227,6 @@ void UPRBaseAnimInstance::UpdateProperties(float DeltaSeconds)
 		// 	ApexJumpTime = 0.0f;
 		// }
 		//
-		// bAttemptTurn = UKismetMathLibrary::Dot_VectorVector(UKismetMathLibrary::Normal(Velocity), UKismetMathLibrary::Normal(Acceleration)) < 0.0f;
 	}
 }
 

@@ -236,7 +236,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	FName RemainingTurnYawCurveName;
 
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	float ForwardValue;
 	
@@ -371,7 +370,6 @@ protected:
 	/** 회전 시도 여부입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	bool bAttemptTurn;
-
 #pragma endregion 
 	
 private:
