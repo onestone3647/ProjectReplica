@@ -10,23 +10,8 @@ UPRMovementSystemComponent::UPRMovementSystemComponent()
 {
 	CurrentGait = EPRGait::Gait_Idle;
 	LastGait = EPRGait::Gait_Idle;
-	GaitSettings.Empty();
-
-	FPRGaitSettings WalkSettings = FPRGaitSettings(200.0f
-													, 450.0f
-													, 1.0f
-													, 0.0f
-													, true
-													, 250.0f);
-	GaitSettings.Emplace(EPRGait::Gait_Walk, WalkSettings);
 	
-	FPRGaitSettings RunSettings = FPRGaitSettings(450.0f
-													, 800.0f
-													, 1.0f
-													, 0.0f
-													, true
-													, 450.0f);
-	GaitSettings.Emplace(EPRGait::Gait_Run, RunSettings);
+	InitializeGaitSettings();
 }
 
 void UPRMovementSystemComponent::UpdateGait(EPRGait DesiredGait)
@@ -38,7 +23,8 @@ void UPRMovementSystemComponent::UpdateGait(EPRGait DesiredGait)
 
 		if(GetPRBaseAnimInstance() && GetPRBaseAnimInstance()->ReceiveGait(DesiredGait))
 		{
-			const FPRGaitSettings DesiredGaitSettings = *GaitSettings.Find(DesiredGait);
+			const FPRGaitSettings DesiredGaitSettings = GetGaitSettings(DesiredGait);
+			
 			UCharacterMovementComponent* CharacterMovement = GetPROwner()->GetCharacterMovement();
 			CharacterMovement->MaxWalkSpeed = DesiredGaitSettings.MovementSpeed;
 			CharacterMovement->MaxAcceleration = DesiredGaitSettings.MaxAcceleration;
@@ -60,4 +46,43 @@ UPRBaseAnimInstance* UPRMovementSystemComponent::GetPRBaseAnimInstance() const
 	}
 
 	return PRBaseAnimInstance;
+}
+
+void UPRMovementSystemComponent::InitializeGaitSettings()
+{
+	GaitSettings.Empty();
+	
+	FPRGaitSettings WalkSettings = FPRGaitSettings(250.0f
+													, 450.0f
+													, 1.0f
+													, 0.0f
+													, true
+													, 1000.0f);
+	GaitSettings.Emplace(EPRGait::Gait_Walk, WalkSettings);
+	
+	FPRGaitSettings RunSettings = FPRGaitSettings(550.0f
+												, 800.0f
+												, 1.0f
+												, 0.0f
+												, true
+												, 800.0f);
+	GaitSettings.Emplace(EPRGait::Gait_Run, RunSettings);
+
+	FPRGaitSettings SprintSettings = FPRGaitSettings(670.0f
+												, 800.0f
+												, 1.0f
+												, 0.0f
+												, true
+												, 450.0f);
+	GaitSettings.Emplace(EPRGait::Gait_Sprint, SprintSettings);
+}
+
+FPRGaitSettings UPRMovementSystemComponent::GetGaitSettings(EPRGait NewGait) const
+{
+	return *GaitSettings.Find(NewGait);
+}
+
+TMap<EPRGait, FPRGaitSettings> UPRMovementSystemComponent::GetAllGaitSettings() const
+{
+	return GaitSettings;
 }

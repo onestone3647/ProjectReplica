@@ -32,7 +32,6 @@ public:
 protected:
 	/** 액터에 속한 모든 컴포넌트의 세팅이 완료되면 호출되는 함수입니다. */
 	virtual void PostInitializeComponents() override;
-	
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
@@ -175,20 +174,26 @@ public:
 	void SetRunLocomotion();
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Locomotion")
+	/** 걷기 속도입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Locomotion")
 	float WalkSpeed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Locomotion")
+	/** 달리기 속도입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Locomotion")
 	float RunSpeed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Locomotion")
+	/** 전력질주 속도입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Locomotion")
 	float SprintSpeed;
 
 public:
+	/** WalkSpeed를 반환하는 함수입니다. */
 	float GetWalkSpeed() const;
 
+	/** RunSpeed를 반환하는 함수입니다. */
 	float GetRunSpeed() const;
 
+	/** SprintSpeed를 반환하는 함수입니다. */
 	float GetSprintSpeed() const;
 #pragma endregion
 };

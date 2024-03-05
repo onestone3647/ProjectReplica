@@ -92,6 +92,18 @@ public:
 	/** PROwner의 PRBaseAnimInstance를 반환하는 함수입니다. */
 	UPRBaseAnimInstance* GetPRBaseAnimInstance() const;
 
+	/** GaitSettings를 초기화하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PRMovementSystem")
+	void InitializeGaitSettings();	
+
+	/** 인자에 해당하는 걸음걸이의 설정 값을 반환하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PRMovementSystem")
+	FPRGaitSettings GetGaitSettings(EPRGait NewGait) const;
+
+	/** GaitSettings를 반환하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PRMovementSystem")
+	TMap<EPRGait, FPRGaitSettings> GetAllGaitSettings() const;
+
 protected:
 	/** 현재 걸음걸이입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRMovementSystem")
@@ -101,7 +113,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRMovementSystem")
 	EPRGait LastGait;
 
-	/** 걸음걸이의 설정값을 가진 Map입니다. */
+	/** 걸음걸이의 설정 값을 가진 Map입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRMovementSystem")
 	TMap<EPRGait, FPRGaitSettings> GaitSettings;
 };

@@ -6,12 +6,11 @@
 #include "Animation/AnimInstance.h"
 #include "Common/PRCommonEnum.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Components/PRMovementSystemComponent.h"
 #include "PRBaseAnimInstance.generated.h"
 
-enum class EPRGait : uint8;
 class APRBaseCharacter;
 class UCharacterMovementComponent;
-class UPRMovementSystemComponent;
 
 #pragma region Before
 /**
@@ -22,7 +21,8 @@ enum class EPRLocomotionState : uint8
 {
 	LocomotionState_Idle			UMETA(DisplayName = "Idle"),
 	LocomotionState_Walk			UMETA(DisplayName = "Walk"),
-	LocomotionState_Run				UMETA(DisplayName = "Run")
+	LocomotionState_Run				UMETA(DisplayName = "Run"),
+	LocomotionState_Sprint			UMETA(DisplayName = "Sprint")
 };
 
 /**
@@ -107,13 +107,183 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance", meta = (BlueprintThreadSafe))
 	void DisableRootLock();	
-	
 
 protected:
 	/** 프로퍼티들을 최신화하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance", meta = (BlueprintThreadSafe))
 	void UpdateProperties(float DeltaSeconds);
 
+	/** LocomotionState를 최신화하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance")
+	void UpdateLocomotionState();
+
+	/** LocomotionState를 추적하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance")
+	EPRTrackState TrackLocomotionState(EPRLocomotionState NewLocomotionState, bool& EnterExecuted, bool& ExitExecuted);
+
+	/** Idle LocomotionState를 추적하는 함수입니다. */
+	void TrackIdleState();
+
+	/** Run LocomotionState를 추적하는 함수입니다. */
+	void TrackRunState();
+
+	/** Sprint LocomotionState를 추적하는 함수입니다. */
+	void TrackSprintState();
+
+	/** Walk LocomotionState를 추적하는 함수입니다. */
+	void TrackWalkState();
+
+	/** Run 상태에 진입했을 때 최신화하는 함수입니다. */
+	void UpdateOnRunStateEnter();
+
+	/** Walk 상태에 진입했을 때 최신화하는 함수입니다. */
+	void UpdateOnWalkStateEnter();
+
+	/** Locomotion의 재생 속도를 최신화하는 함수입니다. */
+	void UpdateLocomotionPlayRate();
+	
+protected:
+	/** 이전 프레임과 현재 프레임 사이의 시간 간격입니다. */
+	UPROPERTY(BlueprintReadOnly, Category = "PRBaseAnimInstance")
+	float DeltaTime;
+	
+	/** 캐릭터의 이동 상태입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	EPRLocomotionState LocomotionState;
+
+	/** 제거 예정 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	EPRGait Gait;
+
+	/** 속도입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	FVector Velocity;
+
+	/** 속도입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	float Speed;
+	
+	/** 걷기 속도입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	float WalkSpeed;	
+
+	/** 달리기 속도입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	float RunSpeed;
+
+	/** 전력질주 속도입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	float SprintSpeed;
+	
+	/** 가속도입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	FVector Acceleration;
+
+	/** 달릴 때의 최소 가속도입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	float MinAccelerationToRunGait;
+
+	/** 움직이는지 나타내는 변수입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	bool bShouldMove;
+
+	/** 공중에서 떨어지고 있는지 나타내는 변수입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	bool bIsFalling;
+
+	/** 입력 벡터입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	FVector InputVector;
+	
+	/** 회전 시도 여부입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	bool bAttemptTurn;
+
+private:
+	/** 이 AnimInstance를 사용하는 PRBaseCharacter입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRBaseAnimInstance", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class APRBaseCharacter> PROwner;
+
+	/** PROwner의 CharacterMovementComponent입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRBaseAnimInstance", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UCharacterMovementComponent> CharacterMovement;
+
+	/** PROwner의 MovementSystem에서 가져온 걸음걸이의 설정 값을 가진 Map입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRBaseAnimInstance", meta = (AllowPrivateAccess = "true"))
+	TMap<EPRGait, FPRGaitSettings> GaitSettings;
+
+private:
+	/** TrackLocomotionState 함수에서 Idle 상태를 추적하는 Flag 변수입니다. */
+	bool bTrackIdleStateEnterExecuted;
+	bool bTrackIdleStateExitExecuted;
+
+	/** TrackLocomotionState 함수에서 Run 상태를 추적하는 Flag 변수입니다. */
+	bool bTrackRunStateEnterExecuted;
+	bool bTrackRunStateExitExecuted;
+
+	/** TrackLocomotionState 함수에서 Sprint 상태를 추적하는 Flag 변수입니다. */
+	bool bTrackSprintStateEnterExecuted;
+	bool bTrackSprintStateExitExecuted;
+
+	/** TrackLocomotionState 함수에서 Walk 상태를 추적하는 Flag 변수입니다. */
+	bool bTrackWalkStateEnterExecuted;
+	bool bTrackWalkStateExitExecuted;
+	
+public:
+	/** PROwner를 반환하는 함수입니다. */
+	class APRBaseCharacter* GetPROwner() const;
+
+	/** PROwner의 CharacterMovementComponent를 반환하는 함수입니다. */
+	class UCharacterMovementComponent* GetCharacterMovement() const;
+
+
+
+
+
+	
+
+#pragma region LockOn
+	// LockOn에서 사용할 것들
+protected:
+	/** Locomotion의 시작 방향을 최신화하는 함수입니다. */
+	void UpdateLocomotionStartDirection(float NewStartAngle);
+
+protected:
+	/** 시작 회전값입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	FRotator StartRotation;
+
+	/** 1차 회전값입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	FRotator PrimaryRotation;
+
+	/** 2차 회전값입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	FRotator SecondaryRotation;
+
+	/** Locomotion의 시작 각(Angle)입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	float LocomotionStartAngle;
+
+#pragma endregion 
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+#pragma region Before2
+protected:
 	/** RootYawOffset을 설정하는 함수입니다. */	
 	void SetRootYawOffset(float Angle);
 
@@ -126,16 +296,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance", meta = (BlueprintThreadSafe))
 	void SetOwnerRotation(FRotator NewRotation);
+
 	
 protected:
-	/** 걸음걸이입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	EPRGait Gait;
-
-	/** 속도입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	FVector Velocity;
-
 	/** Z축을 뺀 XY에서의 속도입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	FVector VelocityXY;
@@ -143,10 +306,6 @@ protected:
 	/** 지상에서의 속도입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	float GroundSpeed;
-
-	/** 가속도입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	FVector Acceleration;
 
 	/** Z축을 뺀 XY에서의 가속도입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
@@ -162,15 +321,7 @@ protected:
 
 	/** 움직이는지 나타내는 변수입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	bool bShouldMove;
-
-	/** 움직이는지 나타내는 변수입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	bool bIsMoving;	
-
-	/** 공중에서 떨어지고 있는지 나타내는 변수입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	bool bIsFalling;
 
 	/** 공중에 존재하는지 나타내는 변수입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
@@ -247,6 +398,7 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	float RightValue;
+#pragma endregion 
 	
 #pragma region Before
 public:
@@ -261,14 +413,6 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance", meta = (BlueprintThreadSafe))
 	void SetupEssentialProperties();
 
-	/** Locomotion의 상태를 최신화하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance")
-	void UpdateLocomotionState();
-
-	/** Locomotion의 상태를 추적하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance")
-	EPRTrackState TrackLocomotionState(EPRLocomotionState NewLocomotionState, bool& EnterExecuted, bool& ExitExecuted);
-
 	/** Idle 상태를 최신화하는 함수입니다. */
 	void UpdateIdleState();
 
@@ -278,34 +422,15 @@ protected:
 	/** Walk 상태를 최신화하는 함수입니다. */
 	void UpdateWalkState();
 
-	/** Run 상태일 때 최신화하는 함수입니다. */
-	void UpdateOnRunEnter();
-
-	/** Walk 상태일 때 최신화하는 함수입니다. */
-	void UpdateOnWalkEnter();
-
-	/** Locomotion의 시작 방향을 최신화하는 함수입니다. */
-	void UpdateLocomotionStartDirection(float NewStartAngle);
-
 	// void UpdateCharacterRotation();
 	//
 	// void UpdateRotationWhileMoving();
-
-	/** Locomotion의 재생 속도를 최신화하는 함수입니다. */
-	void UpdateLocomotionPlayRate();
 
 	/** 예상 정지 거리를 반환하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance", meta = (BlueprintThreadSafe))
 	float GetPredictedStopDistance() const;
 	
 protected:
-	/** 이전 프레임과 현재 프레임 사이의 시간 간격입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRBaseAnimInstance")
-	float DeltaTime;
-	
-	/** Locomotion의 상태입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	EPRLocomotionState LocomotionState;
 
 	/** 가속 여부입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
@@ -323,34 +448,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	FVector2D Acceleration2D;
 
-	/** 속도입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	float Speed;
-
-	/** 걷는 속도입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	float WalkSpeed;	
-
-	/** 입력 벡터입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	FVector InputVector;
-
-	/** 시작 회전값입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	FRotator StartRotation;
-
-	/** 1차 회전값입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	FRotator PrimaryRotation;
-
-	/** 2차 회전값입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	FRotator SecondaryRotation;
-
-	/** Locomotion의 시작 각(Angle)입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	float LocomotionStartAngle;
-
 	/** 움직이는 방향입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	EPRDirection MovementDirection;
@@ -367,38 +464,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	EPRFoot LastFootOnLand;
 
-	/** 회전 시도 여부입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	bool bAttemptTurn;
 #pragma endregion 
-	
-private:
-	/** 이 AnimInstance를 사용하는 PRBaseCharacter입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRBaseAnimInstance", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class APRBaseCharacter> PROwner;
-
-	/** PROwner의 CharacterMovementComponent입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRBaseAnimInstance", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UCharacterMovementComponent> CharacterMovement;
-
-	/** TrackLocomotionState 함수에서 Idle 상태를 추적하는 Flag 변수입니다. */
-	bool bTrackIdleStateEnterExecuted;
-	bool bTrackIdleStateExitExecuted;
-
-	/** TrackLocomotionState 함수에서 Run 상태를 추적하는 Flag 변수입니다. */
-	bool bTrackRunStateEnterExecuted;
-	bool bTrackRunStateExitExecuted;
-
-	/** TrackLocomotionState 함수에서 Walk 상태를 추적하는 Flag 변수입니다. */
-	bool bTrackWalkStateEnterExecuted;
-	bool bTrackWalkStateExitExecuted;
 
 public:
-	/** PROwner를 반환하는 함수입니다. */
-	class APRBaseCharacter* GetPROwner() const;
-
-	/** PROwner의 CharacterMovementComponent를 반환하는 함수입니다. */
-	class UCharacterMovementComponent* GetCharacterMovement() const;
 
 	/** 입력받은 인자로 LastFootOnLand를 설정하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance")

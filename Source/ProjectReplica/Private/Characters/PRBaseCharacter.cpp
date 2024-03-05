@@ -71,9 +71,9 @@ APRBaseCharacter::APRBaseCharacter()
 	MovementSystem = CreateDefaultSubobject<UPRMovementSystemComponent>(TEXT("MovementSystem"));
 
 	// Locomotion
-	WalkSpeed = 240.0f;
-	RunSpeed = 550.0f;
-	SprintSpeed = 700.0f;
+	WalkSpeed = 0.0f;
+	RunSpeed = 0.0f;
+	SprintSpeed = 0.0f;
 }
 
 void APRBaseCharacter::PostInitializeComponents()
@@ -93,6 +93,9 @@ void APRBaseCharacter::PostInitializeComponents()
 
 	// MovementSystem
 	GetMovementSystem()->UpdateGait(EPRGait::Gait_Run);
+	WalkSpeed = GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Walk).MovementSpeed;
+	RunSpeed = GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Run).MovementSpeed;
+	SprintSpeed = GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Sprint).MovementSpeed;
 }
 
 void APRBaseCharacter::BeginPlay()
