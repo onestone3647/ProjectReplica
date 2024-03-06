@@ -172,28 +172,5 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Locomotion")
 	void SetRunLocomotion();
-
-protected:
-	/** 걷기 속도입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Locomotion")
-	float WalkSpeed;
-
-	/** 달리기 속도입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Locomotion")
-	float RunSpeed;
-
-	/** 전력질주 속도입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Locomotion")
-	float SprintSpeed;
-
-public:
-	/** WalkSpeed를 반환하는 함수입니다. */
-	float GetWalkSpeed() const;
-
-	/** RunSpeed를 반환하는 함수입니다. */
-	float GetRunSpeed() const;
-
-	/** SprintSpeed를 반환하는 함수입니다. */
-	float GetSprintSpeed() const;
 #pragma endregion
 };

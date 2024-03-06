@@ -104,10 +104,10 @@ void UPRBaseAnimInstance::NativeInitializeAnimation()
 		if(NewPROwner->GetMovementSystem())
 		{
 			GaitSettings = NewPROwner->GetMovementSystem()->GetAllGaitSettings();
+			WalkSpeed = NewPROwner->GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Walk).MovementSpeed;
+			RunSpeed = NewPROwner->GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Run).MovementSpeed;
+			SprintSpeed = NewPROwner->GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Sprint).MovementSpeed;
 		}
-		WalkSpeed = NewPROwner->GetWalkSpeed();
-		RunSpeed = NewPROwner->GetRunSpeed();
-		SprintSpeed = NewPROwner->GetSprintSpeed();
 	}
 }
 
@@ -417,6 +417,25 @@ void UPRBaseAnimInstance::UpdateLocomotionPlayRate()
 	PlayRate = UKismetMathLibrary::FClamp(DivideSpeed, 0.5f, 1.75f);	
 }
 
+float UPRBaseAnimInstance::GetPredictedStopDistance() const
+{
+	float NewDistanceToMatch = 0.0f;
+	
+	if(GetCharacterMovement())
+	{
+		FVector MovementStopLocation = UAnimCharacterMovementLibrary::PredictGroundMovementStopLocation(GetCharacterMovement()->Velocity,
+																										GetCharacterMovement()->bUseSeparateBrakingFriction,
+																										GetCharacterMovement()->BrakingFriction,
+																										GetCharacterMovement()->GroundFriction,
+																										GetCharacterMovement()->BrakingFrictionFactor,
+																										GetCharacterMovement()->BrakingDecelerationWalking);
+
+		NewDistanceToMatch = MovementStopLocation.Length();
+	}
+	
+	return NewDistanceToMatch;
+}
+
 
 
 
@@ -605,25 +624,6 @@ void UPRBaseAnimInstance::UpdateWalkState()
 	default:
 		break;
 	}
-}
-
-float UPRBaseAnimInstance::GetPredictedStopDistance() const
-{
-	float NewDistanceToMatch = 0.0f;
-	
-	if(GetCharacterMovement())
-	{
-		FVector MovementStopLocation = UAnimCharacterMovementLibrary::PredictGroundMovementStopLocation(GetCharacterMovement()->Velocity,
-																										GetCharacterMovement()->bUseSeparateBrakingFriction,
-																										GetCharacterMovement()->BrakingFriction,
-																										GetCharacterMovement()->GroundFriction,
-																										GetCharacterMovement()->BrakingFrictionFactor,
-																										GetCharacterMovement()->BrakingDecelerationWalking);
-
-		NewDistanceToMatch = MovementStopLocation.Length();
-	}
-	
-	return NewDistanceToMatch;
 }
 
 // void UPRBaseAnimInstance::UpdateCharacterRotation()

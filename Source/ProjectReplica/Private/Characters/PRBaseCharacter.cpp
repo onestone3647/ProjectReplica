@@ -69,11 +69,6 @@ APRBaseCharacter::APRBaseCharacter()
 
 	// MovementSystem
 	MovementSystem = CreateDefaultSubobject<UPRMovementSystemComponent>(TEXT("MovementSystem"));
-
-	// Locomotion
-	WalkSpeed = 0.0f;
-	RunSpeed = 0.0f;
-	SprintSpeed = 0.0f;
 }
 
 void APRBaseCharacter::PostInitializeComponents()
@@ -81,7 +76,10 @@ void APRBaseCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	// CharacterMovement
-	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+	if(GetMovementSystem())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Run).MovementSpeed;
+	}
 
 	// DamageSystem
 	GetDamageSystem()->OnDeathDelegate.AddDynamic(this, &APRBaseCharacter::Death);
@@ -93,9 +91,6 @@ void APRBaseCharacter::PostInitializeComponents()
 
 	// MovementSystem
 	GetMovementSystem()->UpdateGait(EPRGait::Gait_Run);
-	WalkSpeed = GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Walk).MovementSpeed;
-	RunSpeed = GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Run).MovementSpeed;
-	SprintSpeed = GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Sprint).MovementSpeed;
 }
 
 void APRBaseCharacter::BeginPlay()
@@ -281,9 +276,9 @@ bool APRBaseCharacter::IsBlocking() const
 #pragma region Locomotion
 void APRBaseCharacter::ToggleWalk()
 {
-	if(GetCharacterMovement())
+	if(GetCharacterMovement() || GetMovementSystem())
 	{
-		if(GetCharacterMovement()->MaxWalkSpeed != WalkSpeed)
+		if(GetCharacterMovement()->MaxWalkSpeed != GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Walk).MovementSpeed)
 		{
 			// Walk
 			SetWalkLocomotion();
@@ -298,29 +293,14 @@ void APRBaseCharacter::ToggleWalk()
 
 void APRBaseCharacter::SetWalkLocomotion()
 {
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Walk).MovementSpeed;
 	GetCharacterMovement()->MaxAcceleration = 350.0f;
 }
 
 void APRBaseCharacter::SetRunLocomotion()
 {
-	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Run).MovementSpeed;
 	GetCharacterMovement()->MaxAcceleration = 1000.0f;
-}
-
-float APRBaseCharacter::GetWalkSpeed() const
-{
-	return WalkSpeed;
-}
-
-float APRBaseCharacter::GetRunSpeed() const
-{
-	return RunSpeed;
-}
-
-float APRBaseCharacter::GetSprintSpeed() const
-{
-	return SprintSpeed;
 }
 #pragma endregion 
 
