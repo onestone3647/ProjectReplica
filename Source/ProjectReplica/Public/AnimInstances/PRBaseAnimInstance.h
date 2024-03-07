@@ -160,27 +160,27 @@ protected:
 	EPRGait Gait;
 
 	/** 속도입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRBaseAnimInstance")
 	FVector Velocity;
 
 	/** 속도입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRBaseAnimInstance")
 	float Speed;
 	
 	/** 걷기 속도입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRBaseAnimInstance")
 	float WalkSpeed;	
 
 	/** 달리기 속도입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRBaseAnimInstance")
 	float RunSpeed;
 
 	/** 전력질주 속도입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRBaseAnimInstance")
 	float SprintSpeed;
 	
 	/** 가속도입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRBaseAnimInstance")
 	FVector Acceleration;
 
 	/** 달릴 때의 최소 가속도입니다. */
@@ -190,6 +190,10 @@ protected:
 	/** 움직이는지 나타내는 변수입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	bool bShouldMove;
+
+	/** 방향입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	float Direction;
 
 	/** 공중에서 떨어지고 있는지 나타내는 변수입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
@@ -318,10 +322,6 @@ protected:
 	/** 액터의 회전값입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	FRotator ActorRotation;
-
-	/** 방향입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	float Direction;
 
 	/** 움직이는지 나타내는 변수입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")

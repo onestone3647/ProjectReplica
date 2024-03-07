@@ -25,6 +25,7 @@ UPRBaseAnimInstance::UPRBaseAnimInstance()
 	Acceleration = FVector::ZeroVector;
 	MinAccelerationToRunGait = 400.0f;
 	bShouldMove = false;
+	Direction = 0.0f;
 	bIsFalling = false;
 	InputVector = FVector::ZeroVector;
 	bAttemptTurn = false;
@@ -138,6 +139,17 @@ void UPRBaseAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 	Super::NativeThreadSafeUpdateAnimation(DeltaSeconds);
 
 	UpdateProperties(DeltaSeconds);
+
+	if(LocomotionState == EPRLocomotionState::LocomotionState_Idle)
+	{
+		// Idle 상태로 돌아갈 때 StopDistance를 계산합니다.
+		DistanceToMatch = GetPredictedStopDistance();
+	}
+	else
+	{
+		DistanceToMatch = 0.0f;
+	}
+	
 	// UpdateRootYawOffset(DeltaSeconds);
 	//
 	// SetupEssentialProperties();
@@ -182,7 +194,7 @@ void UPRBaseAnimInstance::UpdateProperties(float DeltaSeconds)
 		Speed = Velocity.Size();
 		Acceleration = GetCharacterMovement()->GetCurrentAcceleration();
 		bShouldMove = Speed > KINDA_SMALL_NUMBER && Acceleration != FVector::ZeroVector;		// 3.0f
-		// Direction = UKismetAnimationLibrary::CalculateDirection(Velocity, TryGetPawnOwner()->GetActorRotation());
+		Direction = UKismetAnimationLibrary::CalculateDirection(Velocity, TryGetPawnOwner()->GetActorRotation());
 		InputVector = GetCharacterMovement()->GetLastInputVector();
 
 		bIsFalling = GetCharacterMovement()->IsFalling();
