@@ -23,15 +23,7 @@ void UPRMovementSystemComponent::UpdateGait(EPRGait DesiredGait)
 
 		if(GetPRBaseAnimInstance() && GetPRBaseAnimInstance()->ReceiveGait(DesiredGait))
 		{
-			const FPRGaitSettings DesiredGaitSettings = GetGaitSettings(DesiredGait);
-			
-			UCharacterMovementComponent* CharacterMovement = GetPROwner()->GetCharacterMovement();
-			CharacterMovement->MaxWalkSpeed = DesiredGaitSettings.MovementSpeed;
-			CharacterMovement->MaxAcceleration = DesiredGaitSettings.MaxAcceleration;
-			CharacterMovement->BrakingFrictionFactor = DesiredGaitSettings.BrakingFrictionFactor;
-			CharacterMovement->BrakingFriction = DesiredGaitSettings.BrakingFriction;
-			CharacterMovement->bUseSeparateBrakingFriction = DesiredGaitSettings.bUseSeparateBrakingFriction;
-			CharacterMovement->BrakingDecelerationWalking = DesiredGaitSettings.BrakingDeceleration;
+			ApplyGaitSettings(DesiredGait);
 		}
 	}
 }
@@ -85,4 +77,26 @@ FPRGaitSettings UPRMovementSystemComponent::GetGaitSettings(EPRGait NewGait) con
 TMap<EPRGait, FPRGaitSettings> UPRMovementSystemComponent::GetAllGaitSettings() const
 {
 	return GaitSettings;
+}
+
+bool UPRMovementSystemComponent::ApplyGaitSettings(EPRGait ApplyGait)
+{
+	// 인자에 해당하는 걸음걸이가 없거나 캐릭터가 CharacterMovementComponent가 없을 경우
+	if(!GaitSettings.Contains(ApplyGait)
+		|| !IsValid(GetPROwner())
+		|| !GetPROwner()->GetCharacterMovement())
+	{
+		return false;
+	}
+	
+	const FPRGaitSettings NewApplyGaitSettings = GetGaitSettings(ApplyGait);
+	UCharacterMovementComponent* CharacterMovement = GetPROwner()->GetCharacterMovement();
+	CharacterMovement->MaxWalkSpeed = NewApplyGaitSettings.MovementSpeed;
+	CharacterMovement->MaxAcceleration = NewApplyGaitSettings.MaxAcceleration;
+	CharacterMovement->BrakingFrictionFactor = NewApplyGaitSettings.BrakingFrictionFactor;
+	CharacterMovement->BrakingFriction = NewApplyGaitSettings.BrakingFriction;
+	CharacterMovement->bUseSeparateBrakingFriction = NewApplyGaitSettings.bUseSeparateBrakingFriction;
+	CharacterMovement->BrakingDecelerationWalking = NewApplyGaitSettings.BrakingDeceleration;
+	
+	return true;
 }

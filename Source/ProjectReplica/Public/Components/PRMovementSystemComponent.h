@@ -104,6 +104,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PRMovementSystem")
 	TMap<EPRGait, FPRGaitSettings> GetAllGaitSettings() const;
 
+	/** 인자에 해당하는 걸음걸이의 설정 값을 캐릭터에게 적용하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PRMovementSystem")
+	bool ApplyGaitSettings(EPRGait ApplyGait);
+
 protected:
 	/** 현재 걸음걸이입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRMovementSystem")

@@ -163,14 +163,8 @@ public:
 
 #pragma region Locomotion
 public:
-	/** 캐릭터의 걷기 상태를 설정하는 함수입니다. */
+	/** 캐릭터의 Locomotion을 설정하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "Locomotion")
 	void ToggleWalk();
-
-	UFUNCTION(BlueprintCallable, Category = "Locomotion")
-	void SetWalkLocomotion();
-
-	UFUNCTION(BlueprintCallable, Category = "Locomotion")
-	void SetRunLocomotion();
 #pragma endregion
 };

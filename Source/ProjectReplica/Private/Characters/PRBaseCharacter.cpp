@@ -22,11 +22,7 @@ APRBaseCharacter::APRBaseCharacter()
 	GetCapsuleComponent()->InitCapsuleSize(30.0f, 94.0f);
 
 	// CharacterMovement
-	// GetCharacterMovement()->MaxAcceleration = 1000.0f;
-	// GetCharacterMovement()->BrakingFrictionFactor = 0.5f;
-	// GetCharacterMovement()->GroundFriction = 5.0f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 120.0f;
-	// GetCharacterMovement()->BrakingDecelerationWalking = 1000.0f;
 	
 	// Advanced Movement System 용
 	// GetCharacterMovement()->RotationRate = FRotator::ZeroRotator;
@@ -74,12 +70,6 @@ APRBaseCharacter::APRBaseCharacter()
 void APRBaseCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
-	// CharacterMovement
-	if(GetMovementSystem())
-	{
-		GetCharacterMovement()->MaxWalkSpeed = GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Run).MovementSpeed;
-	}
 
 	// DamageSystem
 	GetDamageSystem()->OnDeathDelegate.AddDynamic(this, &APRBaseCharacter::Death);
@@ -280,27 +270,19 @@ void APRBaseCharacter::ToggleWalk()
 	{
 		if(GetCharacterMovement()->MaxWalkSpeed != GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Walk).MovementSpeed)
 		{
-			// Walk
-			SetWalkLocomotion();
+			// 걷기 상태
+			GetCharacterMovement()->MaxWalkSpeed = GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Walk).MovementSpeed;
+			GetCharacterMovement()->MaxAcceleration = 350.0f;
+			// GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Walk);
 		}
 		else
 		{
-			// Run
-			SetRunLocomotion();
+			// 달리기 상태
+			GetCharacterMovement()->MaxWalkSpeed = GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Run).MovementSpeed;
+			GetCharacterMovement()->MaxAcceleration = 1000.0f;
+			// GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Run);
 		}
 	}
-}
-
-void APRBaseCharacter::SetWalkLocomotion()
-{
-	GetCharacterMovement()->MaxWalkSpeed = GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Walk).MovementSpeed;
-	GetCharacterMovement()->MaxAcceleration = 350.0f;
-}
-
-void APRBaseCharacter::SetRunLocomotion()
-{
-	GetCharacterMovement()->MaxWalkSpeed = GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Run).MovementSpeed;
-	GetCharacterMovement()->MaxAcceleration = 1000.0f;
 }
 #pragma endregion 
 

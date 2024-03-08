@@ -37,10 +37,6 @@ UPRBaseAnimInstance::UPRBaseAnimInstance()
 	LocomotionStartAngle = 0.0f;
 
 
-
-
-
-
 	
 
 	// Velocity = FVector::ZeroVector;
@@ -267,7 +263,7 @@ void UPRBaseAnimInstance::UpdateLocomotionState()
 		const FVector NormalizeVelocity = UKismetMathLibrary::Normal(Velocity);
 		const FVector NormalizeAcceleration = UKismetMathLibrary::Normal(Acceleration);
 	
-		// 정규화된 속도롸 가속도의 내적 계산
+		// 정규화된 속도와 가속도의 내적 계산
 		const float Dot = UKismetMathLibrary::Dot_VectorVector(NormalizeVelocity, NormalizeAcceleration);
 		
 		if(Dot < 0.0f)
