@@ -271,16 +271,29 @@ void APRBaseCharacter::ToggleWalk()
 		if(GetCharacterMovement()->MaxWalkSpeed != GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Walk).MovementSpeed)
 		{
 			// 걷기 상태
-			GetCharacterMovement()->MaxWalkSpeed = GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Walk).MovementSpeed;
-			GetCharacterMovement()->MaxAcceleration = 350.0f;
-			// GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Walk);
+			GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Walk);
 		}
 		else
 		{
 			// 달리기 상태
-			GetCharacterMovement()->MaxWalkSpeed = GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Run).MovementSpeed;
-			GetCharacterMovement()->MaxAcceleration = 1000.0f;
-			// GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Run);
+			GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Run);
+		}
+	}
+}
+
+void APRBaseCharacter::Sprint()
+{
+	if(GetCharacterMovement() || GetMovementSystem())
+	{
+		if(GetCharacterMovement()->MaxWalkSpeed != GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Sprint).MovementSpeed)
+		{
+			// 전력질주 상태
+			GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Sprint);
+		}
+		else
+		{
+			// 달리기 상태
+			GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Run);
 		}
 	}
 }

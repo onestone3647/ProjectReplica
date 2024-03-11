@@ -141,17 +141,13 @@ void APRPlayerCharacter::StopJumping()
 	Super::StopJumping();
 }
 
-void APRPlayerCharacter::Walk(const FInputActionValue& Value)
-{
-	ToggleWalk();
-}
-
-void APRPlayerCharacter::Sprint(const FInputActionValue& Value)
-{
-}
-
 void APRPlayerCharacter::Interaction(const FInputActionValue& Value)
 {
+}
+
+void APRPlayerCharacter::Sprint()
+{
+	Super::Sprint();
 }
 #pragma endregion
 

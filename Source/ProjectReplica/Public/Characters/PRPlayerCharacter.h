@@ -31,7 +31,10 @@ public:
 
 #pragma region Input
 protected:
+	/** 캐릭터의 이동 함수입니다. */
 	void Move(const FInputActionValue& Value);
+
+	/** 캐릭터의 시선을 나타내는 카메라를 조절하는 함수입니다. */
 	void Look(const FInputActionValue& Value);
 
 	/** 다음 업데이트에서 캐릭터를 점프시키는 함수입니다. */
@@ -40,15 +43,18 @@ protected:
 	/** 다음 업데이트 시 캐릭터의 점프를 중지하는 함수입니다. */
 	virtual void StopJumping() override;
 	
-	void Walk(const FInputActionValue& Value);
-	void Sprint(const FInputActionValue& Value);
+	/** 상호작용을 실행하는 함수입니다. */
 	void Interaction(const FInputActionValue& Value);
+
+	/** 캐릭터가 전력질주하는 함수입니다. */
+	virtual void Sprint() override;
 	
 protected:
 	/** 캐릭터가 사용하는 MappingContext 입니다. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
 	TObjectPtr<class UInputMappingContext> DefaultMappingContext;
 
+	/** 캐릭터가 사용하는 InputAction 입니다. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
 	TObjectPtr<class UPRInputConfigDataAsset> InputActions;
 #pragma endregion
