@@ -8,24 +8,14 @@
 
 UPRMovementSystemComponent::UPRMovementSystemComponent()
 {
+	// Gait
 	CurrentGait = EPRGait::Gait_Idle;
 	LastGait = EPRGait::Gait_Idle;
-	
 	InitializeGaitSettings();
-}
 
-void UPRMovementSystemComponent::UpdateGait(EPRGait DesiredGait)
-{
-	if(GetPROwner())
-	{
-		LastGait = CurrentGait;
-		CurrentGait = DesiredGait;
-
-		if(GetPRBaseAnimInstance() && GetPRBaseAnimInstance()->ReceiveGait(DesiredGait))
-		{
-			ApplyGaitSettings(DesiredGait);
-		}
-	}
+	// Aerial
+	bActivateAerial = false;
+	DefaultGravityScale = 0.0f;
 }
 
 UPRBaseAnimInstance* UPRMovementSystemComponent::GetPRBaseAnimInstance() const
@@ -38,6 +28,21 @@ UPRBaseAnimInstance* UPRMovementSystemComponent::GetPRBaseAnimInstance() const
 	}
 
 	return PRBaseAnimInstance;
+}
+
+#pragma region Gait
+void UPRMovementSystemComponent::UpdateGait(EPRGait DesiredGait)
+{
+	if(GetPROwner())
+	{
+		LastGait = CurrentGait;
+		CurrentGait = DesiredGait;
+
+		if(GetPRBaseAnimInstance() && GetPRBaseAnimInstance()->ReceiveGait(DesiredGait))
+		{
+			ApplyGaitSettings(DesiredGait);
+		}
+	}
 }
 
 void UPRMovementSystemComponent::InitializeGaitSettings()
@@ -100,3 +105,24 @@ bool UPRMovementSystemComponent::ApplyGaitSettings(EPRGait ApplyGait)
 	
 	return true;
 }
+#pragma endregion 
+
+#pragma region Aerial
+void UPRMovementSystemComponent::ActivateAerial(bool bNewActivateAerial)
+{
+	if(GetPROwner())
+	{
+		bActivateAerial = bNewActivateAerial;
+		if(bNewActivateAerial)
+		{
+			DefaultGravityScale = GetPROwner()->GetCharacterMovement()->GravityScale;
+			GetPROwner()->GetCharacterMovement()->StopMovementImmediately();
+			GetPROwner()->GetCharacterMovement()->GravityScale = 0.0f;
+		}
+		else
+		{
+			GetPROwner()->GetCharacterMovement()->GravityScale = DefaultGravityScale;
+		}
+	}
+}
+#pragma endregion 

@@ -11,6 +11,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Components/PRMovementSystemComponent.h"
 
 APRPlayerCharacter::APRPlayerCharacter()
 {
@@ -44,6 +45,12 @@ APRPlayerCharacter::APRPlayerCharacter()
 	FollowCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;									// 카메라가 SpringArm을 기준으로 회전하지 않습니다.
 	FollowCamera->SetRelativeRotation(FRotator(-20.0f, 0.0f, 0.0f));
+	
+	// DoubleJump
+	DoubleJumpAnimMontage = nullptr;
+	bCanDoubleJump = true;
+	DoubleJumpDelay = 0.2f;
+	DoubleJumpZVelocity = 1200.0f;
 }
 
 void APRPlayerCharacter::BeginPlay()
@@ -69,7 +76,7 @@ void APRPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 			}
 		}
 
-		UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+		EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 		if(EnhancedInputComponent)
 		{
 			// 이동
@@ -94,6 +101,15 @@ void APRPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 			EnhancedInputComponent->BindAction(InputActions->InputNormalAttack, ETriggerEvent::Triggered, this, &APRBaseCharacter::DoDamage);
 		}
 	}
+}
+
+void APRPlayerCharacter::Landed(const FHitResult& Hit)
+{
+	ACharacter::Landed(Hit);
+
+	// 땅에 착지했을 때 더블 점프 관련 변수를 초기화합니다.
+	bCanDoubleJump = true;
+	GetWorldTimerManager().ClearTimer(DoubleJumpTimerHandle);
 }
 
 #pragma region Input
@@ -133,7 +149,25 @@ void APRPlayerCharacter::Look(const FInputActionValue& Value)
 
 void APRPlayerCharacter::Jump()
 {
-	Super::Jump();
+	if(GetCharacterMovement()->IsFalling() == false)
+	{
+		Super::Jump();
+
+		bCanDoubleJump = false;		// 단일 점프 후 더블 점프 비활성화
+
+		// 딜레이 이후 더블 점프를 하기 위해 딜레이 타이머 실행
+		GetWorldTimerManager().SetTimer(DoubleJumpTimerHandle, FTimerDelegate::CreateLambda([&]()
+		{
+			bCanDoubleJump = true;
+		}), DoubleJumpDelay, false);
+	}
+	else
+	{
+		if(bCanDoubleJump)
+		{
+			DoubleJump();
+		}
+	}
 }
 
 void APRPlayerCharacter::StopJumping()
@@ -197,16 +231,26 @@ void APRPlayerCharacter::LookUpRate(const FInputActionValue& Value)
 #pragma endregion 
 
 #pragma region MovementInput
-// float APRPlayerCharacter::GetMoveForward() const
-// {
-// 	return GetInputAxisValue("MoveForward");
-// }
-//
-// float APRPlayerCharacter::GetMoveRight() const
-// {
-// 	return GetInputAxisValue("MoveRight");
-// }
-//
+float APRPlayerCharacter::GetMoveForward() const
+{
+	if(EnhancedInputComponent && InputActions && InputActions->InputMove)
+	{
+		return EnhancedInputComponent->BindActionValue(InputActions->InputMove).GetValue().Get<FVector2D>().Y;
+	}
+	
+	return 0.0f;
+}
+
+float APRPlayerCharacter::GetMoveRight() const
+{
+	if(EnhancedInputComponent && InputActions && InputActions->InputMove)
+	{
+		return EnhancedInputComponent->BindActionValue(InputActions->InputMove).GetValue().Get<FVector2D>().X;
+	}
+	
+	return 0.0f;
+}
+
 // void APRPlayerCharacter::MoveForward(float Value)
 // {
 // 	if(Controller && Value != 0.0f)
@@ -259,7 +303,7 @@ void APRPlayerCharacter::AddPlayerMovementInput(FVector2D MovementVector)
 	float MoveForward = 0.0f;
 	float MoveRight = 0.0f;
 	FixDiagonalGamepadValues(MovementVector.Y, MovementVector.X, MoveForward, MoveRight);
-
+	
 	AddMovementInput(ForwardVector, MoveForward);
 	AddMovementInput(RightVector, MoveRight);
 }
@@ -283,5 +327,20 @@ void APRPlayerCharacter::FixDiagonalGamepadValues(float ForwardAxis, float Right
 
 	FixForwardAxis = FMath::Clamp(NewForwardAxis, -1.0f, 1.0f);
 	FixRightAxis = FMath::Clamp(NewRightAxis, -1.0f, 1.0f);
+}
+#pragma endregion 
+
+#pragma region DoubleJump
+void APRPlayerCharacter::DoubleJump()
+{
+	bCanDoubleJump = false;
+	GetWorldTimerManager().ClearTimer(DoubleJumpTimerHandle);
+
+	const float CurrentSpeed = GetVelocity().Size2D();		// 떨어지는 속도는 제외합니다.
+	const float MoveForward = GetMoveForward(); 
+	const float MoveRight = GetMoveRight();
+
+	
+	// LaunchCharacter(DoubleJumpVelocity, false, false);
 }
 #pragma endregion 

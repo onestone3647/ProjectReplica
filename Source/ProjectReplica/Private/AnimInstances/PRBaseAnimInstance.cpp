@@ -134,7 +134,7 @@ void UPRBaseAnimInstance::UpdateProperties(float DeltaSeconds)
 	if(GetCharacterMovement())
 	{
 		Velocity = GetCharacterMovement()->Velocity;
-		GroundSpeed = UKismetMathLibrary::VSizeXY(Velocity);
+		GroundSpeed = Velocity.Size2D();
 		Acceleration = GetCharacterMovement()->GetCurrentAcceleration();
 		bShouldMove = GroundSpeed > 3.0f && Acceleration != FVector::ZeroVector;
 		Direction = UKismetAnimationLibrary::CalculateDirection(Velocity, TryGetPawnOwner()->GetActorRotation());

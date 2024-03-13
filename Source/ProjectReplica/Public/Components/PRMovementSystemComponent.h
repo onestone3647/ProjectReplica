@@ -82,15 +82,17 @@ public:
 	UPRMovementSystemComponent();
 
 public:
+	/** PROwner의 PRBaseAnimInstance를 반환하는 함수입니다. */
+	UPRBaseAnimInstance* GetPRBaseAnimInstance() const;
+	
+#pragma region Gait
+public:
 	/**
 	 * 걸음걸이를 최신화하는 함수입니다.
 	 *
 	 * @param DesiredGait 최신화할 걸음걸이입니다.
 	 */
 	void UpdateGait(EPRGait DesiredGait);
-
-	/** PROwner의 PRBaseAnimInstance를 반환하는 함수입니다. */
-	UPRBaseAnimInstance* GetPRBaseAnimInstance() const;
 
 	/** GaitSettings를 초기화하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PRMovementSystem")
@@ -120,4 +122,27 @@ protected:
 	/** 걸음걸이의 설정 값을 가진 Map입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRMovementSystem")
 	TMap<EPRGait, FPRGaitSettings> GaitSettings;
+#pragma endregion
+
+#pragma region Aerial
+public:
+	/**
+	 * 공중에 뜬(에어리얼) 상태를 활성화하는 함수입니다.
+	 *
+	 * @param bNEwActivateAerial: ture일 경우 이동을 중지(속도를 0으로 설정, 가속이 있는 구성요소의 경우 가속을 0으로 설정)하고
+	 *								캐릭터의 GravityScale을 0.0f으로 설정합니다.
+	 *								false일 경우 캐럭터의 GravityScale을 DefaultGravityScale로 설정합니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PRMovementSystem|Aerial")
+	void ActivateAerial(bool bNewActivateAerial);
+
+private:
+	/** 공중에 뜬(에어리얼) 상태인지 나타내는 변수입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRMovementSystem|Aerial", meta = (AllowPrivateAccess = "true"))
+	bool bActivateAerial;
+	
+	/** 중력 크기의 기본값입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRMovementSystem|Aerial", meta = (AllowPrivateAccess = "true"))
+	float DefaultGravityScale;
+#pragma endregion 
 };

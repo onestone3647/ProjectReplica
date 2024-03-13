@@ -86,13 +86,11 @@ void APRBaseCharacter::PostInitializeComponents()
 void APRBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void APRBaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 #pragma region Interface_Damageable

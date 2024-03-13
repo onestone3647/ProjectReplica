@@ -28,6 +28,7 @@ public:
 public:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void Landed(const FHitResult& Hit) override;
 
 #pragma region Input
 protected:
@@ -50,12 +51,16 @@ protected:
 	virtual void Sprint() override;
 	
 protected:
-	/** 캐릭터가 사용하는 MappingContext 입니다. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
+	/** 캐릭터가 사용하는 EnhancedInputComponent입니다. */
+	UPROPERTY(BlueprintReadOnly, Category = "Input")
+	TObjectPtr<class UEnhancedInputComponent> EnhancedInputComponent;
+	
+	/** 캐릭터가 사용하는 MappingContext입니다. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<class UInputMappingContext> DefaultMappingContext;
 
-	/** 캐릭터가 사용하는 InputAction 입니다. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
+	/** 캐릭터가 사용하는 InputAction입니다. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<class UPRInputConfigDataAsset> InputActions;
 #pragma endregion
 
@@ -125,14 +130,14 @@ public:
 #pragma endregion
 
 #pragma region MovementInput
-// public:
-// 	/** InputComponent에서 MoveForward의 값을 반환하는 함수입니다. */
-// 	UFUNCTION(BlueprintCallable, Category = "MovementInput")
-// 	float GetMoveForward() const;
-//
-// 	/** InputComponent에서 MoveRight의 값을 반환하는 함수입니다. */
-// 	UFUNCTION(BlueprintCallable, Category = "MovementInput")
-// 	float GetMoveRight() const;	
+public:
+	/** 전방 이동 입력값을 반환하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "MovementInput")
+	float GetMoveForward() const;
+
+	/** 우측 이동 입력값을 반환하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "MovementInput")
+	float GetMoveRight() const;	
 	
 protected:
 	// /**
@@ -182,5 +187,31 @@ protected:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "MovementInput")
 	void FixDiagonalGamepadValues(float ForwardAxis, float RightAxis, UPARAM(ref) float& FixForwardAxis, UPARAM(ref) float& FixRightAxis) const;
+#pragma endregion
+
+#pragma region DoubleJump
+public:
+	/** 더블 점프하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "DoubleJump")
+	void DoubleJump();
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DoubleJump")
+	TObjectPtr<UAnimMontage> DoubleJumpAnimMontage;
+	
+	/** 더블 점프를 할 수 있는지 나타내는 변수입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "DoubleJump")
+	bool bCanDoubleJump;
+	
+	/** 점프를 한 후 더블 점프를 할 수 있는 딜레이 시간입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DoubleJump")
+	float DoubleJumpDelay;
+
+	/** 더블 점프할 때의 Z축의 속도입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DoubleJump")
+	float DoubleJumpZVelocity;
+
+	/** 점프를 한 후 더블 점프를 할 수 있는 딜레이를 적용하는 TimerHandle입니다. */
+	FTimerHandle DoubleJumpTimerHandle;
 #pragma endregion 
 };
