@@ -62,6 +62,15 @@ protected:
 	/** 캐릭터가 사용하는 InputAction입니다. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<class UPRInputConfigDataAsset> InputActions;
+
+	// FEnhancedInputActionValueBinding를 포인터 변수로 가지고 있어야함
+	// 지역변수로 사용할 수 있지만 그러면 맨 처음 호출할 때는 작동하지 않음
+	/**
+	 * 캐릭터의 이동 InputAction의 입력 값을 참조한 구조체입니다.
+	 * UPROPERTY()를 사용할 수 없는 구조체입니다.
+	 */
+private:
+	struct FEnhancedInputActionValueBinding* MoveActionBinding;
 #pragma endregion
 
 #pragma region DamageSystem
@@ -137,7 +146,11 @@ public:
 
 	/** 우측 이동 입력값을 반환하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "MovementInput")
-	float GetMoveRight() const;	
+	float GetMoveRight() const;
+
+	/** 입력 방향으로 캐릭터를 회전시키는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "MovementInput")
+	void RotationInputDirection(bool bIsReverse = false);
 	
 protected:
 	// /**
@@ -168,11 +181,19 @@ protected:
 	 */
 	virtual void AddPlayerMovementInput(FVector2D MovementVector);
 
+	/** 컨트롤러의 전방 벡터를 반환하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "MovementInput")
+	FVector GetControlForwardVector() const;
+
+	/** 컨트롤러의 우측 벡터를 반환하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "MovementInput")
+	FVector GetControlRightVector() const;
+	
 	/**
-	 * 컨트롤러의 전방 벡터와 오른쪽 벡터를 가져오는 함수입니다.
+	 * 컨트롤러의 전방 벡터와 우측 벡터를 가져오는 함수입니다.
 	 * 
 	 * @param ForwardVector 컨트롤러의 전방 벡터입니다.
-	 * @param RightVector 컨트롤러의 오른쪽 벡터입니다.
+	 * @param RightVector 컨트롤러의 우측 벡터입니다.
 	 */ 
 	UFUNCTION(BlueprintCallable, Category = "MovementInput")
 	void GetControlForwardVectorAndRightVector(UPARAM(ref) FVector& ForwardVector, UPARAM(ref) FVector& RightVector) const;
@@ -207,11 +228,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DoubleJump")
 	float DoubleJumpDelay;
 
-	/** 더블 점프할 때의 Z축의 속도입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DoubleJump")
-	float DoubleJumpZVelocity;
-
 	/** 점프를 한 후 더블 점프를 할 수 있는 딜레이를 적용하는 TimerHandle입니다. */
 	FTimerHandle DoubleJumpTimerHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DoubleJump")
+	bool bFlag;
+	
 #pragma endregion 
 };

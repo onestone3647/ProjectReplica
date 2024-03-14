@@ -95,32 +95,32 @@ public:
 	void UpdateGait(EPRGait DesiredGait);
 
 	/** GaitSettings를 초기화하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, Category = "PRMovementSystem")
+	UFUNCTION(BlueprintCallable, Category = "MovementSystem")
 	void InitializeGaitSettings();	
 
 	/** 인자에 해당하는 걸음걸이의 설정 값을 반환하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, Category = "PRMovementSystem")
+	UFUNCTION(BlueprintCallable, Category = "MovementSystem")
 	FPRGaitSettings GetGaitSettings(EPRGait NewGait) const;
 
 	/** GaitSettings를 반환하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, Category = "PRMovementSystem")
+	UFUNCTION(BlueprintCallable, Category = "MovementSystem")
 	TMap<EPRGait, FPRGaitSettings> GetAllGaitSettings() const;
 
 	/** 인자에 해당하는 걸음걸이의 설정 값을 캐릭터에게 적용하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, Category = "PRMovementSystem")
+	UFUNCTION(BlueprintCallable, Category = "MovementSystem")
 	bool ApplyGaitSettings(EPRGait ApplyGait);
 
 protected:
 	/** 현재 걸음걸이입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRMovementSystem")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "MovementSystem")
 	EPRGait CurrentGait;
 
 	/** 마지막 걸음걸이입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRMovementSystem")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "MovementSystem")
 	EPRGait LastGait;
 
 	/** 걸음걸이의 설정 값을 가진 Map입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRMovementSystem")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSystem")
 	TMap<EPRGait, FPRGaitSettings> GaitSettings;
 #pragma endregion
 
@@ -129,20 +129,20 @@ public:
 	/**
 	 * 공중에 뜬(에어리얼) 상태를 활성화하는 함수입니다.
 	 *
-	 * @param bNEwActivateAerial: ture일 경우 이동을 중지(속도를 0으로 설정, 가속이 있는 구성요소의 경우 가속을 0으로 설정)하고
+	 * @param bNewActivateAerial: ture일 경우 이동을 중지(속도를 0으로 설정, 가속이 있는 구성요소의 경우 가속을 0으로 설정)하고
 	 *								캐릭터의 GravityScale을 0.0f으로 설정합니다.
 	 *								false일 경우 캐럭터의 GravityScale을 DefaultGravityScale로 설정합니다.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "PRMovementSystem|Aerial")
+	UFUNCTION(BlueprintCallable, Category = "MovementSystem|Aerial")
 	void ActivateAerial(bool bNewActivateAerial);
 
 private:
 	/** 공중에 뜬(에어리얼) 상태인지 나타내는 변수입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRMovementSystem|Aerial", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MovementSystem|Aerial", meta = (AllowPrivateAccess = "true"))
 	bool bActivateAerial;
 	
 	/** 중력 크기의 기본값입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRMovementSystem|Aerial", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MovementSystem|Aerial", meta = (AllowPrivateAccess = "true"))
 	float DefaultGravityScale;
 #pragma endregion 
 };

@@ -50,7 +50,6 @@ APRPlayerCharacter::APRPlayerCharacter()
 	DoubleJumpAnimMontage = nullptr;
 	bCanDoubleJump = true;
 	DoubleJumpDelay = 0.2f;
-	DoubleJumpZVelocity = 1200.0f;
 }
 
 void APRPlayerCharacter::BeginPlay()
@@ -81,6 +80,7 @@ void APRPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		{
 			// 이동
 			EnhancedInputComponent->BindAction(InputActions->InputMove, ETriggerEvent::Triggered, this, &APRPlayerCharacter::Move);
+			MoveActionBinding = &EnhancedInputComponent->BindActionValue(InputActions->InputMove);		// 이동 InputAction의 입력 값을 바인딩합니다.
 			
 			// 마우스 시선
 			EnhancedInputComponent->BindAction(InputActions->InputTurn, ETriggerEvent::Triggered, this, &APRPlayerCharacter::Turn);
@@ -153,6 +153,9 @@ void APRPlayerCharacter::Jump()
 	{
 		Super::Jump();
 
+		float Forward = GetMoveForward();
+		float Right = GetMoveRight();
+
 		bCanDoubleJump = false;		// 단일 점프 후 더블 점프 비활성화
 
 		// 딜레이 이후 더블 점프를 하기 위해 딜레이 타이머 실행
@@ -196,7 +199,7 @@ void APRPlayerCharacter::Death()
 void APRPlayerCharacter::Turn(const FInputActionValue& Value)
 {
 	float TurnValue = Value.Get<float>();
-	if(TurnValue != 0.0f)
+	if(!FMath::IsNearlyZero(TurnValue))
 	{
 		AddControllerYawInput(TurnValue);
 	}
@@ -205,7 +208,7 @@ void APRPlayerCharacter::Turn(const FInputActionValue& Value)
 void APRPlayerCharacter::LookUp(const FInputActionValue& Value)
 {
 	float LookValue = Value.Get<float>();
-	if(LookValue != 0.0f)
+	if(!FMath::IsNearlyZero(LookValue))
 	{
 		AddControllerPitchInput(LookValue);
 	}
@@ -214,7 +217,7 @@ void APRPlayerCharacter::LookUp(const FInputActionValue& Value)
 void APRPlayerCharacter::TurnRate(const FInputActionValue& Value)
 {
 	float TurnValue = Value.Get<float>();
-	if(TurnValue != 0.0f)
+	if(!FMath::IsNearlyZero(TurnValue))
 	{
 		AddControllerYawInput(TurnValue * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 	}
@@ -223,7 +226,7 @@ void APRPlayerCharacter::TurnRate(const FInputActionValue& Value)
 void APRPlayerCharacter::LookUpRate(const FInputActionValue& Value)
 {
 	float LookValue = Value.Get<float>();
-	if(LookValue != 0.0f)
+	if(!FMath::IsNearlyZero(LookValue))
 	{
 		AddControllerPitchInput(LookValue * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 	}
@@ -235,7 +238,13 @@ float APRPlayerCharacter::GetMoveForward() const
 {
 	if(EnhancedInputComponent && InputActions && InputActions->InputMove)
 	{
-		return EnhancedInputComponent->BindActionValue(InputActions->InputMove).GetValue().Get<FVector2D>().Y;
+		PR_LOG_SCREEN("Forward: %f", MoveActionBinding->GetValue().Get<FVector2D>().Y);
+		return MoveActionBinding->GetValue().Get<FVector2D>().Y;
+
+
+		// FEnhancedInputActionValueBinding* MoveActionBinding1 = &EnhancedInputComponent->BindActionValue(InputActions->InputMove);
+		// PR_LOG_SCREEN("Forward: %f", MoveActionBinding1->GetValue().Get<FVector2D>().Y);
+		// return MoveActionBinding1->GetValue().Get<FVector2D>().Y;
 	}
 	
 	return 0.0f;
@@ -245,10 +254,42 @@ float APRPlayerCharacter::GetMoveRight() const
 {
 	if(EnhancedInputComponent && InputActions && InputActions->InputMove)
 	{
-		return EnhancedInputComponent->BindActionValue(InputActions->InputMove).GetValue().Get<FVector2D>().X;
+		PR_LOG_SCREEN("Right: %f", MoveActionBinding->GetValue().Get<FVector2D>().X);
+		return MoveActionBinding->GetValue().Get<FVector2D>().X;
+
+		// FEnhancedInputActionValueBinding* MoveActionBinding1 = &EnhancedInputComponent->BindActionValue(InputActions->InputMove);
+		// PR_LOG_SCREEN("Forward: %f", MoveActionBinding1->GetValue().Get<FVector2D>().X);
+		// return MoveActionBinding1->GetValue().Get<FVector2D>().X;
 	}
-	
+
 	return 0.0f;
+}
+
+void APRPlayerCharacter::RotationInputDirection(bool bIsReverse)
+{
+	// 이동 입력 값을 얻습니다.
+	const float MoveForward = GetMoveForward();
+	const float MoveRight = GetMoveRight();
+
+	// 입력 벡터를 생성합니다.
+	FVector InputVector = FVector(MoveForward, MoveRight, 0.0f);
+
+	// 입력 방향의 반대 방향으로 회전할 경우 입력 벡터를 반전합니다.
+	if(bIsReverse)
+	{
+		InputVector *= -1.0f;
+	}
+
+	// 입력 벡터를 기반으로 회전 각도를 계산합니다.
+	const FRotator InputRotator = UKismetMathLibrary::MakeRotFromX(InputVector);
+	float InputDirectionYaw = InputRotator.Yaw;
+	
+	// 입력이 있으면 컨트롤러의 회전을 기준으로, 없으면 액터의 회전을 기준으로 회전합니다.
+	InputDirectionYaw += FMath::IsNearlyZero(MoveForward) && FMath::IsNearlyZero(MoveRight) ? GetActorRotation().Yaw : GetControlRotation().Yaw;
+
+	// 회전 각도를 적용하여 액터를 회전합니다.
+	const FRotator InputDirectionRotator = FRotator(0.0f, InputDirectionYaw, 0.0f);
+	SetActorRotation(InputDirectionRotator);
 }
 
 // void APRPlayerCharacter::MoveForward(float Value)
@@ -308,12 +349,29 @@ void APRPlayerCharacter::AddPlayerMovementInput(FVector2D MovementVector)
 	AddMovementInput(RightVector, MoveRight);
 }
 
-void APRPlayerCharacter::GetControlForwardVectorAndRightVector(FVector& ForwardVector, FVector& RightVector) const
+FVector APRPlayerCharacter::GetControlForwardVector() const
 {
 	const FRotator NewControlRotation = FRotator(0.0f, GetControlRotation().Yaw, 0.0f);
+	
+	return UKismetMathLibrary::GetForwardVector(NewControlRotation);
+}
 
-	ForwardVector = UKismetMathLibrary::GetForwardVector(NewControlRotation);
-	RightVector = UKismetMathLibrary::GetRightVector(NewControlRotation);
+FVector APRPlayerCharacter::GetControlRightVector() const
+{
+	const FRotator NewControlRotation = FRotator(0.0f, GetControlRotation().Yaw, 0.0f);
+	
+	return UKismetMathLibrary::GetRightVector(NewControlRotation);
+}
+
+void APRPlayerCharacter::GetControlForwardVectorAndRightVector(FVector& ForwardVector, FVector& RightVector) const
+{
+	// const FRotator NewControlRotation = FRotator(0.0f, GetControlRotation().Yaw, 0.0f);
+	//
+	// ForwardVector = UKismetMathLibrary::GetForwardVector(NewControlRotation);
+	// RightVector = UKismetMathLibrary::GetRightVector(NewControlRotation);
+
+	ForwardVector = GetControlForwardVector();
+	RightVector = GetControlRightVector();
 }
 
 void APRPlayerCharacter::FixDiagonalGamepadValues(float ForwardAxis, float RightAxis, float& FixForwardAxis, float& FixRightAxis) const
@@ -340,7 +398,19 @@ void APRPlayerCharacter::DoubleJump()
 	const float MoveForward = GetMoveForward(); 
 	const float MoveRight = GetMoveRight();
 
-	
-	// LaunchCharacter(DoubleJumpVelocity, false, false);
+	ActivateAerial(true);
+	RotationInputDirection();
+	PlayAnimMontage(DoubleJumpAnimMontage);
+
+	// 더블점프 이펙트 생성
+
+	// 처음 더블점프를 하게 되면 전방속도를 제대로 받지 못함
+	// 두번째부터는 정상적으로 속도를 받음
+	const FVector ForwardVector = (GetControlForwardVector() * MoveForward).GetSafeNormal() * CurrentSpeed;
+	const FVector RightVector = (GetControlRightVector() * MoveRight).GetSafeNormal() * CurrentSpeed;
+	const FVector Velocity = ForwardVector + RightVector + FVector(0.0f, 0.0f, GetCharacterMovement()->JumpZVelocity);
+	LaunchCharacter(Velocity, bFlag, true);
+	// LaunchCharacter(Velocity, false, true);
+	ActivateAerial(false);
 }
 #pragma endregion 

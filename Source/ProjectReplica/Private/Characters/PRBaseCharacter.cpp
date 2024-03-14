@@ -22,18 +22,16 @@ APRBaseCharacter::APRBaseCharacter()
 	GetCapsuleComponent()->InitCapsuleSize(30.0f, 94.0f);
 
 	// CharacterMovement
+	GetCharacterMovement()->bUseControllerDesiredRotation = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 120.0f;
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
+	// GetCharacterMovement()->GravityScale = 2.0f;
+	// GetCharacterMovement()->JumpZVelocity = 800.0f;
 	
-	// Advanced Movement System 용
-	// GetCharacterMovement()->RotationRate = FRotator::ZeroRotator;
-
 	// LockOn일 때
 	// GetCharacterMovement()->bUseControllerDesiredRotation = true;
 	// GetCharacterMovement()->bOrientRotationToMovement = false;
-
-	// LockOn이 아닐 때
-	GetCharacterMovement()->bUseControllerDesiredRotation = false;
-	GetCharacterMovement()->bOrientRotationToMovement = true;
 
 	// Pawn
 	// 컨트롤러가 회전할 때 캐릭터가 같이 회전하지 않도록 설정합니다.
@@ -260,6 +258,16 @@ bool APRBaseCharacter::IsBlocking() const
 	return false;
 }
 #pragma endregion
+
+#pragma region MovementSystem
+void APRBaseCharacter::ActivateAerial(bool bNewActivateAerial)
+{
+	if(GetMovementSystem())
+	{
+		GetMovementSystem()->ActivateAerial(bNewActivateAerial);
+	}
+}
+#pragma endregion 
 
 #pragma region Locomotion
 void APRBaseCharacter::ToggleWalk()

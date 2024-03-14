@@ -151,6 +151,17 @@ public:
 #pragma endregion 
 
 #pragma region MovementSystem
+public:
+	/**
+	 * 공중에 뜬(에어리얼) 상태를 활성화하는 함수입니다.
+	 *
+	 * @param bNewActivateAerial: ture일 경우 이동을 중지(속도를 0으로 설정, 가속이 있는 구성요소의 경우 가속을 0으로 설정)하고
+	 *								캐릭터의 GravityScale을 0.0f으로 설정합니다.
+	 *								false일 경우 캐럭터의 GravityScale을 DefaultGravityScale로 설정합니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "MovementSystem|Aerial")
+	void ActivateAerial(bool bNewActivateAerial);
+	
 private:
 	/** 캐릭터의 움직임에 관련된 정보를 관리하는 ActorComponent 클래스입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MovementSystem", meta = (AllowPrivateAccess = "true"))
