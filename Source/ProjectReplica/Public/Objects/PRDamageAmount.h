@@ -40,6 +40,10 @@ private:
 	class UPRDamageAmountWidget* CreateDamageAmountWidget();
 
 protected:
+	/** 이 오브젝트의 RootComponent로 지정할 SceneComponent 클래스입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DamageAmount")
+	TObjectPtr<class USceneComponent> Root;
+	
 	/** DamageAmount 위젯의 클래스 레퍼런스입니다. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DamageAmount")
 	TSubclassOf<class UUserWidget> DamageAmountWidgetClass;

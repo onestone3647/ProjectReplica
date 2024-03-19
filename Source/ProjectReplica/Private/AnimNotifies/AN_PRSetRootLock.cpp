@@ -12,9 +12,9 @@ UAN_PRSetRootLock::UAN_PRSetRootLock(const FObjectInitializer& ObjectInitializer
 
 void UAN_PRSetRootLock::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
-	SetRootLock(MeshComp);
-	
 	Super::Notify(MeshComp, Animation, EventReference);
+
+	SetRootLock(MeshComp);
 }
 
 FString UAN_PRSetRootLock::GetNotifyName_Implementation() const

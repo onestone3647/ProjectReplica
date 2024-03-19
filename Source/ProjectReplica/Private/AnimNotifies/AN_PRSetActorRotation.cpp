@@ -11,9 +11,9 @@ UAN_PRSetActorRotation::UAN_PRSetActorRotation(const FObjectInitializer& ObjectI
 
 void UAN_PRSetActorRotation::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
-	SetOwnerRotation(MeshComp);
-	
 	Super::Notify(MeshComp, Animation, EventReference);
+	
+	SetOwnerRotation(MeshComp);
 }
 
 void UAN_PRSetActorRotation::SetOwnerRotation(USkeletalMeshComponent* MeshComp)

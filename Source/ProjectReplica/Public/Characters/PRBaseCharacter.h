@@ -8,6 +8,15 @@
 #include "Interfaces/Interface_PRDamageable.h"
 #include "PRBaseCharacter.generated.h"
 
+/** 캐릭터의 성별을 나타내는 열거형입니다. */
+UENUM(BlueprintType)
+enum class EPRGender : uint8
+{
+	Gender_None				UMETA(DisplayName = "None"),
+	Gender_Male		    	UMETA(DisplayName = "Male"),
+	Gender_Female 		  	UMETA(DisplayName = "Female")
+};
+
 class UPRDamageSystemComponent;
 class UPRStatSystemComponent;
 class UPRStateSystemComponent;
@@ -182,4 +191,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Locomotion")
 	virtual void Sprint();
 #pragma endregion
+
+#pragma region CharacterInfo
+private:
+	/** 캐릭터의 성별입니다. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterInfo", meta = (AllowPrivateAccess = "true"))
+	EPRGender Gender;
+
+	/** 캐릭터의 발소리입니다. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterInfo", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USoundBase> FootstepsSound;
+
+public:
+	/** Gender를 반환하는 함수입니다. */
+	EPRGender GetGender() const;
+
+	/** FootstepsSound를 반환하는 함수입니다. */
+	TObjectPtr<USoundBase> GetFootstepsSound() const;
+#pragma endregion 
 };

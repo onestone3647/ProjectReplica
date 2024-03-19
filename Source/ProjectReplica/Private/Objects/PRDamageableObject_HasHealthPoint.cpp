@@ -9,10 +9,6 @@
 
 APRDamageableObject_HasHealthPoint::APRDamageableObject_HasHealthPoint()
 {
-	// Root
-	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-	SetRootComponent(Root);
-
 	// Health
 	MaxHealth = 100.0f;
 	Health = MaxHealth;

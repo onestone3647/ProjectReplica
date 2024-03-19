@@ -6,9 +6,9 @@
 
 void UAN_PRDisableRootLock::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
-	DisableRootLock(MeshComp);
-	
 	Super::Notify(MeshComp, Animation, EventReference);
+	
+	DisableRootLock(MeshComp);
 }
 
 void UAN_PRDisableRootLock::DisableRootLock(USkeletalMeshComponent* MeshComp)

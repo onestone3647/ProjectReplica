@@ -63,6 +63,10 @@ APRBaseCharacter::APRBaseCharacter()
 
 	// MovementSystem
 	MovementSystem = CreateDefaultSubobject<UPRMovementSystemComponent>(TEXT("MovementSystem"));
+
+	// CharacterInfo
+	Gender = EPRGender::Gender_None;
+	FootstepsSound = nullptr;
 }
 
 void APRBaseCharacter::PostInitializeComponents()
@@ -302,6 +306,18 @@ void APRBaseCharacter::Sprint()
 			GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Run);
 		}
 	}
+}
+#pragma endregion 
+
+#pragma region CharacterInfo
+EPRGender APRBaseCharacter::GetGender() const
+{
+	return Gender;
+}
+
+TObjectPtr<USoundBase> APRBaseCharacter::GetFootstepsSound() const
+{
+	return FootstepsSound;
 }
 #pragma endregion 
 

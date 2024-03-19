@@ -153,9 +153,6 @@ void APRPlayerCharacter::Jump()
 	{
 		Super::Jump();
 
-		float Forward = GetMoveForward();
-		float Right = GetMoveRight();
-
 		bCanDoubleJump = false;		// 단일 점프 후 더블 점프 비활성화
 
 		// 딜레이 이후 더블 점프를 하기 위해 딜레이 타이머 실행
@@ -238,13 +235,9 @@ float APRPlayerCharacter::GetMoveForward() const
 {
 	if(EnhancedInputComponent && InputActions && InputActions->InputMove)
 	{
-		PR_LOG_SCREEN("Forward: %f", MoveActionBinding->GetValue().Get<FVector2D>().Y);
+		// FEnhancedInputActionValueBinding* MoveActionBindingNotBind = &EnhancedInputComponent->BindActionValue(InputActions->InputMove);
+		// return MoveActionBindingNotBind->GetValue().Get<FVector2D>().Y;
 		return MoveActionBinding->GetValue().Get<FVector2D>().Y;
-
-
-		// FEnhancedInputActionValueBinding* MoveActionBinding1 = &EnhancedInputComponent->BindActionValue(InputActions->InputMove);
-		// PR_LOG_SCREEN("Forward: %f", MoveActionBinding1->GetValue().Get<FVector2D>().Y);
-		// return MoveActionBinding1->GetValue().Get<FVector2D>().Y;
 	}
 	
 	return 0.0f;
@@ -254,12 +247,9 @@ float APRPlayerCharacter::GetMoveRight() const
 {
 	if(EnhancedInputComponent && InputActions && InputActions->InputMove)
 	{
-		PR_LOG_SCREEN("Right: %f", MoveActionBinding->GetValue().Get<FVector2D>().X);
+		// FEnhancedInputActionValueBinding* MoveActionBindingNotBind = &EnhancedInputComponent->BindActionValue(InputActions->InputMove);
+		// return MoveActionBindingNotBind->GetValue().Get<FVector2D>().X;
 		return MoveActionBinding->GetValue().Get<FVector2D>().X;
-
-		// FEnhancedInputActionValueBinding* MoveActionBinding1 = &EnhancedInputComponent->BindActionValue(InputActions->InputMove);
-		// PR_LOG_SCREEN("Forward: %f", MoveActionBinding1->GetValue().Get<FVector2D>().X);
-		// return MoveActionBinding1->GetValue().Get<FVector2D>().X;
 	}
 
 	return 0.0f;
@@ -394,7 +384,7 @@ void APRPlayerCharacter::DoubleJump()
 	bCanDoubleJump = false;
 	GetWorldTimerManager().ClearTimer(DoubleJumpTimerHandle);
 
-	const float CurrentSpeed = GetVelocity().Size2D();		// 떨어지는 속도는 제외합니다.
+	const float CurrentSpeed = GetVelocity().Size2D() * 0.8f;		// 떨어지는 속도는 제외합니다.
 	const float MoveForward = GetMoveForward(); 
 	const float MoveRight = GetMoveRight();
 
@@ -409,8 +399,7 @@ void APRPlayerCharacter::DoubleJump()
 	const FVector ForwardVector = (GetControlForwardVector() * MoveForward).GetSafeNormal() * CurrentSpeed;
 	const FVector RightVector = (GetControlRightVector() * MoveRight).GetSafeNormal() * CurrentSpeed;
 	const FVector Velocity = ForwardVector + RightVector + FVector(0.0f, 0.0f, GetCharacterMovement()->JumpZVelocity);
-	LaunchCharacter(Velocity, bFlag, true);
-	// LaunchCharacter(Velocity, false, true);
+	LaunchCharacter(Velocity, true, true);
 	ActivateAerial(false);
 }
 #pragma endregion 

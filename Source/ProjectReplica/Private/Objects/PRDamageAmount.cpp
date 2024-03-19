@@ -8,6 +8,10 @@
 APRDamageAmount::APRDamageAmount()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	
+	// Root
+	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	SetRootComponent(Root);
 
 	// DamageAmountWidgetClass;
 	DamageAmountWidgetClass = nullptr;
@@ -22,7 +26,7 @@ APRDamageAmount::APRDamageAmount()
 
 	// DamageAmountWidget
 	DamageAmountWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("DamageAmountWidget"));
-	DamageAmountWidget->SetupAttachment(RootComponent);
+	DamageAmountWidget->SetupAttachment(Root);
 	DamageAmountWidget->SetWidgetSpace(EWidgetSpace::Screen);
 	DamageAmountWidget->SetDrawSize(FVector2D(500.0f, 120.0f));
 	if(DamageAmountWidgetClass)

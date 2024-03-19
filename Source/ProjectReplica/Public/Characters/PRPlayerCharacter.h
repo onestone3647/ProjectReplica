@@ -63,13 +63,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<class UPRInputConfigDataAsset> InputActions;
 
-	// FEnhancedInputActionValueBinding를 포인터 변수로 가지고 있어야함
-	// 지역변수로 사용할 수 있지만 그러면 맨 처음 호출할 때는 작동하지 않음
+private:
 	/**
-	 * 캐릭터의 이동 InputAction의 입력 값을 참조한 구조체입니다.
+	 * 캐릭터의 이동 InputAction과 그에 대응하는 값 사이의 매칭을 저장한 구조체입니다.
 	 * UPROPERTY()를 사용할 수 없는 구조체입니다.
 	 */
-private:
 	struct FEnhancedInputActionValueBinding* MoveActionBinding;
 #pragma endregion
 
@@ -230,9 +228,5 @@ protected:
 
 	/** 점프를 한 후 더블 점프를 할 수 있는 딜레이를 적용하는 TimerHandle입니다. */
 	FTimerHandle DoubleJumpTimerHandle;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DoubleJump")
-	bool bFlag;
-	
 #pragma endregion 
 };

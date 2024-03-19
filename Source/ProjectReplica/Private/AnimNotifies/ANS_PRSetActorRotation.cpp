@@ -12,16 +12,16 @@ UANS_PRSetActorRotation::UANS_PRSetActorRotation(const FObjectInitializer& Objec
 
 void UANS_PRSetActorRotation::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
-	SetCurrentRotation(MeshComp);
-	
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
+
+	SetCurrentRotation(MeshComp);
 }
 
 void UANS_PRSetActorRotation::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,	const FAnimNotifyEventReference& EventReference)
 {
-	SetOwnerRotation(MeshComp);
-	
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
+	
+	SetOwnerRotation(MeshComp);
 }
 
 void UANS_PRSetActorRotation::SetCurrentRotation(USkeletalMeshComponent* MeshComp)

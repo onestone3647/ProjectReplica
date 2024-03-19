@@ -8,6 +8,10 @@
 APRDamageableObject::APRDamageableObject()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	
+	// Root
+	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	SetRootComponent(Root);
 }
 
 void APRDamageableObject::BeginPlay()

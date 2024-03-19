@@ -29,10 +29,6 @@ protected:
 	void InitializeObject();
 
 protected:
-	/** 이 오브젝트의 RootComponent로 지정할 SceneComponent 클래스입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRDamageableObject")
-	class USceneComponent* Root;
-
 	/** 오브젝트의 현재 체력입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRDamageableObject")
 	float MaxHealth;

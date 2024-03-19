@@ -118,7 +118,6 @@ void UPRMovementSystemComponent::ActivateAerial(bool bNewActivateAerial)
 			DefaultGravityScale = GetPROwner()->GetCharacterMovement()->GravityScale;
 			GetPROwner()->GetCharacterMovement()->StopMovementImmediately();
 			GetPROwner()->GetCharacterMovement()->GravityScale = 0.0f;
-			PR_LOG_SCREEN("Activate Aerial");
 		}
 		else
 		{
