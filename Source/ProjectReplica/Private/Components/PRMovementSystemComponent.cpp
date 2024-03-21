@@ -105,6 +105,11 @@ bool UPRMovementSystemComponent::ApplyGaitSettings(EPRGait ApplyGait)
 	
 	return true;
 }
+
+bool UPRMovementSystemComponent::IsEqualCurrentGait(EPRGait NewGait) const
+{
+	return CurrentGait == NewGait;
+}
 #pragma endregion 
 
 #pragma region Aerial

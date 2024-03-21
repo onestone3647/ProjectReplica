@@ -228,5 +228,9 @@ protected:
 
 	/** 점프를 한 후 더블 점프를 할 수 있는 딜레이를 적용하는 TimerHandle입니다. */
 	FTimerHandle DoubleJumpTimerHandle;
+#pragma endregion
+	
+#pragma region Vaulting
+	void GetInitializeObjectLocation();
 #pragma endregion 
 };

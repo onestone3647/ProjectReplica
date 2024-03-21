@@ -110,6 +110,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "MovementSystem")
 	bool ApplyGaitSettings(EPRGait ApplyGait);
 
+	/** 인자에 해당하는 걸음걸이가 현재 걸음걸이와 같은지 판별하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "MovementSystem")
+	bool IsEqualCurrentGait(EPRGait NewGait) const;
+
 protected:
 	/** 현재 걸음걸이입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "MovementSystem")

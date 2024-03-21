@@ -276,7 +276,7 @@ void APRBaseCharacter::ActivateAerial(bool bNewActivateAerial)
 #pragma region Locomotion
 void APRBaseCharacter::ToggleWalk()
 {
-	if(GetCharacterMovement() || GetMovementSystem())
+	if(GetCharacterMovement() && GetMovementSystem())
 	{
 		if(GetCharacterMovement()->MaxWalkSpeed != GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Walk).MovementSpeed)
 		{
@@ -293,7 +293,7 @@ void APRBaseCharacter::ToggleWalk()
 
 void APRBaseCharacter::Sprint()
 {
-	if(GetCharacterMovement() || GetMovementSystem())
+	if(GetCharacterMovement() && GetMovementSystem())
 	{
 		if(GetCharacterMovement()->MaxWalkSpeed != GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Sprint).MovementSpeed)
 		{

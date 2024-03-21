@@ -116,6 +116,9 @@ protected:
 	/** 예상 정지 거리를 반환하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance", meta = (BlueprintThreadSafe))
 	float GetPredictedStopDistance() const;
+
+	/** Sprint LocomotionState를 초기화하는 함수입니다. */
+	// void InitializeSprintState();
 	
 protected:
 	/** 이전 프레임과 현재 프레임 사이의 시간 간격입니다. */

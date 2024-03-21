@@ -96,6 +96,9 @@ void APRPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 			// 걷기
 			EnhancedInputComponent->BindAction(InputActions->InputWalk, ETriggerEvent::Triggered, this, &APRBaseCharacter::ToggleWalk);
+
+			// 전력 질주
+			EnhancedInputComponent->BindAction(InputActions->InputSprint, ETriggerEvent::Triggered, this, &APRBaseCharacter::Sprint);
 		
 			// 공격
 			EnhancedInputComponent->BindAction(InputActions->InputNormalAttack, ETriggerEvent::Triggered, this, &APRBaseCharacter::DoDamage);
@@ -334,6 +337,14 @@ void APRPlayerCharacter::AddPlayerMovementInput(FVector2D MovementVector)
 	float MoveForward = 0.0f;
 	float MoveRight = 0.0f;
 	FixDiagonalGamepadValues(MovementVector.Y, MovementVector.X, MoveForward, MoveRight);
+
+	// 전력 질주 상태에서 입력이 없을 경우 달리기 상태로 설정합니다.
+	if(MoveForward == 0.0f
+		&& MoveRight == 0.0f
+		&& GetMovementSystem()->IsEqualCurrentGait(EPRGait::Gait_Sprint))
+	{
+		GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Run);
+	}
 	
 	AddMovementInput(ForwardVector, MoveForward);
 	AddMovementInput(RightVector, MoveRight);
@@ -401,5 +412,11 @@ void APRPlayerCharacter::DoubleJump()
 	const FVector Velocity = ForwardVector + RightVector + FVector(0.0f, 0.0f, GetCharacterMovement()->JumpZVelocity);
 	LaunchCharacter(Velocity, true, true);
 	ActivateAerial(false);
+}
+#pragma endregion 
+
+#pragma region Vaulting
+void APRPlayerCharacter::GetInitializeObjectLocation()
+{
 }
 #pragma endregion 

@@ -88,6 +88,7 @@ Plugins/*/Intermediate/*
 /Content/ThirdPerson
 /Content/StarterContent
 /Content/FootstepSound
+/Content/A_Surface_Footstep
 
 # 프로젝트 완성 LFS로 관리하여 올릴 파일들
 /Content/Maps
