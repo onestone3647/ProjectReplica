@@ -21,7 +21,8 @@ public class ProjectReplica : ModuleRules
 			"AIModule",
 			"GameplayTasks",
 			"AnimationLocomotionLibraryRuntime",
-			"AnimGraphRuntime"
+			"AnimGraphRuntime",
+			"MotionWarping"
 		});
 	}
 }

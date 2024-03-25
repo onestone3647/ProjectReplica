@@ -36,6 +36,7 @@ void UAN_PRFootsteps::PlayFootsteps(USkeletalMeshComponent* MeshComp)
 			TArray<AActor*> ActorsToIgnore;
 			ActorsToIgnore.Add(MeshComp->GetOwner());
 
+			// 디버그 옵션을 설정합니다.
 			EDrawDebugTrace::Type DebugType = EDrawDebugTrace::None;
 			if(bDebug)
 			{

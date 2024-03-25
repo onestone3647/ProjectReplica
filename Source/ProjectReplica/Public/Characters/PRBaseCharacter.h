@@ -22,6 +22,7 @@ class UPRStatSystemComponent;
 class UPRStateSystemComponent;
 class UPRObjectPoolSystemComponent;
 class UPRMovementSystemComponent;
+class UMotionWarpingComponent;
 
 // 임시
 class UNiagaraSystem;
@@ -180,6 +181,17 @@ public:
 	/** MovementSystem을 반환하는 함수입니다. */
 	FORCEINLINE class UPRMovementSystemComponent* GetMovementSystem() const { return MovementSystem; }
 #pragma endregion
+
+#pragma region MotionWarping
+private:
+	/** MotionWarping을 실행하는 클래스입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MovementSystem", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UMotionWarpingComponent> MotionWarping;
+
+public:
+	/** MotionWarping을 반환하는 함수입니다. */
+	FORCEINLINE class UMotionWarpingComponent* GetMotionWarping() const { return MotionWarping; }
+#pragma endregion 
 
 #pragma region Locomotion
 public:

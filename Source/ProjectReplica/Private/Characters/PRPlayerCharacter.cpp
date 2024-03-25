@@ -11,7 +11,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/PRMovementSystemComponent.h"
+#include "MotionWarpingComponent.h"
 
 APRPlayerCharacter::APRPlayerCharacter()
 {
@@ -50,6 +52,14 @@ APRPlayerCharacter::APRPlayerCharacter()
 	DoubleJumpAnimMontage = nullptr;
 	bCanDoubleJump = true;
 	DoubleJumpDelay = 0.2f;
+
+	// Vaulting
+	bVaultingDebug = false;
+	VaultingHeight = 500.0f;
+	VaultingRadius = 10.0f;
+	ObjectHeightVector = FVector::ZeroVector;
+	ObjectDepthVector = FVector::ZeroVector;
+	LandingVector = FVector::ZeroVector;
 }
 
 void APRPlayerCharacter::BeginPlay()
@@ -416,7 +426,170 @@ void APRPlayerCharacter::DoubleJump()
 #pragma endregion 
 
 #pragma region Vaulting
+void APRPlayerCharacter::VaultingOverObject()
+{
+	bBusy = true;
+	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	PlayAnimMontage(VaultingAnimMontage);
+}
+
+void APRPlayerCharacter::ResetVaulting()
+{
+	bBusy = false;
+	GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+}
+
 void APRPlayerCharacter::GetInitializeObjectLocation()
 {
+	FVector InitialImpactVector = FVector::ZeroVector;
+	FHitResult HitResult;
+	// FVector TraceStart = GetActorLocation() - FVector(0.0f, 0.0f, GetCapsuleComponent()->GetScaledCapsuleRadius());
+	const FVector TraceStart = FVector(GetActorLocation().X, GetActorLocation().Y, VaultingHeight);
+	const FVector TraceEnd = TraceStart + (GetActorForwardVector() * 250.0f);
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+
+	// 디버그 옵션을 설정합니다.
+	EDrawDebugTrace::Type DebugType = EDrawDebugTrace::None;
+	if(bVaultingDebug)
+	{
+		DebugType = EDrawDebugTrace::ForDuration;
+	}
+
+	bool bIsHit = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), TraceStart, TraceEnd, VaultingRadius, UEngineTypes::ConvertToTraceType(ECC_Visibility),
+															true, ActorsToIgnore, DebugType, HitResult, true);
+	if(bIsHit)
+	{
+		InitialImpactVector = HitResult.ImpactPoint;
+		GetObjectDimensions(InitialImpactVector);
+	}
+	else
+	{
+		InitialImpactVector = FVector::ZeroVector;		
+	}
+		
+}
+
+void APRPlayerCharacter::GetObjectDimensions(FVector NewInitialImpactVector)
+{
+	FVector InitialImpactVector = NewInitialImpactVector;
+	int32 ObjectHeightIndex = 0;
+
+	for(int Index = 0; Index < 50; Index++)
+	{
+		ObjectHeightIndex = Index;
+		
+		FHitResult HitResult;
+		const FVector TraceStart = FVector(InitialImpactVector.X, InitialImpactVector.Y, InitialImpactVector.Z - 30.0f + (ObjectHeightIndex * 5));
+		const FVector TraceEnd = TraceStart + (GetActorForwardVector() * 75.0f);
+		TArray<AActor*> ActorsToIgnore;
+		ActorsToIgnore.Add(this);
+
+		// 디버그 옵션을 설정합니다.
+		EDrawDebugTrace::Type DebugType = EDrawDebugTrace::None;
+		if(bVaultingDebug)
+		{
+			DebugType = EDrawDebugTrace::ForDuration;
+		}
+		
+		bool bIsHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), TraceStart, TraceEnd, UEngineTypes::ConvertToTraceType(ECC_Visibility),
+														true, ActorsToIgnore, DebugType, HitResult, true);
+		if(bIsHit)
+		{
+			ObjectHeightVector = HitResult.ImpactPoint;
+		}
+		else
+		{
+			// 부딪힌 오브젝트가 없으면 반복문을 종료합니다.
+			break;
+		}
+	}
+
+	int32 ObjectDepthIndex = 0;
+	
+	for(int Index = 0; Index < 50; Index++)
+	{
+		ObjectDepthIndex = Index;
+
+		FHitResult HitResult;
+		const FVector TraceStart = ObjectHeightVector + FVector(0.0f, 0.0f, 30.0f) + (GetActorForwardVector() * ObjectDepthIndex * 5);
+		const FVector TraceEnd = TraceStart - FVector(0.0f, 0.0f, 50.0f);
+		TArray<AActor*> ActorsToIgnore;
+		ActorsToIgnore.Add(this);
+
+		// 디버그 옵션을 설정합니다.
+		EDrawDebugTrace::Type DebugType = EDrawDebugTrace::None;
+		if(bVaultingDebug)
+		{
+			DebugType = EDrawDebugTrace::ForDuration;
+		}
+		
+		bool bIsHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), TraceStart, TraceEnd, UEngineTypes::ConvertToTraceType(ECC_Visibility),
+														true, ActorsToIgnore, DebugType, HitResult, true);
+		if(bIsHit)
+		{
+			ObjectDepthVector = HitResult.ImpactPoint;
+		}
+		else
+		{
+			// 부딪힌 오브젝트가 없으면 반복문을 종료합니다.
+			break;
+		}
+	}
+
+	FHitResult HitResult;
+	const FVector TraceStart = ObjectDepthVector + (GetActorForwardVector() * 150.0f);
+	const FVector TraceEnd = TraceStart - FVector(0.0f, 0.0f, 150.0f);
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+
+	// 디버그 옵션을 설정합니다.
+	EDrawDebugTrace::Type DebugType = EDrawDebugTrace::None;
+	if(bVaultingDebug)
+	{
+		DebugType = EDrawDebugTrace::ForDuration;
+	}
+
+	bool bIsHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), TraceStart, TraceEnd, UEngineTypes::ConvertToTraceType(ECC_Visibility),
+												true, ActorsToIgnore, DebugType, HitResult, true);
+	if(bIsHit)
+	{
+		LandingVector = HitResult.ImpactPoint;
+	}
+	else
+	{
+		LandingVector = HitResult.TraceEnd + FVector(0.0f, 0.0f, 50.0f);
+	}
+
+	if(bVaultingDebug)
+	{
+		DrawDebugSphere(GetWorld(), ObjectHeightVector, 20.0f, 12, FColor::White, false, 5.0f);
+		DrawDebugSphere(GetWorld(), ObjectDepthVector, 20.0f, 12, FColor::Blue, false, 5.0f);
+		DrawDebugSphere(GetWorld(), LandingVector, 20.0f, 12, FColor::Red, false, 5.0f);
+	}
+
+	SetMotionWarpPositions();
+}
+
+void APRPlayerCharacter::SetMotionWarpPositions()
+{
+	if(GetMotionWarping())
+	{
+		FMotionWarpingTarget MotionWarpingTarget = FMotionWarpingTarget();
+		MotionWarpingTarget.Name = FName("Warp1");
+		MotionWarpingTarget.Location = UKismetMathLibrary::VLerp(ObjectHeightVector, ObjectDepthVector, 0.5f);
+		MotionWarpingTarget.Rotation = GetActorRotation();
+		GetMotionWarping()->AddOrUpdateWarpTarget(MotionWarpingTarget);
+
+		FMotionWarpingTarget LandingMotionWarpingTarget = FMotionWarpingTarget();
+		LandingMotionWarpingTarget.Name = FName("Warp2");
+		LandingMotionWarpingTarget.Location = LandingVector;
+		LandingMotionWarpingTarget.Rotation = GetActorRotation();
+		GetMotionWarping()->AddOrUpdateWarpTarget(LandingMotionWarpingTarget);
+
+		VaultingOverObject();
+	}
 }
 #pragma endregion 

@@ -231,6 +231,46 @@ protected:
 #pragma endregion
 	
 #pragma region Vaulting
+public:
+	void VaultingOverObject();
+
+	void ResetVaulting();
+	
+protected:
+	/** 초기화된 오브젝트의 위치를 반환하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "Vaulting")
 	void GetInitializeObjectLocation();
+
+	void GetObjectDimensions(FVector NewInitialImpactVector);
+
+	void SetMotionWarpPositions();
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	TObjectPtr<UAnimMontage> VaultingAnimMontage;
+	
+	/** Vaulting의 디버그 실행을 나타내는 변수입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	bool bVaultingDebug;
+
+	/** Vaulting하는 높이입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	float VaultingHeight;
+
+	/** Vaulting을 실행하는 반지름입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	float VaultingRadius;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	FVector ObjectHeightVector;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	FVector ObjectDepthVector;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	FVector LandingVector;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	bool bBusy;
 #pragma endregion 
 };

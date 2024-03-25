@@ -8,6 +8,7 @@
 #include "Components/PRStateSystemComponent.h"
 #include "Components/PRObjectPoolSystemComponent.h"
 #include "Components/PRMovementSystemComponent.h"
+#include "MotionWarpingComponent.h"
 
 // 임시
 #include "NiagaraComponent.h"
@@ -63,6 +64,9 @@ APRBaseCharacter::APRBaseCharacter()
 
 	// MovementSystem
 	MovementSystem = CreateDefaultSubobject<UPRMovementSystemComponent>(TEXT("MovementSystem"));
+
+	// MotionWarping
+	MotionWarping = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("MotionWarping"));
 
 	// CharacterInfo
 	Gender = EPRGender::Gender_None;
