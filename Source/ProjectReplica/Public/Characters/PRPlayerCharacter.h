@@ -232,6 +232,108 @@ protected:
 	
 #pragma region Vaulting
 public:
+	/** Vault를 실행하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "Vaulting")
+	void ExecuteVault();
+
+protected:
+	/** Trace의 충돌한 지점을 기준으로 뛰어넘을 수 있는 오브젝트의 치수를 계산하는 함수입니다. */
+	void CalculateVaultableObjectDepth(FVector TraceImpactPoint);
+
+	/** Trace의 마지막 위치를 기준으로 캐릭터가 착지할 위치를 계산하는 함수입니다. */
+	void CalculateVaultLandLocation(FVector TraceEndLocation);
+
+protected:
+	/** 장애물을 뛰어넘을 수 있는지 나타내는 변수입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Vaulting")
+	bool bCanWarp;
+	
+	/** 장애물을 뛰어넘기 시작하는 위치입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Vaulting")
+	FVector VaultStartLocation;
+
+	/** 장애물을 뛰어넘는 마지막 위치입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Vaulting")
+	FVector VaultEndLocation;
+
+	/** 장애물을 뛰어넘고 착지하는 위치입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Vaulting")
+	FVector VaultLandLocation;
+	
+	/** 뛰어넘을 수 있는 오브젝트를 탐색하는 Trace의 횟수입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	int32 VaultableObjectTraceCount;
+
+	/** 뛰어넘을 수 있는 오브젝트를 탐색하는 Trace간의 사이의 거리입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	float VaultableObjectTraceInterval;
+
+	/** 뛰어넘을 수 있는 오브젝트와의 거리입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	float VaultableObjectDistance;
+
+	/** 뛰어넘을 수 있는 오브젝트의 탐색에 실행하는 SphereTrace의 반지름입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	float VaultableObjectTraceRadius;
+
+	/** 뛰어넘을 수 있는 오브젝트의 치수를 계산하는 Trace의 횟수입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting|DepthTrace")
+	int32 DepthTraceCount;
+
+	/** 뛰어넘을 수 있는 오브젝트의 치수를 계산하는 Trace간의 사이의 거리입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting|DepthTrace")
+	float DepthTraceInterval;
+
+	/** 뛰어넘을 수 있는 오브젝트의 치수를 계산하는 위를 향한 Trace의 Offset입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting|DepthTrace")
+	float DepthTraceUpOffset;
+
+	/** 뛰어넘을 수 있는 오브젝트의 치수를 계산하는 아래를 향한 Trace의 Offset입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting|DepthTrace")
+	float DepthTraceDownOffset;
+
+	/** 오브젝트를 뛰어넘고 착지할 거리입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting|Landing")
+	float VaultLandDistance;
+
+	/** 오브젝트를 뛰어넘고 착지할 위치를 계산하는 아래를 향한 Trace의 Offset입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting|Landing")
+	float VaultLandDownOffset;
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+	/** 장애물을 뛰어넘는 마지막 위치입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Vaulting")
+	FVector VaultMiddleLocation;
+
+	
+	/** 장애물을 뛰어넘을 수 있는 높이를 탐색하는 Trace의 횟수입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	int32 VaultableHeightTraceCount;
+
+public:
 	UFUNCTION(BlueprintCallable, Category = "Vault")
 	void Vault();
 
@@ -247,23 +349,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
 	TObjectPtr<UAnimMontage> VaultAnim;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vaulting")
-	bool bCanWarp;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
 	int32 DepthCount;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
 	float DepthOffset;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Vaulting")
-	FVector VaultStartLocation;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Vaulting")
-	FVector VaultMiddleLocation;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Vaulting")
-	FVector VaultLandLocation;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
 	FName VaultMiddleName;
@@ -327,10 +417,6 @@ protected:
 	/** Vault가 끝날 때 사용하는 MotionWarpingTarget의 이름입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
 	FName VaultEndName;
-
-	/** 장애물을 뛰어넘을 수 있는 높이를 탐색하는 Trace의 횟수입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
-	float VaultableHeightTraceCount;
 
 	/** 장애물을 뛰어넘을 수 있는 높이를 탐색하는 Trace의 오프셋입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")

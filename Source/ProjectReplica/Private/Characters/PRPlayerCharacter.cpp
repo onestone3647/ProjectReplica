@@ -54,7 +54,33 @@ APRPlayerCharacter::APRPlayerCharacter()
 	DoubleJumpDelay = 0.2f;
 
 	// Vaulting
+	VaultStartLocation = FVector::ZeroVector;
+	VaultEndLocation = FVector::ZeroVector;
+	VaultLandLocation = FVector::ZeroVector;
+	VaultableObjectTraceCount = 2;
+	VaultableObjectTraceInterval = 30.0f;
+	VaultableObjectDistance = 100.0f;
+	VaultableObjectTraceRadius = 10.0f;
+	// DepthTrace
+	DepthTraceCount = 5;
+	DepthTraceInterval = 50.0f;
+	DepthTraceUpOffset = 80.0f;
+	DepthTraceDownOffset = 100.f;
+	// Landing
+	VaultLandDistance = 80.0f;
+	VaultLandDownOffset = 1000.0f;
+	
 
+
+	
+
+
+
+
+
+
+
+	
 	DepthCount = 5;
 	DepthOffset = 50.0f;
 	VaultMiddleName = FName("VaultMiddle");
@@ -66,8 +92,8 @@ APRPlayerCharacter::APRPlayerCharacter()
 	VaultAnimMontage = nullptr;
 	VaultStartName = FName("VaultStart");
 	VaultEndName = FName("VaultEnd");
-	VaultableHeightTraceCount = 2;
 	VaultableHeightTraceOffset = 30.0f;
+	VaultableHeightTraceCount = 2;
 	VaultableHeight = 100.0f;
 	VaultableDistance = 150.0f;
 	VaultableTraceRadius = 10.0f;
@@ -450,6 +476,112 @@ void APRPlayerCharacter::DoubleJump()
 #pragma endregion 
 
 #pragma region Vaulting
+void APRPlayerCharacter::ExecuteVault()
+{
+	// 뛰어넘을 오브젝트를 탐색합니다.
+	for(int Index = 0; Index < VaultableObjectTraceCount; Index++)
+	{
+		FHitResult HitResult;
+		const FVector TraceStart = GetActorLocation() + FVector(0.0f, 0.0f, Index * VaultableObjectTraceInterval);
+		const FVector TraceEnd = TraceStart + (GetActorForwardVector() * VaultableObjectDistance);
+		TArray<AActor*> ActorsToIgnore;
+		ActorsToIgnore.Add(this);
+
+		// 디버그 옵션을 설정합니다.
+		EDrawDebugTrace::Type DebugType = EDrawDebugTrace::None;
+		if(bVaultDebug)
+		{
+			DebugType = EDrawDebugTrace::ForDuration;
+		}
+
+		// 캐릭터가 뛰어넘을 수 있는 거리 안에 오브젝트가 존재하는 Trace를 실행합니다.
+		bool bIsHit = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), TraceStart, TraceEnd, VaultableObjectTraceRadius, UEngineTypes::ConvertToTraceType(ECC_Visibility),
+																false, ActorsToIgnore, DebugType, HitResult, true);
+		if(bIsHit)
+		{
+			CalculateVaultableObjectDepth(HitResult.ImpactPoint);
+			
+			// 뛰어넘을 오브젝트를 탐색했을 경우 탐색을 마칩니다.
+			break;
+		}
+	}
+}
+
+void APRPlayerCharacter::CalculateVaultableObjectDepth(FVector TraceImpactPoint)
+{
+	// 뛰어넘을 오브젝트의 치수를 계산합니다.
+	for(int Index = 0; Index < DepthTraceCount; Index++)
+	{
+		FHitResult HitResult;
+		const FVector TraceStart = TraceImpactPoint
+									+ FVector(0.0f, 0.0f, DepthTraceUpOffset)
+									+ (GetActorForwardVector() * Index * DepthTraceInterval);
+		const FVector TraceEnd = TraceStart - FVector(0.0f, 0.0f, DepthTraceDownOffset);
+		TArray<AActor*> ActorsToIgnore;
+		ActorsToIgnore.Add(this);
+
+		// 디버그 옵션을 설정합니다.
+		EDrawDebugTrace::Type DebugType = EDrawDebugTrace::None;
+		if(bVaultDebug)
+		{
+			DebugType = EDrawDebugTrace::ForDuration;
+		}
+
+		// 뛰어넘을 장애물과 캐릭터 사이의 거리를 측정합니다.
+		bool bIsHit = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), TraceStart, TraceEnd, VaultableObjectTraceRadius, UEngineTypes::ConvertToTraceType(ECC_Visibility),
+																false, ActorsToIgnore, DebugType, HitResult, true);
+		if(bIsHit)
+		{
+			// 점차 거리를 늘려가면서 탐색합니다.
+			// 첫 번째 탐색일 경우
+			if(Index == 0)
+			{
+				VaultStartLocation = HitResult.ImpactPoint;
+				if(bVaultDebug)
+				{
+					DrawDebugSphere(GetWorld(), VaultStartLocation, 10.0f, 12, FColor::White, false, 5.0f);
+				}
+			}
+
+			VaultEndLocation = HitResult.ImpactPoint;
+			if(bVaultDebug)
+			{
+				DrawDebugSphere(GetWorld(), VaultEndLocation, 10.0f, 12, FColor::Yellow, false, 5.0f);
+			}
+		}
+		else
+		{
+			// 탐색을 마칠 경우 장애물을 넘어서 탐색한 것이므로 착지할 위치를 계산합니다.
+			CalculateVaultLandLocation(HitResult.TraceStart);
+			break;
+		}
+	}
+}
+
+void APRPlayerCharacter::CalculateVaultLandLocation(FVector TraceEndLocation)
+{
+	FHitResult HitResult;
+	const FVector TraceStart = TraceEndLocation + (GetActorForwardVector() * VaultLandDistance);
+	const FVector TraceEnd = TraceStart - FVector(0.0f, 0.0f, VaultLandDownOffset);
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+
+	// 디버그 옵션을 설정합니다.
+	EDrawDebugTrace::Type DebugType = EDrawDebugTrace::None;
+	if(bVaultDebug)
+	{
+		DebugType = EDrawDebugTrace::ForDuration;
+	}
+	
+	bool bIsLandHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), TraceStart, TraceEnd, UEngineTypes::ConvertToTraceType(ECC_Visibility),
+																	true, ActorsToIgnore, DebugType, HitResult, true);
+	if(bIsLandHit)
+	{
+		VaultLandLocation = HitResult.ImpactPoint;
+	}
+}
+
+
 void APRPlayerCharacter::Vault()
 {
 	// 뛰어넘을 장애물 탐색
@@ -578,15 +710,13 @@ void APRPlayerCharacter::VaultDepth(FVector VaultableImapctVector)
 
 void APRPlayerCharacter::OnVaultAnimMontageEnded(UAnimMontage* VaultMontage, bool bInterrupted)
 {
-	PR_LOG_SCREEN("Ended Delegate Call");
-	if(VaultMontage == VaultAnim)
-	{
-		PR_LOG_SCREEN("Vault Delegate Call");
-		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-		SetActorEnableCollision(true);
-		bCanWarp = false;
-		VaultLandLocation = FVector(0.0f, 0.0f, 20000.0f);
-	}
+	// if(VaultMontage == VaultAnim)
+	// {
+	// 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	// 	SetActorEnableCollision(true);
+	// 	bCanWarp = false;
+	// 	VaultLandLocation = FVector(0.0f, 0.0f, 20000.0f);
+	// }
 }
 
 
