@@ -232,9 +232,71 @@ protected:
 	
 #pragma region Vaulting
 public:
+	UFUNCTION(BlueprintCallable, Category = "Vault")
+	void Vault();
+
+	void VaultMotionWarp();
+
+protected:
+	void VaultDepth(FVector VaultableImapctVector);
+
+	UFUNCTION()
+	void OnVaultAnimMontageEnded(UAnimMontage* VaultMontage, bool bInterrupted);
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	TObjectPtr<UAnimMontage> VaultAnim;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	bool bCanWarp;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	int32 DepthCount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	float DepthOffset;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Vaulting")
+	FVector VaultStartLocation;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Vaulting")
+	FVector VaultMiddleLocation;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Vaulting")
+	FVector VaultLandLocation;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	FName VaultMiddleName;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	FName VaultLandName;
+	
+
+	
+
+	
+public:
+	/** 장애물을 뛰어넘을 수 있는지 판별하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "Vaulting")
+	bool IsVaultable() const;
+
+	/** Vaulting에 관련된 것들을 초기화하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "Vaulting")
+	void ResetVault();
+
+	/** 장애물을 뛰어넘는 함수입니다. */
 	void VaultingOverObject();
 
-	void ResetVaulting();
+	/** 장애물을 뛰어넘을 수 있는지 최신화하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "Vaulting")
+	void UpdateVaultable();
+
+protected:
+	/** 인자의 위치에 존재하는 오브젝트의 치수를 계산하는 함수입니다. */
+	void CalculateObjectDimensions(FVector VaultableImapctVector);
+
+	/** 장애물을 뛰어넘는 MotionWarpingTarget을 초기화하는 함수입니다. */
+	void InitializeVaultMotionWarpTarget();
 	
 protected:
 	/** 초기화된 오브젝트의 위치를 반환하는 함수입니다. */
@@ -246,20 +308,83 @@ protected:
 	void SetMotionWarpPositions();
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
-	TObjectPtr<UAnimMontage> VaultingAnimMontage;
-	
 	/** Vaulting의 디버그 실행을 나타내는 변수입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting|Debug")
+	bool bVaultDebug;
+
+	/** 장애물을 뛰어넘을 수 있는지 나타내는 변수입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vaulting")
+	bool bVaultable;
+	
+	/** 장애물을 뛰어넘는 AnimMontage입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
-	bool bVaultingDebug;
+	TObjectPtr<UAnimMontage> VaultAnimMontage;
+
+	/** Vault가 시작할 때 사용하는 MotionWarpingTarget의 이름입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	FName VaultStartName;
+	
+	/** Vault가 끝날 때 사용하는 MotionWarpingTarget의 이름입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	FName VaultEndName;
+
+	/** 장애물을 뛰어넘을 수 있는 높이를 탐색하는 Trace의 횟수입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	float VaultableHeightTraceCount;
+
+	/** 장애물을 뛰어넘을 수 있는 높이를 탐색하는 Trace의 오프셋입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	float VaultableHeightTraceOffset;
+	
+	/** 장애물을 뛰어넘을 수 있는 높이입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	float VaultableHeight;
+
+	/** 뛰어넘을 수 있는 장애물과의 거리입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	float VaultableDistance;
+
+	/** Vault를 실행하는 SphereTrace의 반지름입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	float VaultableTraceRadius;	
+	
+	/** 뛰어넘을 수 있는 오브젝틩 높이를 측정할 횟수입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	int32 CalculateVaultableObjectHeightCount;
+
+	/** 뛰어넘을 수 있는 오브젝트의 높이의 위치입니다. */
+	UPROPERTY(BlueprintReadOnly, Category = "Vaulting")
+	FVector VaultableObjectHeightLocation;
+
+	/** 뛰어넘을 수 있는 오브젝트의 깊이를 측정할 횟수입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	int32 CalculateVaultableObjectDepthCount;
+	
+	/** 뛰어넘을 수 있는 오브젝트의 깊이의 위치입니다. */
+	UPROPERTY(BlueprintReadOnly, Category = "Vaulting")
+	FVector VaultableObjectDepthLocation;
+
+	/** 장애물을 뛰어넘어 착지하는 위치입니다. */
+	UPROPERTY(BlueprintReadOnly, Category = "Vaulting")
+	FVector VaultLandingLocation;
+
+	/** 장애물을 뛰어넘어 착지하는 위치를 조절하는 오프셋입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	float VaultLandingLocationOffset;
+
+
+
+
+
+
+	
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
+	float VaultingRadius;	
 
 	/** Vaulting하는 높이입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
 	float VaultingHeight;
-
-	/** Vaulting을 실행하는 반지름입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
-	float VaultingRadius;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vaulting")
 	FVector ObjectHeightVector;
@@ -269,8 +394,5 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vaulting")
 	FVector LandingVector;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vaulting")
-	bool bBusy;
 #pragma endregion 
 };
