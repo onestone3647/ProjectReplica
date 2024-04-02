@@ -141,8 +141,9 @@ void UPRBaseAnimInstance::UpdateProperties(float DeltaSeconds)
 		InputVector = GetCharacterMovement()->GetLastInputVector();
 
 		bIsFalling = GetCharacterMovement()->IsFalling();
-		
-		bAttemptTurn = UKismetMathLibrary::Dot_VectorVector(UKismetMathLibrary::Normal(Velocity), UKismetMathLibrary::Normal(Acceleration)) < 0.0f;
+
+		// QuickTurn 잠시 보류
+		// bAttemptTurn = UKismetMathLibrary::Dot_VectorVector(UKismetMathLibrary::Normal(Velocity), UKismetMathLibrary::Normal(Acceleration)) < 0.0f;
 	}
 }
 

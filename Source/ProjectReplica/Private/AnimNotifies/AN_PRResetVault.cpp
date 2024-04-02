@@ -4,21 +4,22 @@
 #include "AnimNotifies/AN_PRResetVault.h"
 #include "Characters/PRPlayerCharacter.h"
 
+UAN_PRResetVault::UAN_PRResetVault(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	bIsNativeBranchingPoint = true;
+}
+
 void UAN_PRResetVault::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
 
-	ResetVault(MeshComp);
-}
-
-void UAN_PRResetVault::ResetVault(USkeletalMeshComponent* MeshComp)
-{
 	if(MeshComp)
 	{
 		APRPlayerCharacter* PRPlayer = Cast<APRPlayerCharacter>(MeshComp->GetOwner());
 		if(IsValid(PRPlayer))
 		{
-			PRPlayer->ResetVault();
+			// PRPlayer->OnVaultAnimMontageEnded(nullptr, false);
 		}
 	}
 }
