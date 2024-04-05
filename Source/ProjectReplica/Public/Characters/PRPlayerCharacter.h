@@ -27,6 +27,7 @@ public:
 	
 public:
 	virtual void BeginPlay() override;
+	virtual void PostInitializeComponents() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void Landed(const FHitResult& Hit) override;
 
@@ -48,7 +49,7 @@ protected:
 	void Interaction(const FInputActionValue& Value);
 
 	/** 캐릭터가 전력질주하는 함수입니다. */
-	virtual void Sprint() override;
+	virtual void ToggleSprint() override;
 	
 protected:
 	/** 캐릭터가 사용하는 EnhancedInputComponent입니다. */
@@ -246,9 +247,6 @@ public:
 	/** 장애물을 뛰어넘은 후 상태를 초기화하는 함수입니다. */
 	void ResetVaultState();
 
-	/** 장애물을 뛰어넘은 후 상태를 초기화하는 함수입니다. */
-	void ResetVault();
-
 protected:
 	/** Trace의 충돌한 지점을 기준으로 뛰어넘을 수 있는 오브젝트의 치수를 계산하는 함수입니다. */
 	void CalculateVaultableObjectDepth(FVector TraceImpactPoint);
@@ -263,6 +261,16 @@ protected:
 	UFUNCTION()
 	void OnVaultAnimMontageEnded(UAnimMontage* NewVaultAnimMontage, bool bInterrupted);
 
+private:
+	/** VaultCollision의 OnComponentBeginOverlap 델리게이트에 바인딩하는 함수입니다. */
+	UFUNCTION()
+	void OnVaultCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+private:
+	/** 장애물을 뛰어넘을 수 있는지 탐색하는 CapsuleComponent 클래스입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vaulting", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UCapsuleComponent> VaultCollision;
+	
 protected:
 	/** Vaulting의 디버그 실행을 나타내는 변수입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting|Debug")
@@ -315,22 +323,6 @@ protected:
 	/** 뛰어넘을 수 있는 오브젝트의 탐색에 실행하는 SphereTrace의 반지름입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
 	float VaultableObjectTraceRadius;
-
-	/** 초기화하는 캡슐 콜리전의 절반 높이입니다. */
-	UPROPERTY(BlueprintReadWrite, Category = "Vaulting")
-	float InitCapsuleHalfHeight;
-
-	/** 장애물을 뛰어넘을 때의 캡슐 콜리전의 절반 높이입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
-	float VaultCapsuleHalfHeight;
-	
-	/** 초기화하는 캡슐 콜리전의 반경입니다. */
-	UPROPERTY(BlueprintReadWrite, Category = "Vaulting")
-	float InitCapsuleRadius;
-
-	/** 장애물을 뛰어넘을 때의 캡슐 콜리전의 반경입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting")
-	float VaultCapsuleRadius;
 
 	/** 뛰어넘을 수 있는 오브젝트의 치수를 계산하는 Trace의 횟수입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting|DepthTrace")

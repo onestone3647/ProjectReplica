@@ -81,18 +81,22 @@ class PROJECTREPLICA_API UPRMovementSystemComponent : public UPRBaseActorCompone
 public:
 	UPRMovementSystemComponent();
 
+protected:
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 public:
-	/** PROwner의 PRBaseAnimInstance를 반환하는 함수입니다. */
-	UPRBaseAnimInstance* GetPRBaseAnimInstance() const;
+	// /** PROwner의 PRBaseAnimInstance를 반환하는 함수입니다. */
+	// UPRBaseAnimInstance* GetPRBaseAnimInstance() const;
 	
 #pragma region Gait
 public:
-	/**
-	 * 걸음걸이를 최신화하는 함수입니다.
-	 *
-	 * @param DesiredGait 최신화할 걸음걸이입니다.
-	 */
-	void UpdateGait(EPRGait DesiredGait);
+	// /**
+	//  * 걸음걸이를 최신화하는 함수입니다.
+	//  *
+	//  * @param DesiredGait 최신화할 걸음걸이입니다.
+	//  */
+	// void UpdateGait(EPRGait DesiredGait);
+	void UpdateGait();
 
 	/** GaitSettings를 초기화하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "MovementSystem")
@@ -110,11 +114,26 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "MovementSystem")
 	bool ApplyGaitSettings(EPRGait ApplyGait);
 
+	/** 인자에 해당하는 걸음걸이가 허용한 걸을걸잉와 같은지 판별하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "MovementSystem")
+	bool IsEqualAllowGait(EPRGait NewGait) const;
+
 	/** 인자에 해당하는 걸음걸이가 현재 걸음걸이와 같은지 판별하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "MovementSystem")
 	bool IsEqualCurrentGait(EPRGait NewGait) const;
 
+	/**
+	 * 입력받은 인자로 CurrentGait를 설정하는 함수입니다.
+	 * 기존의 CurrentGait는 LastGait로 설정합니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "MovementSystem")
+	void SetCurrentGait(EPRGait NewGait);
+
 protected:
+	/** 허용한 걸을걸이입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "MovementSystem")
+	EPRGait AllowGait;	
+	
 	/** 현재 걸음걸이입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "MovementSystem")
 	EPRGait CurrentGait;
@@ -126,6 +145,35 @@ protected:
 	/** 걸음걸이의 설정 값을 가진 Map입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSystem")
 	TMap<EPRGait, FPRGaitSettings> GaitSettings;
+
+	/** 속도입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRBaseAnimInstance")
+	FVector Velocity;
+
+	/** 지상에서의 속도입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRBaseAnimInstance")
+	float GroundSpeed;	
+
+	/** 가속도입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRBaseAnimInstance")
+	FVector Acceleration;
+
+	/** 달릴 때의 최소 가속도입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
+	float MinAccelerationToRunGait;
+
+public:
+	/** AllowGait를 반환하는 함수입니다. */
+	EPRGait GetAllowGait() const;
+
+	/** 입력받은 인자로 AllowGait를 설정하는 함수입니다. */
+	void SetAllowGait(EPRGait NewGait);
+
+	/** CurrentGait를 반환하는 함수입니다. */
+	EPRGait GetCurrentGait() const;
+
+	/** MinAccelerationToRunGait를 반환하는 함수입니다. */
+	float GetMinAccelerationToRunGait() const;
 #pragma endregion
 
 #pragma region Aerial

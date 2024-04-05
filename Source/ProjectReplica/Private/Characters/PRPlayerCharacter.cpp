@@ -53,7 +53,15 @@ APRPlayerCharacter::APRPlayerCharacter()
 	bCanDoubleJump = true;
 	DoubleJumpDelay = 0.2f;
 
-	// Vaulting
+	// VaultCollision
+	VaultCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("VaultCollision"));
+	VaultCollision->InitCapsuleSize(10.0f, 38.0f);
+	VaultCollision->SetRelativeLocation(FVector(30.0f, 0.0f, -30.0f));
+	VaultCollision->SetCollisionProfileName(TEXT("VaultCollision"));
+	VaultCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	VaultCollision->SetupAttachment(RootComponent);
+	
+	// Vault
 	bVaultDebug = false;
 	bCanVaultWarp = false;
 	VaultStartName = FName("VaultStart");
@@ -66,10 +74,6 @@ APRPlayerCharacter::APRPlayerCharacter()
 	VaultableObjectTraceInterval = 30.0f;
 	VaultableObjectDistance = 100.0f;
 	VaultableObjectTraceRadius = 10.0f;
-	InitCapsuleHalfHeight = 0.0f;
-	VaultCapsuleHalfHeight = 40.0f;
-	InitCapsuleRadius = 0.0f;
-	VaultCapsuleRadius = 15.0f;
 	// DepthTrace
 	DepthTraceCount = 5;
 	DepthTraceInterval = 50.0f;
@@ -84,6 +88,14 @@ APRPlayerCharacter::APRPlayerCharacter()
 void APRPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void APRPlayerCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	// VaultCollision
+	VaultCollision->OnComponentBeginOverlap.AddDynamic(this, &APRPlayerCharacter::OnVaultCollisionBeginOverlap);
 }
 
 void APRPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -127,7 +139,7 @@ void APRPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 			EnhancedInputComponent->BindAction(InputActions->InputWalk, ETriggerEvent::Triggered, this, &APRBaseCharacter::ToggleWalk);
 
 			// 전력 질주
-			EnhancedInputComponent->BindAction(InputActions->InputSprint, ETriggerEvent::Triggered, this, &APRBaseCharacter::Sprint);
+			EnhancedInputComponent->BindAction(InputActions->InputSprint, ETriggerEvent::Triggered, this, &APRBaseCharacter::ToggleSprint);
 		
 			// 공격
 			EnhancedInputComponent->BindAction(InputActions->InputNormalAttack, ETriggerEvent::Triggered, this, &APRBaseCharacter::DoDamage);
@@ -211,9 +223,9 @@ void APRPlayerCharacter::Interaction(const FInputActionValue& Value)
 {
 }
 
-void APRPlayerCharacter::Sprint()
+void APRPlayerCharacter::ToggleSprint()
 {
-	Super::Sprint();
+	Super::ToggleSprint();
 }
 #pragma endregion
 
@@ -368,11 +380,27 @@ void APRPlayerCharacter::AddPlayerMovementInput(FVector2D MovementVector)
 	FixDiagonalGamepadValues(MovementVector.Y, MovementVector.X, MoveForward, MoveRight);
 
 	// 전력 질주 상태에서 입력이 없을 경우 달리기 상태로 설정합니다.
-	if(MoveForward == 0.0f
-		&& MoveRight == 0.0f
-		&& GetMovementSystem()->IsEqualCurrentGait(EPRGait::Gait_Sprint))
+	if(GetMoveForward() == 0.0f
+		&& GetMoveRight() == 0.0f
+		&& GetMovementSystem()->IsEqualAllowGait(EPRGait::Gait_Sprint))
 	{
+		GetMovementSystem()->SetAllowGait(EPRGait::Gait_Run);
 		GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Run);
+	}
+
+	// 전력 질주 상태일 때 Vault를 실행합니다.
+	if(GetMovementSystem()->IsEqualAllowGait(EPRGait::Gait_Sprint))
+	{
+		// 전력 질주를 허용한 상태일 때 입력이 있을 경우 VaultCollision을 활성화합니다.
+		if(MoveForward != 0.0f || MoveRight != 0.0f)
+		{
+			VaultCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
+	}
+	else
+	{
+		// 전력 질주를 허용한 상태가 아닐 때 VaultCollision을 비활성화합니다.
+		VaultCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 	
 	AddMovementInput(ForwardVector, MoveForward);
@@ -483,43 +511,20 @@ void APRPlayerCharacter::ExecuteVault()
 
 void APRPlayerCharacter::DisableVaultWarp()
 {
-	// bCanVaultWarp = false;
-	//
-	// GetCapsuleComponent()->SetCapsuleRadius(InitCapsuleRadius);
-	//
-	// // ExecuteVaultMotionWarp 함수의 bInZOffset 변수에 영향을 줘서
-	// // 장애물을 뛰어넘을 수 없을 경우에 생기는 버그를 방지하기 위해서 초기화합니다.
-	// VaultLandLocation = FVector(0.0f, 0.0f, 20000.0f);
-}
-
-void APRPlayerCharacter::SetVaultState()
-{
-	InitCapsuleHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-	InitCapsuleRadius = GetCapsuleComponent()->GetScaledCapsuleRadius();
-
-	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
-	GetCapsuleComponent()->SetCapsuleHalfHeight(VaultCapsuleHalfHeight);
-	GetCapsuleComponent()->SetCapsuleRadius(VaultCapsuleRadius);
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-}
-
-void APRPlayerCharacter::ResetVaultState()
-{
-	GetCapsuleComponent()->SetCapsuleHalfHeight(InitCapsuleHalfHeight);
-	GetCharacterMovement()->SetMovementMode(MOVE_Falling);
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	// DisableVaultWarp();
-	
 	bCanVaultWarp = false;
-	
-	GetCapsuleComponent()->SetCapsuleRadius(InitCapsuleRadius);
 	
 	// ExecuteVaultMotionWarp 함수의 bInZOffset 변수에 영향을 줘서
 	// 장애물을 뛰어넘을 수 없을 경우에 생기는 버그를 방지하기 위해서 초기화합니다.
 	VaultLandLocation = FVector(0.0f, 0.0f, 20000.0f);
 }
 
-void APRPlayerCharacter::ResetVault()
+void APRPlayerCharacter::SetVaultState()
+{
+	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void APRPlayerCharacter::ResetVaultState()
 {
 	GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -631,9 +636,6 @@ void APRPlayerCharacter::ExecuteVaultMotionWarp()
 																GetMesh()->GetComponentLocation().Z + VaultLandLocationZOffset);
 	if(bCanVaultWarp && bInZOffset)
 	{
-		// GetCharacterMovement()->SetMovementMode(MOVE_Flying);
-		// GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
 		if(GetMotionWarping())
 		{
 			// VaultStart
@@ -657,7 +659,7 @@ void APRPlayerCharacter::ExecuteVaultMotionWarp()
 			VaultLandMotionWarpingTarget.Rotation = GetActorRotation();
 			GetMotionWarping()->AddOrUpdateWarpTarget(VaultLandMotionWarpingTarget);
 
-			PlayAnimMontage(VaultAnimMontage);
+			PlayAnimMontage(VaultAnimMontage, 1.2f);
 			GetMesh()->GetAnimInstance()->OnMontageBlendingOut.AddDynamic(this, &APRPlayerCharacter::OnVaultAnimMontageEnded);
 		}
 	}
@@ -667,15 +669,14 @@ void APRPlayerCharacter::OnVaultAnimMontageEnded(UAnimMontage* NewVaultAnimMonta
 {
 	if(VaultAnimMontage == NewVaultAnimMontage)
 	{
-		// GetCharacterMovement()->SetMovementMode(MOVE_Falling);
-		// GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		DisableVaultWarp();
 	}
-	
-	// GetCharacterMovement()->SetMovementMode(MOVE_Falling);
-	// GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	// DisableVaultWarp();
 
 	GetMesh()->GetAnimInstance()->OnMontageBlendingOut.RemoveDynamic(this, &APRPlayerCharacter::OnVaultAnimMontageEnded);
+}
+
+void APRPlayerCharacter::OnVaultCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	ExecuteVault();
 }
 #pragma endregion 

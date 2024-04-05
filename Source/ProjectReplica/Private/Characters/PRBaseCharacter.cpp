@@ -86,7 +86,7 @@ void APRBaseCharacter::PostInitializeComponents()
 	GetObjectPoolSystem()->InitializeObjectPool();
 
 	// MovementSystem
-	GetMovementSystem()->UpdateGait(EPRGait::Gait_Run);
+	// GetMovementSystem()->UpdateGait(EPRGait::Gait_Run);
 }
 
 void APRBaseCharacter::BeginPlay()
@@ -97,6 +97,12 @@ void APRBaseCharacter::BeginPlay()
 void APRBaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	if(GetMovementSystem()->IsEqualAllowGait(EPRGait::Gait_Sprint)
+		&& GetCharacterMovement()->GetLastInputVector() == FVector::ZeroVector)
+	{
+		GetMovementSystem()->SetAllowGait(EPRGait::Gait_Run);
+	}
 }
 
 #pragma region Interface_Damageable
@@ -285,28 +291,32 @@ void APRBaseCharacter::ToggleWalk()
 		if(GetCharacterMovement()->MaxWalkSpeed != GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Walk).MovementSpeed)
 		{
 			// 걷기 상태
+			GetMovementSystem()->SetAllowGait(EPRGait::Gait_Walk);
 			GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Walk);
 		}
 		else
 		{
 			// 달리기 상태
+			GetMovementSystem()->SetAllowGait(EPRGait::Gait_Run);
 			GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Run);
 		}
 	}
 }
 
-void APRBaseCharacter::Sprint()
+void APRBaseCharacter::ToggleSprint()
 {
 	if(GetCharacterMovement() && GetMovementSystem())
 	{
 		if(GetCharacterMovement()->MaxWalkSpeed != GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Sprint).MovementSpeed)
 		{
 			// 전력질주 상태
+			GetMovementSystem()->SetAllowGait(EPRGait::Gait_Sprint);
 			GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Sprint);
 		}
 		else
 		{
 			// 달리기 상태
+			GetMovementSystem()->SetAllowGait(EPRGait::Gait_Run);
 			GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Run);
 		}
 	}

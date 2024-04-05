@@ -55,15 +55,6 @@ protected:
 
 public:
 	/**
-	 * 걸음걸이를 받는 함수입니다.
-	 *
-	 * @param NewGait 받는 걸음걸이입니다.
-	 * @return 받은 경우 true, 받지 않은 경우 false를 반환합니다.
-	 */
-	UFUNCTION(Blueprintable, Category = "PRBaseAnimInstance")
-	bool ReceiveGait(EPRGait NewGait);
-
-	/**
 	 * RootLock을 설정하는 함수입니다.
 	 * RootLock이 true일 경우 RootLock을 활성화합니다.
 	 * RootLock이 false일 경우 RootLock을 비활성화합니다.
@@ -116,9 +107,6 @@ protected:
 	/** 예상 정지 거리를 반환하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PRBaseAnimInstance", meta = (BlueprintThreadSafe))
 	float GetPredictedStopDistance() const;
-
-	/** Sprint LocomotionState를 초기화하는 함수입니다. */
-	// void InitializeSprintState();
 	
 protected:
 	/** 이전 프레임과 현재 프레임 사이의 시간 간격입니다. */
@@ -129,9 +117,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	EPRLocomotionState LocomotionState;
 
-	/** 제거 예정 */
+	/** 현재 걸음걸이입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
-	EPRGait Gait;
+	EPRGait CurrentGait;
 
 	/** 속도입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRBaseAnimInstance")

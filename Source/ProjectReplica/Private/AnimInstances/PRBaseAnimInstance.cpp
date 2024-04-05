@@ -16,14 +16,14 @@ UPRBaseAnimInstance::UPRBaseAnimInstance()
 
 	DeltaTime = 0.0f;
 	LocomotionState = EPRLocomotionState::LocomotionState_Idle;
-	Gait = EPRGait::Gait_Idle;
+	CurrentGait = EPRGait::Gait_Idle;
 	Velocity = FVector::ZeroVector;
 	GroundSpeed = 0.0f;
 	WalkSpeed = 0.0f;
 	RunSpeed = 0.0f;
 	SprintSpeed = 0.0f;
 	Acceleration = FVector::ZeroVector;
-	MinAccelerationToRunGait = 400.0f;
+	MinAccelerationToRunGait = 0.0f;
 	bShouldMove = false;
 	Direction = 0.0f;
 	bIsFalling = false;
@@ -57,6 +57,7 @@ void UPRBaseAnimInstance::NativeInitializeAnimation()
 			WalkSpeed = NewPROwner->GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Walk).MovementSpeed;
 			RunSpeed = NewPROwner->GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Run).MovementSpeed;
 			SprintSpeed = NewPROwner->GetMovementSystem()->GetGaitSettings(EPRGait::Gait_Sprint).MovementSpeed;
+			MinAccelerationToRunGait = NewPROwner->GetMovementSystem()->GetMinAccelerationToRunGait();
 		}
 	}
 }
@@ -100,13 +101,6 @@ void UPRBaseAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 	}
 }
 
-bool UPRBaseAnimInstance::ReceiveGait(EPRGait NewGait)
-{
-	Gait = NewGait;
-	
-	return true;
-}
-
 void UPRBaseAnimInstance::SetRootLock(bool bRootLock)
 {
 	if(bRootLock)
@@ -133,6 +127,7 @@ void UPRBaseAnimInstance::UpdateProperties(float DeltaSeconds)
 {
 	if(GetCharacterMovement())
 	{
+		CurrentGait = GetPROwner()->GetMovementSystem()->GetCurrentGait();
 		Velocity = GetCharacterMovement()->Velocity;
 		GroundSpeed = Velocity.Size2D();
 		Acceleration = GetCharacterMovement()->GetCurrentAcceleration();
@@ -182,29 +177,47 @@ void UPRBaseAnimInstance::UpdateLocomotionState()
 			// {
 			// 	LocomotionState = EPRLocomotionState::LocomotionState_Idle;
 			// }
+			
 			// 속도와 가속도에 기반하여 Locomotion 상태를 결정합니다.
-			if(GroundSpeed > 0.0f			// or 1.0f
-				&& Acceleration.Size() > MinAccelerationToRunGait
-				&& GetCharacterMovement()->MaxWalkSpeed > GaitSettings.Find(EPRGait::Gait_Walk)->MovementSpeed
-				&& GetCharacterMovement()->MaxWalkSpeed < GaitSettings.Find(EPRGait::Gait_Sprint)->MovementSpeed)
+			// if(GroundSpeed > 0.0f			// or 1.0f
+			// 	&& Acceleration.Size() > MinAccelerationToRunGait
+			// 	&& GetCharacterMovement()->MaxWalkSpeed > GaitSettings.Find(EPRGait::Gait_Walk)->MovementSpeed
+			// 	&& GetCharacterMovement()->MaxWalkSpeed < GaitSettings.Find(EPRGait::Gait_Sprint)->MovementSpeed)
+			// {
+			// 	LocomotionState = EPRLocomotionState::LocomotionState_Run;
+			// }
+			// else if(GroundSpeed > 0.0f			// or 1.0f
+			// 	&& Acceleration.Size() > MinAccelerationToRunGait
+			// 	&& GetCharacterMovement()->MaxWalkSpeed > GaitSettings.Find(EPRGait::Gait_Run)->MovementSpeed)
+			// {
+			// 	LocomotionState = EPRLocomotionState::LocomotionState_Sprint;
+			// }
+			// else if(GroundSpeed > 0.0f									// or 1.0f
+			// 	&& Acceleration.Size() > 0.0f							// or 0.01f
+			// 	&& GetCharacterMovement()->MaxWalkSpeed > 0.0f)			// or 1.0f
+			// {
+			// 	LocomotionState = EPRLocomotionState::LocomotionState_Walk;
+			// }
+			// else
+			// {
+			// 	LocomotionState = EPRLocomotionState::LocomotionState_Idle;
+			// }
+
+			switch(CurrentGait)
 			{
-				LocomotionState = EPRLocomotionState::LocomotionState_Run;
-			}
-			else if(GroundSpeed > 0.0f			// or 1.0f
-				&& Acceleration.Size() > MinAccelerationToRunGait
-				&& GetCharacterMovement()->MaxWalkSpeed > GaitSettings.Find(EPRGait::Gait_Run)->MovementSpeed)
-			{
-				LocomotionState = EPRLocomotionState::LocomotionState_Sprint;
-			}
-			else if(GroundSpeed > 0.0f									// or 1.0f
-				&& Acceleration.Size() > 0.0f							// or 0.01f
-				&& GetCharacterMovement()->MaxWalkSpeed > 0.0f)			// or 1.0f
-			{
+			case EPRGait::Gait_Walk:
 				LocomotionState = EPRLocomotionState::LocomotionState_Walk;
-			}
-			else
-			{
+				break;
+			case EPRGait::Gait_Run:
+				LocomotionState = EPRLocomotionState::LocomotionState_Run;
+				break;
+			case EPRGait::Gait_Sprint:
+				LocomotionState = EPRLocomotionState::LocomotionState_Sprint;
+				break;
+			case EPRGait::Gait_Idle:
+			default:
 				LocomotionState = EPRLocomotionState::LocomotionState_Idle;
+				break;
 			}
 		}
 	}
@@ -328,15 +341,6 @@ float UPRBaseAnimInstance::GetPredictedStopDistance() const
 	
 	return NewDistanceToMatch;
 }
-
-// void UPRBaseAnimInstance::InitializeSprintState()
-// {
-// 	// 전력 질주 상태에서 벗어나면 달리기 상태로 초기화합니다.
-// 	if(IsValid(GetPROwner()) && GetPROwner()->GetMovementSystem())
-// 	{
-// 		GetPROwner()->GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Run);
-// 	}
-// }
 
 APRBaseCharacter* UPRBaseAnimInstance::GetPROwner() const
 {

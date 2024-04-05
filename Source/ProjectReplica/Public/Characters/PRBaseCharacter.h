@@ -201,7 +201,7 @@ public:
 
 	/** 캐릭터가 전력질주하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "Locomotion")
-	virtual void Sprint();
+	virtual void ToggleSprint();
 #pragma endregion
 
 #pragma region CharacterInfo

@@ -3,44 +3,78 @@
 
 #include "Components/PRMovementSystemComponent.h"
 #include "Characters/PRBaseCharacter.h"
-#include "AnimInstances/PRBaseAnimInstance.h"
+// #include "AnimInstances/PRBaseAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 UPRMovementSystemComponent::UPRMovementSystemComponent()
 {
+	PrimaryComponentTick.bCanEverTick = true;
+	
 	// Gait
+	AllowGait = EPRGait::Gait_Run;
 	CurrentGait = EPRGait::Gait_Idle;
 	LastGait = EPRGait::Gait_Idle;
 	InitializeGaitSettings();
+	Velocity = FVector::ZeroVector;
+	GroundSpeed = 0.0f;
+	Acceleration = FVector::ZeroVector;
+	MinAccelerationToRunGait = 400.0f;
 
 	// Aerial
 	bActivateAerial = false;
 	DefaultGravityScale = 0.0f;
 }
 
-UPRBaseAnimInstance* UPRMovementSystemComponent::GetPRBaseAnimInstance() const
+void UPRMovementSystemComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	UPRBaseAnimInstance* PRBaseAnimInstance = nullptr;
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if(GetPROwner())
-	{
-		PRBaseAnimInstance = Cast<UPRBaseAnimInstance>(GetPROwner()->GetMesh()->GetAnimInstance());
-	}
-
-	return PRBaseAnimInstance;
+	UpdateGait();
 }
 
+// UPRBaseAnimInstance* UPRMovementSystemComponent::GetPRBaseAnimInstance() const
+// {
+// 	UPRBaseAnimInstance* PRBaseAnimInstance = nullptr;
+//
+// 	if(GetPROwner())
+// 	{
+// 		PRBaseAnimInstance = Cast<UPRBaseAnimInstance>(GetPROwner()->GetMesh()->GetAnimInstance());
+// 	}
+//
+// 	return PRBaseAnimInstance;
+// }
+
 #pragma region Gait
-void UPRMovementSystemComponent::UpdateGait(EPRGait DesiredGait)
+void UPRMovementSystemComponent::UpdateGait()
 {
 	if(GetPROwner())
 	{
-		LastGait = CurrentGait;
-		CurrentGait = DesiredGait;
-
-		if(GetPRBaseAnimInstance() && GetPRBaseAnimInstance()->ReceiveGait(DesiredGait))
+		Velocity = GetPROwner()->GetCharacterMovement()->Velocity;
+		GroundSpeed = Velocity.Size2D();
+		Acceleration = GetPROwner()->GetCharacterMovement()->GetCurrentAcceleration();
+		
+		if(GroundSpeed > 0.0f			// or 1.0f
+			&& Acceleration.Size() > MinAccelerationToRunGait
+			&& GetPROwner()->GetCharacterMovement()->MaxWalkSpeed > GaitSettings.Find(EPRGait::Gait_Walk)->MovementSpeed
+			&& GetPROwner()->GetCharacterMovement()->MaxWalkSpeed < GaitSettings.Find(EPRGait::Gait_Sprint)->MovementSpeed)
 		{
-			ApplyGaitSettings(DesiredGait);
+			SetCurrentGait(EPRGait::Gait_Run);
+		}
+		else if(GroundSpeed > 0.0f			// or 1.0f
+			&& Acceleration.Size() > MinAccelerationToRunGait
+			&& GetPROwner()->GetCharacterMovement()->MaxWalkSpeed > GaitSettings.Find(EPRGait::Gait_Run)->MovementSpeed)
+		{
+			SetCurrentGait(EPRGait::Gait_Sprint);
+		}
+		else if(GroundSpeed > 0.0f												// or 1.0f
+			&& Acceleration.Size() > 0.0f										// or 0.01f
+			&& GetPROwner()->GetCharacterMovement()->MaxWalkSpeed > 0.0f)		// or 1.0f
+		{
+			SetCurrentGait(EPRGait::Gait_Walk);
+		}
+		else
+		{
+			SetCurrentGait(EPRGait::Gait_Idle);
 		}
 	}
 }
@@ -93,7 +127,7 @@ bool UPRMovementSystemComponent::ApplyGaitSettings(EPRGait ApplyGait)
 	{
 		return false;
 	}
-	
+
 	const FPRGaitSettings NewApplyGaitSettings = GetGaitSettings(ApplyGait);
 	UCharacterMovementComponent* CharacterMovement = GetPROwner()->GetCharacterMovement();
 	CharacterMovement->MaxWalkSpeed = NewApplyGaitSettings.MovementSpeed;
@@ -106,9 +140,44 @@ bool UPRMovementSystemComponent::ApplyGaitSettings(EPRGait ApplyGait)
 	return true;
 }
 
+bool UPRMovementSystemComponent::IsEqualAllowGait(EPRGait NewGait) const
+{
+	return AllowGait == NewGait;
+}
+
 bool UPRMovementSystemComponent::IsEqualCurrentGait(EPRGait NewGait) const
 {
 	return CurrentGait == NewGait;
+}
+
+void UPRMovementSystemComponent::SetCurrentGait(EPRGait NewGait)
+{
+	if(CurrentGait != NewGait)
+	{
+		LastGait = CurrentGait;
+		CurrentGait = NewGait;
+	}
+}
+
+EPRGait UPRMovementSystemComponent::GetAllowGait() const
+{
+	return AllowGait;
+}
+
+void UPRMovementSystemComponent::SetAllowGait(EPRGait NewGait)
+{
+	AllowGait = NewGait;
+	ApplyGaitSettings(NewGait);
+}
+
+EPRGait UPRMovementSystemComponent::GetCurrentGait() const
+{
+	return CurrentGait;
+}
+
+float UPRMovementSystemComponent::GetMinAccelerationToRunGait() const
+{
+	return MinAccelerationToRunGait;
 }
 #pragma endregion 
 
