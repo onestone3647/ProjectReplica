@@ -84,27 +84,30 @@ void UPRMovementSystemComponent::InitializeGaitSettings()
 	GaitSettings.Empty();
 	
 	FPRGaitSettings WalkSettings = FPRGaitSettings(250.0f
-													, 450.0f
+													, 5000.0f
 													, 1.0f
 													, 0.0f
 													, true
-													, 1000.0f);
+													, 1000.0f
+													, 250.0f);
 	GaitSettings.Emplace(EPRGait::Gait_Walk, WalkSettings);
 	
 	FPRGaitSettings RunSettings = FPRGaitSettings(550.0f
-												, 800.0f
+												, 5000.0f
 												, 1.0f
 												, 0.0f
 												, true
-												, 800.0f);
+												, 800.0f
+												, 250.0f);
 	GaitSettings.Emplace(EPRGait::Gait_Run, RunSettings);
 
 	FPRGaitSettings SprintSettings = FPRGaitSettings(670.0f
-												, 800.0f
+												, 5000.0f
 												, 1.0f
 												, 0.0f
 												, true
-												, 450.0f);
+												, 450.0f
+												, 250.0f);
 	GaitSettings.Emplace(EPRGait::Gait_Sprint, SprintSettings);
 }
 
@@ -136,6 +139,7 @@ bool UPRMovementSystemComponent::ApplyGaitSettings(EPRGait ApplyGait)
 	CharacterMovement->BrakingFriction = NewApplyGaitSettings.BrakingFriction;
 	CharacterMovement->bUseSeparateBrakingFriction = NewApplyGaitSettings.bUseSeparateBrakingFriction;
 	CharacterMovement->BrakingDecelerationWalking = NewApplyGaitSettings.BrakingDeceleration;
+	CharacterMovement->MinAnalogWalkSpeed = NewApplyGaitSettings.MinAnalogWalkSpeed;
 	
 	return true;
 }

@@ -32,16 +32,19 @@ public:
 		, BrakingFriction(0.0f)
 		, bUseSeparateBrakingFriction(true)
 		, BrakingDeceleration(0.0f)
+		, MinAnalogWalkSpeed(0.0f)
 	{}
 
 	FPRGaitSettings(float NewMovementSpeed, float NewMaxAcceleration, float NewBrakingFrictionFactor,
-					float NewBrakingFriction, bool bNewUseSeparateBrakingFriction, float NewBrakingDeceleration)
+					float NewBrakingFriction, bool bNewUseSeparateBrakingFriction, float NewBrakingDeceleration,
+					float NewMinAnalogWalkSpeed)
 		: MovementSpeed(NewMovementSpeed)
 		, MaxAcceleration(NewMaxAcceleration)
 		, BrakingFrictionFactor(NewBrakingFrictionFactor)
 		, BrakingFriction(NewBrakingFriction)
 		, bUseSeparateBrakingFriction(bNewUseSeparateBrakingFriction)
 		, BrakingDeceleration(NewBrakingDeceleration)
+		, MinAnalogWalkSpeed(NewMinAnalogWalkSpeed)
 	{}
 
 public:
@@ -68,6 +71,10 @@ public:
 	/** 감속 걷기 제동입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GaitSettings")
 	float BrakingDeceleration;
+
+	/** 최소 아날로그 걷기 속도입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GaitSettings")
+	float MinAnalogWalkSpeed;	
 };
 
 /**

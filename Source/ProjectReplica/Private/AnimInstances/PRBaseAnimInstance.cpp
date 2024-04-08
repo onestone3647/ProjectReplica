@@ -160,49 +160,7 @@ void UPRBaseAnimInstance::UpdateLocomotionState()
 		}
 		else
 		{
-			// // 속도와 가속도에 기반하여 Locomotion 상태를 결정합니다.
-			// if(GroundSpeed > 0.0f			// or 1.0f
-			// 	&& Acceleration.Size() > MinAccelerationToRunGait
-			// 	&& GetCharacterMovement()->MaxWalkSpeed > GaitSettings.Find(EPRGait::Gait_Walk)->MovementSpeed + 5.0f)
-			// {
-			// 	LocomotionState = EPRLocomotionState::LocomotionState_Run;
-			// }
-			// else if(GroundSpeed > 0.0f									// or 1.0f
-			// 	&& Acceleration.Size() > 0.0f							// or 0.01f
-			// 	&& GetCharacterMovement()->MaxWalkSpeed > 0.0f)			// or 1.0f
-			// {
-			// 	LocomotionState = EPRLocomotionState::LocomotionState_Walk;
-			// }
-			// else
-			// {
-			// 	LocomotionState = EPRLocomotionState::LocomotionState_Idle;
-			// }
-			
-			// 속도와 가속도에 기반하여 Locomotion 상태를 결정합니다.
-			// if(GroundSpeed > 0.0f			// or 1.0f
-			// 	&& Acceleration.Size() > MinAccelerationToRunGait
-			// 	&& GetCharacterMovement()->MaxWalkSpeed > GaitSettings.Find(EPRGait::Gait_Walk)->MovementSpeed
-			// 	&& GetCharacterMovement()->MaxWalkSpeed < GaitSettings.Find(EPRGait::Gait_Sprint)->MovementSpeed)
-			// {
-			// 	LocomotionState = EPRLocomotionState::LocomotionState_Run;
-			// }
-			// else if(GroundSpeed > 0.0f			// or 1.0f
-			// 	&& Acceleration.Size() > MinAccelerationToRunGait
-			// 	&& GetCharacterMovement()->MaxWalkSpeed > GaitSettings.Find(EPRGait::Gait_Run)->MovementSpeed)
-			// {
-			// 	LocomotionState = EPRLocomotionState::LocomotionState_Sprint;
-			// }
-			// else if(GroundSpeed > 0.0f									// or 1.0f
-			// 	&& Acceleration.Size() > 0.0f							// or 0.01f
-			// 	&& GetCharacterMovement()->MaxWalkSpeed > 0.0f)			// or 1.0f
-			// {
-			// 	LocomotionState = EPRLocomotionState::LocomotionState_Walk;
-			// }
-			// else
-			// {
-			// 	LocomotionState = EPRLocomotionState::LocomotionState_Idle;
-			// }
-
+			// 캐릭터의 현재 걷는 상태에 기반하여 Locomotion 상태를 결정합니다.
 			switch(CurrentGait)
 			{
 			case EPRGait::Gait_Walk:

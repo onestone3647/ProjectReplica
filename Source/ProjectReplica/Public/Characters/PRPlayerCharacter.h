@@ -32,6 +32,11 @@ public:
 	virtual void Landed(const FHitResult& Hit) override;
 
 #pragma region Input
+public:
+	/** 게임패드를 사용한 입력인지 판별하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	bool IsUsingGamepad() const;
+	
 protected:
 	/** 캐릭터의 이동 함수입니다. */
 	void Move(const FInputActionValue& Value);

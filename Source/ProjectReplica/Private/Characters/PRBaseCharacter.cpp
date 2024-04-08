@@ -27,8 +27,8 @@ APRBaseCharacter::APRBaseCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 120.0f;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
-	// GetCharacterMovement()->GravityScale = 2.0f;
-	// GetCharacterMovement()->JumpZVelocity = 800.0f;
+	GetCharacterMovement()->GravityScale = 1.75f;
+	GetCharacterMovement()->JumpZVelocity = 700.0f;
 	
 	// LockOn일 때
 	// GetCharacterMovement()->bUseControllerDesiredRotation = true;

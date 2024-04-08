@@ -14,6 +14,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/PRMovementSystemComponent.h"
 #include "MotionWarpingComponent.h"
+#include "Controllers/PRPlayerController.h"
+#include "Kismet/KismetInputLibrary.h"
 
 APRPlayerCharacter::APRPlayerCharacter()
 {
@@ -157,6 +159,17 @@ void APRPlayerCharacter::Landed(const FHitResult& Hit)
 }
 
 #pragma region Input
+bool APRPlayerCharacter::IsUsingGamepad() const
+{
+	APRPlayerController* PRPlayerController = Cast<APRPlayerController>(GetController());
+	if(IsValid(PRPlayerController))
+	{
+		return PRPlayerController->IsUsingGamepad();
+	}
+
+	return false;
+}
+
 void APRPlayerCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -387,6 +400,9 @@ void APRPlayerCharacter::AddPlayerMovementInput(FVector2D MovementVector)
 		GetMovementSystem()->SetAllowGait(EPRGait::Gait_Run);
 		GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Run);
 	}
+
+	// 아날로그 스틱의 1/3 기울기보다 작을 경우 걷기 상태, 클 경우 달리기 상태로 설정합니다.
+	
 
 	// 전력 질주 상태일 때 Vault를 실행합니다.
 	if(GetMovementSystem()->IsEqualAllowGait(EPRGait::Gait_Sprint))
