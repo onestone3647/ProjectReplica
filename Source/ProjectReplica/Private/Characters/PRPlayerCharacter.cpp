@@ -398,10 +398,23 @@ void APRPlayerCharacter::AddPlayerMovementInput(FVector2D MovementVector)
 		&& GetMovementSystem()->IsEqualAllowGait(EPRGait::Gait_Sprint))
 	{
 		GetMovementSystem()->SetAllowGait(EPRGait::Gait_Run);
-		GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Run);
+		// GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Run);
 	}
 
 	// 아날로그 스틱의 1/3 기울기보다 작을 경우 걷기 상태, 클 경우 달리기 상태로 설정합니다.
+	if(IsUsingGamepad())
+	{
+		if(FMath::Abs(MovementVector.X) >= 1.0f / 3.0f || FMath::Abs(MovementVector.Y) >= 1.0f/ 3.0f)
+		{
+			// 달리기 상태
+			GetMovementSystem()->SetAllowGait(EPRGait::Gait_Run);
+		}
+		else
+		{
+			// 걷기 상태
+			GetMovementSystem()->SetAllowGait(EPRGait::Gait_Walk);
+		}
+	}
 	
 
 	// 전력 질주 상태일 때 Vault를 실행합니다.

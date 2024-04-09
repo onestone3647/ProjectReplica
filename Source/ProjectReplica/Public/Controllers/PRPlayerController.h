@@ -21,7 +21,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	/** 게임패드를 사용한 입력인지 판별하는 함수입니다. */
+	/** 플레이어 컨트롤러가 게임패드를 사용 중인지 확인하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "InputDevice")
 	bool IsUsingGamepad() const;
 };

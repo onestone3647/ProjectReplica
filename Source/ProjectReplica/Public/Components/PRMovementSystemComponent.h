@@ -136,6 +136,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "MovementSystem")
 	void SetCurrentGait(EPRGait NewGait);
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Input")
+	EPRGait TestGait;
+
+	void SetTestGait(EPRGait NewGait) { TestGait = NewGait; }
+	
 protected:
 	/** 허용한 걸을걸이입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "MovementSystem")
