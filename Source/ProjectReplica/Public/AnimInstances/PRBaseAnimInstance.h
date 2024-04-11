@@ -117,6 +117,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	EPRLocomotionState LocomotionState;
 
+	/** 허용한 걸을걸이입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "MovementSystem")
+	EPRGait AllowGait;	
+
 	/** 현재 걸음걸이입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRBaseAnimInstance")
 	EPRGait CurrentGait;

@@ -16,6 +16,7 @@ UPRBaseAnimInstance::UPRBaseAnimInstance()
 
 	DeltaTime = 0.0f;
 	LocomotionState = EPRLocomotionState::LocomotionState_Idle;
+	AllowGait = EPRGait::Gait_Run;
 	CurrentGait = EPRGait::Gait_Idle;
 	Velocity = FVector::ZeroVector;
 	GroundSpeed = 0.0f;
@@ -127,6 +128,7 @@ void UPRBaseAnimInstance::UpdateProperties(float DeltaSeconds)
 {
 	if(GetCharacterMovement())
 	{
+		AllowGait = GetPROwner()->GetMovementSystem()->GetAllowGait();
 		CurrentGait = GetPROwner()->GetMovementSystem()->GetCurrentGait();
 		Velocity = GetCharacterMovement()->Velocity;
 		GroundSpeed = Velocity.Size2D();

@@ -401,8 +401,9 @@ void APRPlayerCharacter::AddPlayerMovementInput(FVector2D MovementVector)
 		// GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Run);
 	}
 
+	// 게임패드를 사용하고 전력질주 상태가 아닐 떄
 	// 아날로그 스틱의 1/3 기울기보다 작을 경우 걷기 상태, 클 경우 달리기 상태로 설정합니다.
-	if(IsUsingGamepad())
+	if(IsUsingGamepad() && !GetMovementSystem()->IsEqualAllowGait(EPRGait::Gait_Sprint))
 	{
 		if(FMath::Abs(MovementVector.X) >= 1.0f / 3.0f || FMath::Abs(MovementVector.Y) >= 1.0f/ 3.0f)
 		{
@@ -416,7 +417,6 @@ void APRPlayerCharacter::AddPlayerMovementInput(FVector2D MovementVector)
 		}
 	}
 	
-
 	// 전력 질주 상태일 때 Vault를 실행합니다.
 	if(GetMovementSystem()->IsEqualAllowGait(EPRGait::Gait_Sprint))
 	{
@@ -490,6 +490,7 @@ void APRPlayerCharacter::DoubleJump()
 	PlayAnimMontage(DoubleJumpAnimMontage);
 
 	// 더블점프 이펙트 생성
+	
 
 	// 처음 더블점프를 하게 되면 전방속도를 제대로 받지 못함
 	// 두번째부터는 정상적으로 속도를 받음

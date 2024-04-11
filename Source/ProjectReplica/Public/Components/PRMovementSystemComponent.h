@@ -90,19 +90,10 @@ public:
 
 protected:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-public:
-	// /** PROwner의 PRBaseAnimInstance를 반환하는 함수입니다. */
-	// UPRBaseAnimInstance* GetPRBaseAnimInstance() const;
 	
 #pragma region Gait
 public:
-	// /**
-	//  * 걸음걸이를 최신화하는 함수입니다.
-	//  *
-	//  * @param DesiredGait 최신화할 걸음걸이입니다.
-	//  */
-	// void UpdateGait(EPRGait DesiredGait);
+	/** 걸음걸이를 최신화하는 함수입니다. */
 	void UpdateGait();
 
 	/** GaitSettings를 초기화하는 함수입니다. */

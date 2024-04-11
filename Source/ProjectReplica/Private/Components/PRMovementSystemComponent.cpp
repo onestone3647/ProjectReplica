@@ -3,7 +3,6 @@
 
 #include "Components/PRMovementSystemComponent.h"
 #include "Characters/PRBaseCharacter.h"
-// #include "AnimInstances/PRBaseAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 UPRMovementSystemComponent::UPRMovementSystemComponent()
@@ -31,18 +30,6 @@ void UPRMovementSystemComponent::TickComponent(float DeltaTime, ELevelTick TickT
 
 	UpdateGait();
 }
-
-// UPRBaseAnimInstance* UPRMovementSystemComponent::GetPRBaseAnimInstance() const
-// {
-// 	UPRBaseAnimInstance* PRBaseAnimInstance = nullptr;
-//
-// 	if(GetPROwner())
-// 	{
-// 		PRBaseAnimInstance = Cast<UPRBaseAnimInstance>(GetPROwner()->GetMesh()->GetAnimInstance());
-// 	}
-//
-// 	return PRBaseAnimInstance;
-// }
 
 #pragma region Gait
 void UPRMovementSystemComponent::UpdateGait()
@@ -97,7 +84,7 @@ void UPRMovementSystemComponent::InitializeGaitSettings()
 												, 1.0f
 												, 0.0f
 												, true
-												, 800.0f
+												, 700.0f
 												, 250.0f);
 	GaitSettings.Emplace(EPRGait::Gait_Run, RunSettings);
 
@@ -106,7 +93,7 @@ void UPRMovementSystemComponent::InitializeGaitSettings()
 												, 1.0f
 												, 0.0f
 												, true
-												, 450.0f
+												, 700.0f
 												, 250.0f);
 	GaitSettings.Emplace(EPRGait::Gait_Sprint, SprintSettings);
 }
