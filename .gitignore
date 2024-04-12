@@ -92,7 +92,12 @@ Plugins/*/Intermediate/*
 
 # 프로젝트 완성 LFS로 관리하여 올릴 파일들
 /Content/Maps
-/Content/Characters/Mannequin_UE4
+/Content/Characters/Mannequin_UE4/Animations
+/Content/Characters/Mannequin_UE4/Materials
+/Content/Characters/Mannequin_UE4/Meshes
+/Content/Characters/Mannequin_UE4/Rigs
+/Content/Characters/Mannequin_UE4/Textures
+/Content/Characters/Mannequin_UE4/MirrorDataTable_Mannequin_UE4.uasset
 /Content/Characters/Mannequins
 /Content/Characters/Player
 /Content/Characters/Sanhua

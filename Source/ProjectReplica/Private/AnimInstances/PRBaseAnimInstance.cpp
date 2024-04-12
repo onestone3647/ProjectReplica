@@ -80,9 +80,9 @@ void UPRBaseAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	UpdateLocomotionState();
 	
 	TrackIdleState();
+	TrackWalkState();
 	TrackRunState();
 	TrackSprintState();
-	TrackWalkState();
 }
 
 void UPRBaseAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)

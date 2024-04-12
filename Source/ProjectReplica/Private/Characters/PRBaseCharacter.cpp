@@ -25,6 +25,10 @@ APRBaseCharacter::APRBaseCharacter()
 	// CharacterMovement
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->MaxAcceleration = 5000.0f;
+	GetCharacterMovement()->bUseSeparateBrakingFriction = true;
+	GetCharacterMovement()->MaxWalkSpeed = 550.0f;
+	GetCharacterMovement()->BrakingDecelerationWalking = 700.0f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 120.0f;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
 	GetCharacterMovement()->GravityScale = 1.75f;
