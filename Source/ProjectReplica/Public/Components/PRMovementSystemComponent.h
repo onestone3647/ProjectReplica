@@ -120,6 +120,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "MovementSystem")
 	bool IsEqualCurrentGait(EPRGait NewGait) const;
 
+	/** 인자에 해당하는 걸음걸이가 마지막 걸음걸이와 같은지 판별하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "MovementSystem")
+	bool IsEqualLastGait(EPRGait NewGait) const;
+
 	/**
 	 * 입력받은 인자로 CurrentGait를 설정하는 함수입니다.
 	 * 기존의 CurrentGait는 LastGait로 설정합니다.

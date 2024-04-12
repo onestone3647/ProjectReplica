@@ -25,10 +25,10 @@ APRBaseCharacter::APRBaseCharacter()
 	// CharacterMovement
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->MaxAcceleration = 5000.0f;
+	GetCharacterMovement()->MaxAcceleration = 2048.0f;
 	GetCharacterMovement()->bUseSeparateBrakingFriction = true;
 	GetCharacterMovement()->MaxWalkSpeed = 550.0f;
-	GetCharacterMovement()->BrakingDecelerationWalking = 700.0f;
+	GetCharacterMovement()->BrakingDecelerationWalking = 1000.0f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 120.0f;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
 	GetCharacterMovement()->GravityScale = 1.75f;
@@ -90,7 +90,7 @@ void APRBaseCharacter::PostInitializeComponents()
 	GetObjectPoolSystem()->InitializeObjectPool();
 
 	// MovementSystem
-	// GetMovementSystem()->UpdateGait(EPRGait::Gait_Run);
+	GetMovementSystem()->SetAllowGait(EPRGait::Gait_Run);
 }
 
 void APRBaseCharacter::BeginPlay()
@@ -101,12 +101,6 @@ void APRBaseCharacter::BeginPlay()
 void APRBaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	if(GetMovementSystem()->IsEqualAllowGait(EPRGait::Gait_Sprint)
-		&& GetCharacterMovement()->GetLastInputVector() == FVector::ZeroVector)
-	{
-		GetMovementSystem()->SetAllowGait(EPRGait::Gait_Run);
-	}
 }
 
 #pragma region Interface_Damageable

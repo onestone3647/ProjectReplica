@@ -29,6 +29,17 @@ void UPRMovementSystemComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	UpdateGait();
+
+	if(GetPROwner())
+	{
+		// 전력질주 후 정지했을 경우 달리기 상태로 설정합니다.
+		if(GetPROwner()->GetCharacterMovement()->GetLastUpdateVelocity() == FVector::ZeroVector
+			&& IsEqualAllowGait(EPRGait::Gait_Sprint)
+			&& IsEqualLastGait(EPRGait::Gait_Sprint))
+		{
+			SetAllowGait(EPRGait::Gait_Run);
+		}
+	}
 }
 
 #pragma region Gait
@@ -71,7 +82,7 @@ void UPRMovementSystemComponent::InitializeGaitSettings()
 	GaitSettings.Empty();
 	
 	FPRGaitSettings WalkSettings = FPRGaitSettings(250.0f
-													, 5000.0f
+													, 2048.0f
 													, 1.0f
 													, 0.0f
 													, true
@@ -80,16 +91,16 @@ void UPRMovementSystemComponent::InitializeGaitSettings()
 	GaitSettings.Emplace(EPRGait::Gait_Walk, WalkSettings);
 	
 	FPRGaitSettings RunSettings = FPRGaitSettings(550.0f
-												, 5000.0f
+												, 2048.0f
 												, 1.0f
 												, 0.0f
 												, true
-												, 700.0f
+												, 1000.0f
 												, 250.0f);
 	GaitSettings.Emplace(EPRGait::Gait_Run, RunSettings);
 
 	FPRGaitSettings SprintSettings = FPRGaitSettings(670.0f
-												, 5000.0f
+												, 2048.0f
 												, 1.0f
 												, 0.0f
 												, true
@@ -141,6 +152,11 @@ bool UPRMovementSystemComponent::IsEqualCurrentGait(EPRGait NewGait) const
 	return CurrentGait == NewGait;
 }
 
+bool UPRMovementSystemComponent::IsEqualLastGait(EPRGait NewGait) const
+{
+	return LastGait == NewGait;
+}
+
 void UPRMovementSystemComponent::SetCurrentGait(EPRGait NewGait)
 {
 	if(CurrentGait != NewGait)
@@ -157,6 +173,15 @@ EPRGait UPRMovementSystemComponent::GetAllowGait() const
 
 void UPRMovementSystemComponent::SetAllowGait(EPRGait NewGait)
 {
+	if(NewGait == EPRGait::Gait_Sprint)
+	{
+		PR_LOG_SCREEN("sprint");
+	}
+	else if(NewGait == EPRGait::Gait_Run)
+	{
+		
+		PR_LOG_SCREEN("run");
+	}
 	AllowGait = NewGait;
 	ApplyGaitSettings(NewGait);
 }

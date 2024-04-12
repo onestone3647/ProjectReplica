@@ -72,8 +72,8 @@ APRPlayerCharacter::APRPlayerCharacter()
 	VaultStartLocation = FVector::ZeroVector;
 	VaultingLocation = FVector::ZeroVector;
 	VaultLandLocation = FVector::ZeroVector;
-	VaultableObjectTraceCount = 2;
-	VaultableObjectTraceInterval = 30.0f;
+	VaultableObjectTraceCount = 3;
+	VaultableObjectTraceInterval = -30.0f;
 	VaultableObjectDistance = 100.0f;
 	VaultableObjectTraceRadius = 10.0f;
 	// DepthTrace
@@ -392,15 +392,6 @@ void APRPlayerCharacter::AddPlayerMovementInput(FVector2D MovementVector)
 	float MoveRight = 0.0f;
 	FixDiagonalGamepadValues(MovementVector.Y, MovementVector.X, MoveForward, MoveRight);
 
-	// 전력 질주 상태에서 입력이 없을 경우 달리기 상태로 설정합니다.
-	if(GetMoveForward() == 0.0f
-		&& GetMoveRight() == 0.0f
-		&& GetMovementSystem()->IsEqualAllowGait(EPRGait::Gait_Sprint))
-	{
-		GetMovementSystem()->SetAllowGait(EPRGait::Gait_Run);
-		// GetMovementSystem()->ApplyGaitSettings(EPRGait::Gait_Run);
-	}
-
 	// 게임패드를 사용하고 전력질주 상태가 아닐 떄
 	// 아날로그 스틱의 1/3 기울기보다 작을 경우 걷기 상태, 클 경우 달리기 상태로 설정합니다.
 	if(IsUsingGamepad() && !GetMovementSystem()->IsEqualAllowGait(EPRGait::Gait_Sprint))
@@ -503,6 +494,245 @@ void APRPlayerCharacter::DoubleJump()
 #pragma endregion 
 
 #pragma region Vaulting
+void APRPlayerCharacter::Test1()
+{
+	// 뛰어넘을 오브젝트를 탐색합니다.
+	for(int Index = 0; Index < VaultableObjectTraceCount; Index++)
+	{
+		FHitResult HitResult;
+		const FVector TraceStart = GetActorLocation() + FVector(0.0f, 0.0f, Index * VaultableObjectTraceInterval);
+		const FVector TraceEnd = TraceStart + (GetActorForwardVector() * VaultableObjectDistance);
+		TArray<AActor*> ActorsToIgnore;
+		ActorsToIgnore.Add(this);
+
+		// 디버그 옵션을 설정합니다.
+		EDrawDebugTrace::Type DebugType = EDrawDebugTrace::None;
+		DebugType = EDrawDebugTrace::ForDuration;
+
+
+		// 캐릭터가 뛰어넘을 수 있는 거리 안에 오브젝트가 존재하는 Trace를 실행합니다.
+		bool bIsHit = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), TraceStart, TraceEnd, VaultableObjectTraceRadius, UEngineTypes::ConvertToTraceType(ECC_Visibility),
+																false, ActorsToIgnore, DebugType, HitResult, true);
+		if(bIsHit)
+		{
+			DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 10.0f, 12, FColor::Blue, false, 5.0f);
+			
+			// 뛰어넘을 오브젝트를 탐색했을 경우 탐색을 마칩니다.
+			break;
+		}
+	}
+}
+
+void APRPlayerCharacter::Test2()
+{
+	// 뛰어넘을 오브젝트를 탐색합니다.
+	for(int Index = 0; Index < VaultableObjectTraceCount; Index++)
+	{
+		FHitResult HitResult;
+		const FVector TraceStart = GetActorLocation() + FVector(0.0f, 0.0f, Index * VaultableObjectTraceInterval);
+		const FVector TraceEnd = TraceStart + (GetActorForwardVector() * VaultableObjectDistance);
+		TArray<AActor*> ActorsToIgnore;
+		ActorsToIgnore.Add(this);
+
+		// 디버그 옵션을 설정합니다.
+		EDrawDebugTrace::Type DebugType = EDrawDebugTrace::None;
+		DebugType = EDrawDebugTrace::ForDuration;
+
+
+		// 캐릭터가 뛰어넘을 수 있는 거리 안에 오브젝트가 존재하는 Trace를 실행합니다.
+		bool bIsHit = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), TraceStart, TraceEnd, VaultableObjectTraceRadius, UEngineTypes::ConvertToTraceType(ECC_Visibility),
+																false, ActorsToIgnore, DebugType, HitResult, true);
+		if(bIsHit)
+		{
+			Test22(HitResult.ImpactPoint);
+			
+			DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 10.0f, 12, FColor::Blue, false, 5.0f);
+			
+			// 뛰어넘을 오브젝트를 탐색했을 경우 탐색을 마칩니다.
+			break;
+		}
+	}
+}
+
+void APRPlayerCharacter::Test22(FVector TraceImpactPoint)
+{
+	// 뛰어넘을 오브젝트의 치수를 계산합니다.
+	for(int Index = 0; Index < DepthTraceCount; Index++)
+	{
+		FHitResult HitResult;
+		const FVector TraceStart = TraceImpactPoint
+									+ FVector(0.0f, 0.0f, DepthTraceUpOffset)
+									+ (GetActorForwardVector() * Index * DepthTraceInterval);
+		const FVector TraceEnd = TraceStart - FVector(0.0f, 0.0f, DepthTraceDownOffset);
+		TArray<AActor*> ActorsToIgnore;
+		ActorsToIgnore.Add(this);
+
+		// 디버그 옵션을 설정합니다.
+		EDrawDebugTrace::Type DebugType = EDrawDebugTrace::None;
+		DebugType = EDrawDebugTrace::ForDuration;
+
+
+		// 뛰어넘을 장애물과 캐릭터 사이의 거리를 측정합니다.
+		bool bIsHit = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), TraceStart, TraceEnd, VaultableObjectTraceRadius, UEngineTypes::ConvertToTraceType(ECC_Visibility),
+																false, ActorsToIgnore, DebugType, HitResult, true);
+		if(bIsHit)
+		{
+			// HitResult.bStartPenetrating: Break Hit Result 블루프린트 노드에서 Initial Overlap 변수로 나타냅니다.
+			// Trace 시작 시 충돌이 발생했는지 여부를 나타내는 변수입니다.
+			if(HitResult.bStartPenetrating)		
+			{
+				// Trace를 시작할 때 Trace 원점에서 충돌이 발생했을(Trace가 충돌로 시작됐을) 경우 Vault를 비활성화합니다.
+				DisableVaultWarp();
+				break;
+			}
+			else
+			{
+				// 점차 거리를 늘려가면서 탐색합니다.
+				// 첫 번째 탐색일 경우
+				if(Index == 0)
+				{
+					VaultStartLocation = HitResult.ImpactPoint;
+					
+					DrawDebugSphere(GetWorld(), VaultStartLocation, 15.0f, 12, FColor::White, false, 5.0f);
+				}
+
+				VaultingLocation = HitResult.ImpactPoint;
+
+				DrawDebugSphere(GetWorld(), VaultingLocation, 10.0f, 12, FColor::Yellow, false, 5.0f);
+			
+				bCanVaultWarp = true;
+			}
+		}
+		else
+		{
+			// 탐색을 마칠 경우 장애물을 넘어서 탐색한 것이므로 착지할 위치를 계산합니다.
+			Test222(HitResult.TraceStart);
+			break;
+		}
+	}
+
+	if(bVaultDebug && VaultingLocation != FVector::ZeroVector)
+	{
+		DrawDebugSphere(GetWorld(), VaultingLocation, 15.0f, 12, FColor::Purple, false, 5.0f);
+	}
+}
+
+void APRPlayerCharacter::Test222(FVector TraceEndLocation)
+{
+	FHitResult HitResult;
+	const FVector TraceStart = TraceEndLocation + (GetActorForwardVector() * VaultLandDistance);
+	const FVector TraceEnd = TraceStart - FVector(0.0f, 0.0f, VaultLandDownOffset);
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+
+	// 디버그 옵션을 설정합니다.
+	EDrawDebugTrace::Type DebugType = EDrawDebugTrace::None;
+	DebugType = EDrawDebugTrace::ForDuration;
+
+	bool bIsLandHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), TraceStart, TraceEnd, UEngineTypes::ConvertToTraceType(ECC_Visibility),
+																	true, ActorsToIgnore, DebugType, HitResult, true);
+	if(bIsLandHit)
+	{
+		VaultLandLocation = HitResult.ImpactPoint;
+		DrawDebugSphere(GetWorld(), VaultLandLocation, 10.0f, 12, FColor::Cyan, false, 5.0f);
+	}
+}
+
+void APRPlayerCharacter::Test3()
+{
+	// 뛰어넘을 오브젝트를 탐색합니다.
+	for(int Index = 0; Index < VaultableObjectTraceCount; Index++)
+	{
+		FHitResult HitResult;
+		const FVector TraceStart = GetActorLocation() + FVector(0.0f, 0.0f, Index * VaultableObjectTraceInterval);
+		const FVector TraceEnd = TraceStart + (GetActorForwardVector() * VaultableObjectDistance);
+		TArray<AActor*> ActorsToIgnore;
+		ActorsToIgnore.Add(this);
+
+		// 디버그 옵션을 설정합니다.
+		EDrawDebugTrace::Type DebugType = EDrawDebugTrace::None;
+		DebugType = EDrawDebugTrace::ForDuration;
+
+
+		// 캐릭터가 뛰어넘을 수 있는 거리 안에 오브젝트가 존재하는 Trace를 실행합니다.
+		bool bIsHit = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), TraceStart, TraceEnd, VaultableObjectTraceRadius, UEngineTypes::ConvertToTraceType(ECC_Visibility),
+																false, ActorsToIgnore, DebugType, HitResult, true);
+		if(bIsHit)
+		{
+			Test33(HitResult.ImpactPoint);
+			
+			DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 10.0f, 12, FColor::Blue, false, 5.0f);
+			
+			// 뛰어넘을 오브젝트를 탐색했을 경우 탐색을 마칩니다.
+			break;
+		}
+	}
+}
+
+void APRPlayerCharacter::Test33(FVector TraceImpactPoint)
+{
+	// 뛰어넘을 오브젝트의 치수를 계산합니다.
+	for(int Index = 0; Index < DepthTraceCount; Index++)
+	{
+		FHitResult HitResult;
+		const FVector TraceStart = TraceImpactPoint
+									+ FVector(0.0f, 0.0f, DepthTraceUpOffset)
+									+ (GetActorForwardVector() * Index * DepthTraceInterval);
+		const FVector TraceEnd = TraceStart - FVector(0.0f, 0.0f, DepthTraceDownOffset);
+		TArray<AActor*> ActorsToIgnore;
+		ActorsToIgnore.Add(this);
+
+		// 디버그 옵션을 설정합니다.
+		EDrawDebugTrace::Type DebugType = EDrawDebugTrace::None;
+		DebugType = EDrawDebugTrace::ForDuration;
+
+
+		// 뛰어넘을 장애물과 캐릭터 사이의 거리를 측정합니다.
+		bool bIsHit = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), TraceStart, TraceEnd, VaultableObjectTraceRadius, UEngineTypes::ConvertToTraceType(ECC_Visibility),
+																false, ActorsToIgnore, DebugType, HitResult, true);
+		if(bIsHit)
+		{
+			// HitResult.bStartPenetrating: Break Hit Result 블루프린트 노드에서 Initial Overlap 변수로 나타냅니다.
+			// Trace 시작 시 충돌이 발생했는지 여부를 나타내는 변수입니다.
+			if(HitResult.bStartPenetrating)		
+			{
+				// Trace를 시작할 때 Trace 원점에서 충돌이 발생했을(Trace가 충돌로 시작됐을) 경우 Vault를 비활성화합니다.
+				DisableVaultWarp();
+				break;
+			}
+			else
+			{
+				// 점차 거리를 늘려가면서 탐색합니다.
+				// 첫 번째 탐색일 경우
+				if(Index == 0)
+				{
+					VaultStartLocation = HitResult.ImpactPoint;
+					DrawDebugSphere(GetWorld(), VaultStartLocation, 15.0f, 12, FColor::White, false, 5.0f);
+				}
+
+				VaultingLocation = HitResult.ImpactPoint;
+				DrawDebugSphere(GetWorld(), VaultingLocation, 10.0f, 12, FColor::Yellow, false, 5.0f);
+
+			
+				bCanVaultWarp = true;
+			}
+		}
+		else
+		{
+			// 탐색을 마칠 경우 장애물을 넘어서 탐색한 것이므로 착지할 위치를 계산합니다.
+			Test222(HitResult.TraceStart);
+			break;
+		}
+	}
+
+	if(bVaultDebug && VaultingLocation != FVector::ZeroVector)
+	{
+		DrawDebugSphere(GetWorld(), VaultingLocation, 15.0f, 12, FColor::Purple, false, 5.0f);
+	}
+
+	ExecuteVaultMotionWarp();
+}
+
 void APRPlayerCharacter::ExecuteVault()
 {
 	// 뛰어넘을 오브젝트를 탐색합니다.
@@ -526,12 +756,12 @@ void APRPlayerCharacter::ExecuteVault()
 																false, ActorsToIgnore, DebugType, HitResult, true);
 		if(bIsHit)
 		{
-			CalculateVaultableObjectDepth(HitResult.ImpactPoint);
-			
 			if(bVaultDebug)
 			{
 				DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 10.0f, 12, FColor::Blue, false, 5.0f);
 			}
+			
+			CalculateVaultableObjectDepth(HitResult.ImpactPoint);
 			
 			// 뛰어넘을 오브젝트를 탐색했을 경우 탐색을 마칩니다.
 			break;
@@ -624,7 +854,7 @@ void APRPlayerCharacter::CalculateVaultableObjectDepth(FVector TraceImpactPoint)
 		}
 	}
 
-	if(bVaultDebug &&VaultingLocation != FVector::ZeroVector)
+	if(bVaultDebug && VaultingLocation != FVector::ZeroVector)
 	{
 		DrawDebugSphere(GetWorld(), VaultingLocation, 15.0f, 12, FColor::Purple, false, 5.0f);
 	}
