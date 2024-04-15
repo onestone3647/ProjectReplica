@@ -173,15 +173,6 @@ EPRGait UPRMovementSystemComponent::GetAllowGait() const
 
 void UPRMovementSystemComponent::SetAllowGait(EPRGait NewGait)
 {
-	if(NewGait == EPRGait::Gait_Sprint)
-	{
-		PR_LOG_SCREEN("sprint");
-	}
-	else if(NewGait == EPRGait::Gait_Run)
-	{
-		
-		PR_LOG_SCREEN("run");
-	}
 	AllowGait = NewGait;
 	ApplyGaitSettings(NewGait);
 }

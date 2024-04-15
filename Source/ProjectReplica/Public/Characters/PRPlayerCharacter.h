@@ -235,23 +235,6 @@ protected:
 	/** 점프를 한 후 더블 점프를 할 수 있는 딜레이를 적용하는 TimerHandle입니다. */
 	FTimerHandle DoubleJumpTimerHandle;
 #pragma endregion
-
-public:
-	UFUNCTION(BlueprintCallable, Category = "Vaulting")
-	void Test1();
-
-	UFUNCTION(BlueprintCallable, Category = "Vaulting")
-	void Test2();
-
-	void Test22(FVector TraceImpactPoint);
-
-	void Test222(FVector TraceEndLocation);
-
-	UFUNCTION(BlueprintCallable, Category = "Vaulting")
-	void Test3();
-
-	void Test33(FVector TraceImpactPoint);
-
 	
 #pragma region Vaulting
 public:
