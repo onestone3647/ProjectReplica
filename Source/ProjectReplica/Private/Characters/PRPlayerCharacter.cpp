@@ -50,6 +50,10 @@ APRPlayerCharacter::APRPlayerCharacter()
 	FollowCamera->SetRelativeRotation(FRotator(-20.0f, 0.0f, 0.0f));
 	
 	// DoubleJump
+	DoubleJumpNiagaraEffect = nullptr;
+	RootSocketName = FName("root");
+	LeftFootSocketName = FName("foot_l");
+	RightFootSocketName = FName("foot_r");
 	DoubleJumpAnimMontage = nullptr;
 	bCanDoubleJump = true;
 	DoubleJumpDelay = 0.2f;
@@ -484,6 +488,21 @@ void APRPlayerCharacter::DoubleJump()
 	PlayAnimMontage(DoubleJumpAnimMontage);
 
 	// 더블점프 이펙트 생성
+	if(DoubleJumpNiagaraEffect)
+	{
+		const FVector CenterLocation = GetMesh()->GetSocketLocation(FName("root"));
+		const FVector LeftFootLocation = GetMesh()->GetSocketLocation(FName("foot_l"));
+		const FVector RightFootLocation = GetMesh()->GetSocketLocation(FName("foot_r"));
+		const FVector NewSpawnEffectLocation = FVector(CenterLocation.X, CenterLocation.Y, UKismetMathLibrary::Min(LeftFootLocation.Z, RightFootLocation.Z));
+		// UNiagaraComponent* SpawnNiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DoubleJumpNiagaraEffect, NewSpawnEffectLocation);
+		// SpawnNiagaraComponent->SetVariableLinearColor("EffectColor", SignatureEffectColor);
+
+		// UPRNiagaraEffect* DoubleJumpEffect = GetEffectSystem()->SpawnNiagaraEffectAtLocation(DoubleJumpNiagaraEffect, NewSpawnEffectLocation);
+		// if(DoubleJumpEffect != nullptr)
+		// {
+		// 	DoubleJumpEffect->GetNiagaraEffect()->SetVariableLinearColor("EffectColor", SignatureEffectColor);
+		// }
+	}
 	
 
 	// 처음 더블점프를 하게 되면 전방속도를 제대로 받지 못함

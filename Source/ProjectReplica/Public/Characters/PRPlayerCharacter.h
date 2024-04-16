@@ -221,6 +221,23 @@ public:
 	void DoubleJump();
 
 protected:
+	/** 더블 점프 Niagara 이펙트입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DoubleJump")
+	TObjectPtr<UNiagaraComponent> DoubleJumpNiagaraEffect;
+
+	/** Root 본 소켓 이름입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DoubleJump")
+	FName RootSocketName;
+
+	/** 왼쪽 발 본 소켓 이름입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DoubleJump")
+	FName LeftFootSocketName;
+
+	/** 오른쪽 발 본 소켓 이름입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DoubleJump")
+	FName RightFootSocketName;
+
+	/** 더블 점프 AnimMontage입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DoubleJump")
 	TObjectPtr<UAnimMontage> DoubleJumpAnimMontage;
 	
