@@ -7,7 +7,7 @@
 #include "PRPooledObject.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPooledObjectDeactivate, APRPooledObject*, PooledObject);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDynamicPooledObjectDeactivate, APRPooledObject*, PooledObject);
+// DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDynamicPooledObjectDeactivate, APRPooledObject*, PooledObject);
 
 /**
  * 오브젝트 풀링에 사용하는 오브젝트 클래스입니다.
@@ -48,6 +48,10 @@ public:
 	virtual void Deactivate_Implementation();
 
 protected:
+	/** 입력받은 인자로 오브젝트의 수명을 설정하는 함수입니다. */
+	void SetLifespan(float NewLifespan);
+
+protected:
 	/** 오브젝트의 활성화를 나타내는 변수입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRPooledObject")
 	bool bActivate;
@@ -57,6 +61,7 @@ protected:
 	float Lifespan;
 
 	/** 오브젝트의 수명을 관리하는 TimerHandle입니다. */
+	UPROPERTY(BlueprintReadOnly, Category = "PREffect")
 	FTimerHandle LifespanTimerHandle;
 
 	/** 오브젝트의 소유자입니다. */
@@ -68,20 +73,11 @@ protected:
 	int32 PoolIndex;
 
 public:
-	/** 입력받은 인자로 Lifespan을 설정하는 함수입니다. */
-	void SetLifespan(float NewLifespan);
-	
 	/** ObjectOwner를 반환하는 함수입니다. */
 	FORCEINLINE AActor* GetObjectOwner() const { return ObjectOwner; }
 
-	/** 입력받은 인자로 ObjectOwner를 설정하는 함수입니다. */
-	void SetObjectOwner(AActor* NewObjectOwner);
-
 	/** PoolIndex를 반환하는 함수입니다. */
 	int32 GetPoolIndex() const;
-
-	/** 입력받은 인자로 PoolIndex를 설정하는 함수입니다. */
-	void SetPoolIndex(int32 NewPoolIndex);
 
 public:
 	/** 오브젝트가 비활성화될 때 실행하는 델리게이트입니다. */
