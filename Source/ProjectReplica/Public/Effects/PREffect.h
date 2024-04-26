@@ -71,7 +71,7 @@ protected:
 	virtual void InitializeEffect(AActor* NewEffectOwner = nullptr, int32 NewPoolIndex= -1, float NewLifespan = 0.0f);
 	
 	/** 입력받은 인자로 이펙트의 수명을 설정하는 함수입니다. */
-	void SetLifespan(float NewLifespan);
+	void SetEffectLifespan(float NewEffectLifespan);
 
 protected:
 	/** 이펙트의 활성화를 나타내는 변수입니다. */
@@ -79,12 +79,12 @@ protected:
 	bool bActivate;
 	
 	/** 이펙트의 수명입니다. 수명이 다할 경우 이펙트를 비활성화합니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffect")
-	float Lifespan;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PREffect")
+	float EffectLifespan;
 
 	/** 이펙트의 수명을 관리하는 TimerHandle입니다. */
 	UPROPERTY(BlueprintReadOnly, Category = "PREffect")
-	FTimerHandle LifespanTimerHandle;
+	FTimerHandle EffectLifespanTimerHandle;
 
 	/** 이펙트의 소유자입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffect")
@@ -95,8 +95,8 @@ protected:
 	int32 PoolIndex;
 
 public:
-	/** Lifespan을 반환하는 함수입니다. */
-	float GetLifespan() const;
+	/** EffectLifespan을 반환하는 함수입니다. */
+	float GetEffectLifespan() const;
 	
 	/** EffectOwner를 반환하는 함수입니다. */
 	FORCEINLINE AActor* GetEffectOwner() const { return EffectOwner; }

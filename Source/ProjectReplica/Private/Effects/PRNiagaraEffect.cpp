@@ -2,9 +2,8 @@
 
 
 #include "Effects/PRNiagaraEffect.h"
-#include "NiagaraComponent.h"
-#include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
+#include "NiagaraComponent.h"
 
 APRNiagaraEffect::APRNiagaraEffect()
 {
@@ -25,23 +24,31 @@ void APRNiagaraEffect::InitializeNiagaraEffect(UNiagaraSystem* NiagaraSystem, AA
 void APRNiagaraEffect::Activate()
 {
 	Super::Activate();
-	
-	NiagaraEffect->Activate();
+
+	if(IsValid(NiagaraEffect))
+	{
+		NiagaraEffect->Activate();
+	}
 }
 
 void APRNiagaraEffect::Deactivate()
 {
 	Super::Deactivate();
 
-	NiagaraEffect->Deactivate();
-
-	// 비활성화 델리게이트를 호출합니다.
-	// OnNiagaraEffectDeactivate.Broadcast(this);
+	if(IsValid(NiagaraEffect))
+	{
+		NiagaraEffect->Deactivate();
+	}
 }
 
 UNiagaraSystem* APRNiagaraEffect::GetNiagaraEffectAsset() const
 {
-	return NiagaraEffect->GetAsset();
+	if(IsValid(NiagaraEffect))
+	{
+		return NiagaraEffect->GetAsset();
+	}
+
+	return nullptr;
 }
 
 TObjectPtr<UNiagaraComponent> APRNiagaraEffect::GetNiagaraEffect() const

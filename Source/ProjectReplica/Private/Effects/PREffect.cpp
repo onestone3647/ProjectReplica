@@ -8,7 +8,7 @@ APREffect::APREffect()
 	PrimaryActorTick.bCanEverTick = false;
 
 	bActivate = false;
-	Lifespan = 0.0f;
+	EffectLifespan = 0.0f;
 	EffectOwner = nullptr;
 	PoolIndex = -1;
 }
@@ -52,7 +52,7 @@ void APREffect::Activate()
 	SetActorHiddenInGame(!bActivate);
 
 	// 이펙트의 수명을 설정합니다. 이펙트의 수명이 끝나면 이펙트를 비활성화합니다.
-	SetLifespan(Lifespan);
+	SetEffectLifespan(EffectLifespan);
 }
 
 void APREffect::Deactivate()
@@ -63,7 +63,7 @@ void APREffect::Deactivate()
 	// 이펙트에 설정된 모든 타이머를 초기화합니다.
 	GetWorldTimerManager().ClearAllTimersForObject(this);
 
-	// 델리게이트를 호출합니다.
+	// 비활성화 델리게이트를 호출합니다.
 	OnEffectDeactivateDelegate.Broadcast(this);
 }
 
@@ -75,7 +75,7 @@ void APREffect::InitializeEffect(AActor* NewEffectOwner, int32 NewPoolIndex, flo
 
 	EffectOwner = NewEffectOwner;
 	PoolIndex = NewPoolIndex;
-	Lifespan = NewLifespan;
+	EffectLifespan = NewLifespan;
 
 	// 이펙트에 설정된 모든 타이머를 초기화합니다.
 	GetWorldTimerManager().ClearAllTimersForObject(this);
@@ -84,27 +84,27 @@ void APREffect::InitializeEffect(AActor* NewEffectOwner, int32 NewPoolIndex, flo
 	OnEffectDeactivateDelegate.Clear();
 }
 
-void APREffect::SetLifespan(float NewLifespan)
+void APREffect::SetEffectLifespan(float NewLifespan)
 {
-	Lifespan = NewLifespan;
+	EffectLifespan = NewLifespan;
 	if(bActivate)
 	{
 		if(NewLifespan > 0.0f)
 		{
 			// 수명이 0보다 클 경우, 즉 새로운 수명이 설정된 경우 타이머를 설정합니다.
-			GetWorldTimerManager().SetTimer(LifespanTimerHandle, this, &APREffect::Deactivate, NewLifespan);
+			GetWorldTimerManager().SetTimer(EffectLifespanTimerHandle, this, &APREffect::Deactivate, NewLifespan);
 		}
 		else
 		{
 			// 수명이 0보다 작거나 같을 경우, 즉 이펙트의 수명이 무한대인 경우 이전에 설정한 타이머를 지워 제한된 수명을 가지지 않게 합니다.
-			GetWorldTimerManager().ClearTimer(LifespanTimerHandle);
+			GetWorldTimerManager().ClearTimer(EffectLifespanTimerHandle);
 		}
 	}
 }
 
-float APREffect::GetLifespan() const
+float APREffect::GetEffectLifespan() const
 {
-	return Lifespan;
+	return EffectLifespan;
 }
 
 int32 APREffect::GetPoolIndex() const

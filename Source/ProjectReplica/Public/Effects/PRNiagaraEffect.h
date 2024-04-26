@@ -9,8 +9,6 @@
 class UNiagaraSystem;
 class UNiagaraComponent;
 
-// DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNiagaraEffectDeactivate, APRNiagaraEffect*, NiagaraEffect);
-
 /**
  * EffectSystem이 관리하는 나이아가라 이펙트 클래스입니다.
  */
@@ -52,8 +50,4 @@ private:
 public:
 	/** NiagaraEffect를 반환하는 함수입니다. */
 	TObjectPtr<UNiagaraComponent> GetNiagaraEffect() const;
-
-public:
-	/** NiagaraEffect를 비활성화할 때 실행하는 델리게이트입니다. */
-	// FOnNiagaraEffectDeactivate OnNiagaraEffectDeactivate;
 };

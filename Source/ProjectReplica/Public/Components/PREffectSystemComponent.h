@@ -133,6 +133,33 @@ public:
 	/** 이펙트의 수명입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PRParticleEffectSettings")
 	float Lifespan;
+
+public:
+	/**
+	 * 인자로 받은 ParticleEffectSettings와 같은지 판별하는 ==연산자 오버로딩입니다.
+	 * 
+	 * @param NewParticleEffectSettings 비교하는 ParticleEffectSettings와 같은지 판별할 ParticleEffectSettings입니다.
+	 * @return 인자로 받은 ParticleEffectSettings와 같을 경우 true를 다를 경우 false를 반환합니다.
+	 */
+	FORCEINLINE bool operator==(const FPRParticleEffectSettings& NewParticleEffectSettings) const
+	{
+		return this->ParticleSystem == NewParticleEffectSettings.ParticleSystem
+				&& this->PoolSize == NewParticleEffectSettings.PoolSize
+				&& this->Lifespan == NewParticleEffectSettings.Lifespan;
+	}
+
+	/**
+	 * 인자로 받은 ParticleEffectSettings와 다른지 판별하는 !=연산자 오버로딩입니다.
+	 * 
+	 * @param NewParticleEffectSettings 비교하는 ParticleEffectSettings와 같은지 판별할 ParticleEffectSettings입니다.
+	 * @return 인자로 받은 ParticleEffectSettings와 다를 경우 true를 같을 경우 false를 반환합니다.
+	 */
+	FORCEINLINE bool operator!=(const FPRParticleEffectSettings& NewParticleEffectSettings) const
+	{
+		return this->ParticleSystem != NewParticleEffectSettings.ParticleSystem
+				&& this->PoolSize != NewParticleEffectSettings.PoolSize
+				&& this->Lifespan != NewParticleEffectSettings.Lifespan;
+	}
 };
 
 /**
@@ -313,9 +340,112 @@ private:
 #pragma endregion 
 	
 #pragma region ParticleEffect
+public:
+	/**
+	 * 모든 ParticleEffectPool, DynamicParticleEffectPool,
+	 * ActivateParticleEffectIndexList, UsedParticleEffectIndexList를 비우는 함수입니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|ParticleEffect")
+	void EmptyAllParticleEffectPool();
+
+	/** 인자로 받은 ParticleEffect가 활성화되었는지 판별하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|ParticleEffect")
+	bool IsActivateParticleEffect(APRParticleEffect* ParticleEffect) const;
+
+	/** 인자로 받은 ParticleEffect의 Pool이 생성되었는지 판별하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|ParticleEffect")
+	bool IsCreateParticleEffectPool(UParticleSystem* ParticleSystem) const;
+
+	/** 인자로 받은 ParticleEffect가 동적으로 생성한 ParticleEffect인지 판별하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|ParticleEffect")
+	bool IsDynamicParticleEffect(APRParticleEffect* ParticleEffect) const;
+
+	/**
+	 * 이펙트를 지정한 위치에 Spawn하는 함수입니다.
+	 *
+	 * @param SpawnEffect Spawn할 이펙트
+	 * @param Location 이펙트를 생성할 위치
+	 * @param Rotation 이펙트에 적용한 회전 값
+	 * @param Scale 이펙트에 적용할 크기
+	 * @param bEffectAutoActivate true일 경우 이펙트를 Spawn하자마다 이펙트를 실행합니다. false일 경우 이펙트를 실행하지 않습니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|ParticleEffect")
+	APRParticleEffect* SpawnParticleEffectAtLocation(UParticleSystem* SpawnEffect, FVector Location, FRotator Rotation = FRotator::ZeroRotator, FVector Scale = FVector(1.0f), bool bEffectAutoActivate = true);
+
+	
+	/**
+	 * 이펙트를 지정한 Component에 부착하여 Spawn하는 함수입니다.
+	 *
+	 * @param SpawnEffect Spawn할 이펙트
+	 * @param Parent 이펙트를 부착할 Component
+	 * @param AttachSocketName 부착할 소켓의 이름
+	 * @param Location 이펙트를 생성할 위치
+	 * @param Rotation 이펙트에 적용한 회전 값
+	 * @param Scale 이펙트에 적용할 크기
+	 * @param bEffectAutoActivate true일 경우 이펙트를 Spawn하자마다 이펙트를 실행합니다. false일 경우 이펙트를 실행하지 않습니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|ParticleEffect")
+	APRParticleEffect* SpawnParticleEffectAttached(UParticleSystem* SpawnEffect, USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate = true);
+
 private:
+	/** 인자에 해당하는 활성화할 수 있는 ParticleSystem을 반환하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|ParticleEffect")
+	APRParticleEffect* GetActivateableParticleEffect(UParticleSystem* ParticleSystem);
+	
+	/** 인자로 받은 ParticleEffectSettings를 기반으로 ParticleEffectPool을 생성하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|ParticleEffect")
+	void CreateParticleEffectPool(FPRParticleEffectSettings ParticleEffectSettings);
+
+	/** 인자로 받은 ParticleSystem의 ActivateParticleEffectIndexList를 생성하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|ParticleEffect")
+	void CreateActivateParticleEffectIndexList(UParticleSystem* ParticleSystem);
+
+	/** 인자로 받은 ParticleSystem의 UsedParticleEffectIndexList를 생성하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|ParticleEffect")
+	void CreateUsedParticleEffectIndexList(UParticleSystem* ParticleSystem);
+	
+	/** 인자로 받은 ParticleSystem를 월드에 APRParticleEffect로 Spawn하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|ParticleEffect")
+	APRParticleEffect* SpawnParticleEffectInWorld(UParticleSystem* NiagaraSystem, int32 PoolIndex = -1, float Lifespan = 0.0f);
+
+	/** 인자로 받은 ParticleEffect가 비활성화될 때 실행하는 함수입니다. */
+	UFUNCTION()
+	void OnParticleEffectDeactivate(APREffect* Effect);
+
+	/** 동적으로 생성한 ParticleEffect가 비활성화될 때 실행하는 함수입니다. */
+	UFUNCTION()
+	void OnDynamicParticleEffectDeactivate(APREffect* Effect);
+
+	/** 동적으로 생성한 ParticleEffect를 제거하는 함수입니다. */
+	UFUNCTION()
+	void DynamicParticleEffectDestroy(APRParticleEffect* ParticleEffect);
+
+	/** 인자로 받은 ParticleEffect의 설정 값을 데이터 테이블에서 가져오는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|ParticleEffect")
+	FPRParticleEffectSettings GetParticleEffectSettingsFromDataTable(UParticleSystem* ParticleSystem) const; 
+	
+private:
+	/** ParticleEffectPool의 설정 값을 가진 데이터 테이블입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PREffectSystem|ParticleEffect", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UDataTable> ParticleEffectSettingsDataTable;	
+	
 	/** 월드에 Spawn한 ParticleEffect의 Pool입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffectSystem|ParticleEffect", meta = (AllowPrivateAccess = "true"))
 	TMap<TObjectPtr<UParticleSystem>, FPRParticleEffectPool> ParticleEffectPool;
+
+	/** 월드에 동적 Spawn한 ParticleEffect의 Pool입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffectSystem|ParticleEffect", meta = (AllowPrivateAccess = "true"))
+	TMap<TObjectPtr<UParticleSystem>, FPRDynamicParticleEffectPool> DynamicParticleEffectPool;
+
+	/** 활성화된 ParticleEffect의 Index 목록입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffectSystem|ParticleEffect", meta = (AllowPrivateAccess = "true"))
+	TMap<TObjectPtr<UParticleSystem>, FPRActivateIndexList> ActivateParticleEffectIndexList;
+
+	/**
+	 * 동적으로 생성된 ParticleEffect의 Index를 추적하기 위한 Index 목록입니다.
+	 * 동적으로 생성한 ParticleEffect의 Index를 부여할 때 해당 Index를 여기에 저장합니다.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffectSystem|ParticleEffect", meta = (AllowPrivateAccess = "true"))
+	TMap<TObjectPtr<UParticleSystem>, FPRUsedIndexList> UsedParticleEffectIndexList;
 #pragma endregion 
 };
