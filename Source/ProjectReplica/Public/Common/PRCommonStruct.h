@@ -20,9 +20,9 @@ struct FPRActivateIndexList
 	GENERATED_BODY()
 
 public:
-	/** 활성화된 Index를 보관한 목록입니다. */
+	/** 활성화된 Index를 보관한 Set입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "ActivateIndexList")
-	TArray<int32> Indexes;
+	TSet<int32> Indexes;
 };
 
 /**

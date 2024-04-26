@@ -16,7 +16,6 @@ APRPooledObject::APRPooledObject()
 void APRPooledObject::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void APRPooledObject::InitializeObject_Implementation(AActor* NewObjectOwner, int32 NewPoolIndex)
@@ -63,6 +62,7 @@ void APRPooledObject::Deactivate_Implementation()
 	// 오브젝트에 설정된 모든 타이머를 초기화합니다.
 	GetWorldTimerManager().ClearAllTimersForObject(this);
 
+	// 델리게이트를 호출합니다.
 	OnPooledObjectDeactivateDelegate.Broadcast(this);
 }
 
@@ -81,18 +81,8 @@ void APRPooledObject::SetLifespan(float NewLifespan)
 	}
 }
 
-void APRPooledObject::SetObjectOwner(AActor* NewObjectOwner)
-{
-	ObjectOwner = NewObjectOwner;
-}
-
 int32 APRPooledObject::GetPoolIndex() const
 {
 	return PoolIndex;
-}
-
-void APRPooledObject::SetPoolIndex(int32 NewPoolIndex)
-{
-	PoolIndex = NewPoolIndex;
 }
 

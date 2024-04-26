@@ -7,6 +7,7 @@
 #include "Components/PRStatSystemComponent.h"
 #include "Components/PRStateSystemComponent.h"
 #include "Components/PRObjectPoolSystemComponent.h"
+#include "Components/PREffectSystemComponent.h"
 #include "Components/PRMovementSystemComponent.h"
 #include "MotionWarpingComponent.h"
 
@@ -66,6 +67,9 @@ APRBaseCharacter::APRBaseCharacter()
 	// ObjectPoolSystem
 	ObjectPoolSystem = CreateDefaultSubobject<UPRObjectPoolSystemComponent>(TEXT("ObjectPoolSystem"));
 
+	// EffectSystem
+	EffectSystem = CreateDefaultSubobject<UPREffectSystemComponent>(TEXT("EffectSystem"));
+
 	// MovementSystem
 	MovementSystem = CreateDefaultSubobject<UPRMovementSystemComponent>(TEXT("MovementSystem"));
 
@@ -88,6 +92,9 @@ void APRBaseCharacter::PostInitializeComponents()
 
 	// ObjectPoolSystem
 	GetObjectPoolSystem()->InitializeObjectPool();
+
+	// EffectSystem
+	GetEffectSystem()->InitializeEffectPool();
 
 	// MovementSystem
 	GetMovementSystem()->SetAllowGait(EPRGait::Gait_Run);

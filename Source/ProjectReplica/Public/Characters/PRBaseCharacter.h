@@ -21,6 +21,7 @@ class UPRDamageSystemComponent;
 class UPRStatSystemComponent;
 class UPRStateSystemComponent;
 class UPRObjectPoolSystemComponent;
+class UPREffectSystemComponent;
 class UPRMovementSystemComponent;
 class UMotionWarpingComponent;
 
@@ -158,6 +159,17 @@ private:
 public:
 	/** ObjectPoolSystem을 반환하는 함수입니다. */
 	FORCEINLINE class UPRObjectPoolSystemComponent* GetObjectPoolSystem() const { return ObjectPoolSystem; }
+#pragma endregion
+
+#pragma region EffectSystem
+private:
+	/** 이펙트를 관리하는 ActorComponent 클래스입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "EffectSystem", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPREffectSystemComponent> EffectSystem;
+
+public:
+	/** ObjectPoolSystem을 반환하는 함수입니다. */
+	FORCEINLINE class UPREffectSystemComponent* GetEffectSystem() const { return EffectSystem; }
 #pragma endregion 
 
 #pragma region MovementSystem

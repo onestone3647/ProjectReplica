@@ -82,7 +82,7 @@ APRPooledObject* UPRObjectPoolSystemComponent::ActivatePooledObject(APRPooledObj
 	}
 
 	// 활성화된 오브젝트의 Index를 ActivateObjectIndexList에 추가합니다.
-	ActivateObjectIndexList.Find(PooledObject->GetClass())->Indexes.AddUnique(PooledObject->GetPoolIndex());
+	ActivateObjectIndexList.Find(PooledObject->GetClass())->Indexes.Add(PooledObject->GetPoolIndex());
 	
 	return PooledObject;
 }
