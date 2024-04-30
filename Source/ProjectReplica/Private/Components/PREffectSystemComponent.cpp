@@ -188,7 +188,7 @@ APRNiagaraEffect* UPREffectSystemComponent::SpawnNiagaraEffectAtLocation(UNiagar
 		// NiagaraEffect를 활성화하고 Spawn할 위치와 회전값, 크기, 자동실행 여부를 적용합니다.
 		ActivateableNiagaraEffect->SpawnEffectAtLocation(Location, Rotation, Scale, bEffectAutoActivate);
 
-		// 활성화된 NiagaraEffect의 Index를 ActivateNiagaraEffectIndexList에 추가합니다.
+		// 활성화된 NiagaraEffect의 Index를 ActivateNiagaraEffectIndexList에 저장합니다.
 		ActivateNiagaraEffectIndexList.Find(SpawnEffect)->Indexes.Add(ActivateableNiagaraEffect->GetPoolIndex());
 	}
 	
@@ -203,7 +203,7 @@ APRNiagaraEffect* UPREffectSystemComponent::SpawnNiagaraEffectAttached(UNiagaraS
 		// NiagaraEffect를 활성화하고 Spawn하여 부착할 Component와 위치, 회전값, 크기, 자동실행 여부를 적용합니다.
 		ActivateableNiagaraEffect->SpawnEffectAttached(Parent, AttachSocketName, Location, Rotation, Scale, bEffectAutoActivate);
 
-		// 활성화된 NiagaraEffect의 Index를 ActivateNiagaraEffectIndexList에 추가합니다.
+		// 활성화된 NiagaraEffect의 Index를 ActivateNiagaraEffectIndexList에 저장합니다.
 		ActivateNiagaraEffectIndexList.Find(SpawnEffect)->Indexes.Add(ActivateableNiagaraEffect->GetPoolIndex());
 	}
 	
@@ -242,44 +242,7 @@ APRNiagaraEffect* UPREffectSystemComponent::GetActivateableNiagaraEffect(UNiagar
 	// Pair의 모든 NiagaraEffect가 활성화되었을 경우 새로운 NiagaraEffect를 생성합니다.
 	if(ActivateableNiagaraEffect == nullptr)
 	{
-		FPRUsedIndexList* UsedEffectIndexList = UsedNiagaraEffectIndexList.Find(NiagaraSystem);
-		if(UsedEffectIndexList == nullptr)
-		{
-			// 지정된 NiagaraEffect가 없습니다.
-			return nullptr;
-		}
-
-		// 사용 가능한 Index를 구합니다.
-		const int32 NewIndex = FindAvailableIndex(UsedEffectIndexList->Indexes);
-
-		// 사용 가능한 Index를 UsedEffectIndexList에 추가합니다.
-		UsedEffectIndexList->Indexes.Add(NewIndex);
-
-		// 새로운 NiagaraEffect를 생성하고 초기화합니다.
-		const FPRNiagaraEffectSettings NiagaraEffectSettings = GetNiagaraEffectSettingsFromDataTable(NiagaraSystem);
-		if(NiagaraEffectSettings != FPRNiagaraEffectSettings())
-		{
-			// 데이터 테이블에 NiagaraEffect의 설정 값을 가지고 있을 경우 설정 값의 Lifespan을 적용합니다.
-			ActivateableNiagaraEffect = SpawnNiagaraEffectInWorld(NiagaraSystem, NewIndex, NiagaraEffectSettings.Lifespan);
-		}
-		else
-		{
-			// 데이터 테이블에 NiagaraEffect의 설정 값을 가지고 있지 않을 경우 DynamicLifespan을 적용합니다.
-			ActivateableNiagaraEffect = SpawnNiagaraEffectInWorld(NiagaraSystem, NewIndex, DynamicLifespan);
-		}
-		
-		if(!IsValid(ActivateableNiagaraEffect))
-		{
-			// 지정된 NiagaraEffect가 없습니다.
-			return nullptr;
-		}
-		
-		// ActivateableNiagaraEffect의 OnNiagaraEffectDeactivate 이벤트에 대한 콜백 함수를 바인딩합니다.
-		// 동적으로 생성된 NiagaraEffect에 대한 추가로 비활성화하는 함수입니다.
-		ActivateableNiagaraEffect->OnEffectDeactivateDelegate.AddDynamic(this, &UPREffectSystemComponent::OnDynamicNiagaraEffectDeactivate);
-
-		// 새로 생성한 NiagaraEffect를 Pair에 추가합니다.
-		Pair->Effects.Emplace(ActivateableNiagaraEffect);
+		ActivateableNiagaraEffect = SpawnDynamicNiagaraEffectInWorld(NiagaraSystem);
 	}
 	
 	// 동적으로 생성된 NiagaraEffect일 경우 DynamicEffectDestroyTimer를 정지합니다.
@@ -300,7 +263,7 @@ void UPREffectSystemComponent::CreateNiagaraEffectPool(FPRNiagaraEffectSettings 
 {
 	if(GetWorld() != nullptr && NiagaraEffectSettings.NiagaraSystem != nullptr)
 	{
-		// NiagaraEffectPool에 추가할 Pair를 초기화하고 NiagaraEffect를 생성하여 추가합니다.
+		// NiagaraEffectPool에 저장할 Pair를 초기화하고 NiagaraEffect를 생성하여 저장합니다.
 		FPRNiagaraEffectPool Pair;
 		for(int32 Index = 0; Index < NiagaraEffectSettings.PoolSize; Index++)
 		{
@@ -311,7 +274,7 @@ void UPREffectSystemComponent::CreateNiagaraEffectPool(FPRNiagaraEffectSettings 
 			}
 		}
 
-		// 초기화된 Pair를 NiagaraEffectPool에 추가하고 ActivateNiagaraEffectIndexList와 UsedNiagaraEffectIndexList를 생성합니다.
+		// 초기화된 Pair를 NiagaraEffectPool에 저장하고 ActivateNiagaraEffectIndexList와 UsedNiagaraEffectIndexList를 생성합니다.
 		NiagaraEffectPool.Emplace(NiagaraEffectSettings.NiagaraSystem, Pair);
 		CreateActivateNiagaraEffectIndexList(NiagaraEffectSettings.NiagaraSystem);
 		CreateUsedNiagaraEffectIndexList(NiagaraEffectSettings.NiagaraSystem);
@@ -360,10 +323,63 @@ APRNiagaraEffect* UPREffectSystemComponent::SpawnNiagaraEffectInWorld(UNiagaraSy
 	NiagaraEffect->InitializeNiagaraEffect(NiagaraSystem, GetPROwner(), PoolIndex, Lifespan);
 
 	// NiagaraEffect의 OnEffectDeactivateDelegate 이벤트에 대한 콜백 함수를 바인딩합니다.
-	// NiagaraEffect->OnNiagaraEffectDeactivate.AddDynamic(this, &UPREffectSystemComponent::OnNiagaraEffectDeactivate);
 	NiagaraEffect->OnEffectDeactivateDelegate.AddDynamic(this, &UPREffectSystemComponent::OnNiagaraEffectDeactivate);
 
 	return NiagaraEffect;
+}
+
+APRNiagaraEffect* UPREffectSystemComponent::SpawnDynamicNiagaraEffectInWorld(UNiagaraSystem* NiagaraSystem)
+{
+	APRNiagaraEffect* ActivateableNiagaraEffect = nullptr;
+
+	FPRUsedIndexList* UsedEffectIndexList = UsedNiagaraEffectIndexList.Find(NiagaraSystem);
+	if(UsedEffectIndexList == nullptr)
+	{
+		// 지정된 NiagaraEffect가 없습니다.
+		return nullptr;
+	}
+
+	// 사용 가능한 Index를 구합니다.
+	const int32 NewIndex = FindAvailableIndex(UsedEffectIndexList->Indexes);
+
+	// 사용 가능한 Index를 UsedEffectIndexList에 저장합니다.
+	UsedEffectIndexList->Indexes.Add(NewIndex);
+
+	// 새로운 NiagaraEffect를 생성하고 초기화합니다.
+	const FPRNiagaraEffectSettings NiagaraEffectSettings = GetNiagaraEffectSettingsFromDataTable(NiagaraSystem);
+	if(NiagaraEffectSettings != FPRNiagaraEffectSettings())
+	{
+		// 데이터 테이블에 NiagaraEffect의 설정 값을 가지고 있을 경우 설정 값의 Lifespan을 적용합니다.
+		ActivateableNiagaraEffect = SpawnNiagaraEffectInWorld(NiagaraSystem, NewIndex, NiagaraEffectSettings.Lifespan);
+	}
+	else
+	{
+		// 데이터 테이블에 NiagaraEffect의 설정 값을 가지고 있지 않을 경우 DynamicLifespan을 적용합니다.
+		ActivateableNiagaraEffect = SpawnNiagaraEffectInWorld(NiagaraSystem, NewIndex, DynamicLifespan);
+	}
+		
+	if(!IsValid(ActivateableNiagaraEffect))
+	{
+		// 지정된 NiagaraEffect가 없습니다.
+		return nullptr;
+	}
+		
+	// ActivateableNiagaraEffect의 OnNiagaraEffectDeactivate 이벤트에 대한 콜백 함수를 바인딩합니다.
+	// 동적으로 생성된 NiagaraEffect에 대한 추가로 비활성화하는 함수입니다.
+	ActivateableNiagaraEffect->OnEffectDeactivateDelegate.AddDynamic(this, &UPREffectSystemComponent::OnDynamicNiagaraEffectDeactivate);
+
+	// NiagaraEffectPool에서 해당 NiagaraEffect의 Pool을 얻습니다.
+	FPRNiagaraEffectPool* Pair = NiagaraEffectPool.Find(NiagaraSystem);
+	if(Pair == nullptr)
+	{
+		// 지정된 NiagaraEffect가 업습니다.
+		return nullptr;
+	}
+	
+	// 새로 생성한 NiagaraEffect를 Pair에 저장합니다.
+	Pair->Effects.Emplace(ActivateableNiagaraEffect);
+
+	return ActivateableNiagaraEffect;
 }
 
 void UPREffectSystemComponent::OnNiagaraEffectDeactivate(APREffect* Effect)
@@ -392,7 +408,7 @@ void UPREffectSystemComponent::OnDynamicNiagaraEffectDeactivate(APREffect* Effec
 			FTimerDelegate DynamicEffectDestroyDelegate = FTimerDelegate::CreateUObject(this, &UPREffectSystemComponent::DynamicNiagaraEffectDestroy, NiagaraEffect);
 			GetWorld()->GetTimerManager().SetTimer(DynamicEffectDestroyTimerHandle, DynamicEffectDestroyDelegate, DynamicLifespan, false);
 
-			// 타이머를 DynamicDestroyNiagaraEffectList에 추가합니다.
+			// 타이머를 DynamicDestroyNiagaraEffectList에 저장합니다.
 			FPRDynamicNiagaraEffectPool* DynamicPair = DynamicNiagaraEffectPool.Find(NiagaraEffect->GetNiagaraEffectAsset());
 			if(DynamicPair != nullptr)
 			{
@@ -559,7 +575,7 @@ APRParticleEffect* UPREffectSystemComponent::SpawnParticleEffectAtLocation(UPart
 		// ParticleEffect를 활성화하고 Spawn할 위치와 회전값, 크기, 자동실행 여부를 적용합니다.
 		ActivateableParticleEffect->SpawnEffectAtLocation(Location, Rotation, Scale, bEffectAutoActivate);
 
-		// 활성화된 ParticleEffect의 Index를 ActivateParticleEffectIndexList에 추가합니다.
+		// 활성화된 ParticleEffect의 Index를 ActivateParticleEffectIndexList에 저장합니다.
 		ActivateParticleEffectIndexList.Find(SpawnEffect)->Indexes.Add(ActivateableParticleEffect->GetPoolIndex());
 	}
 	
@@ -574,7 +590,7 @@ APRParticleEffect* UPREffectSystemComponent::SpawnParticleEffectAttached(UPartic
 		// ParticleEffect를 활성화하고 Spawn하여 부착할 Component와 위치, 회전값, 크기, 자동실행 여부를 적용합니다.
 		ActivateableParticleEffect->SpawnEffectAttached(Parent, AttachSocketName, Location, Rotation, Scale, bEffectAutoActivate);
 
-		// 활성화된 ParticleEffect의 Index를 ActivateParticleEffectIndexList에 추가합니다.
+		// 활성화된 ParticleEffect의 Index를 ActivateParticleEffectIndexList에 저장합니다.
 		ActivateParticleEffectIndexList.Find(SpawnEffect)->Indexes.Add(ActivateableParticleEffect->GetPoolIndex());
 	}
 	
@@ -613,44 +629,7 @@ APRParticleEffect* UPREffectSystemComponent::GetActivateableParticleEffect(UPart
 	// Pair의 모든 ParticleEffect가 활성화되었을 경우 새로운 ParticleEffect를 생성합니다.
 	if(ActivateableParticleEffect == nullptr)
 	{
-		FPRUsedIndexList* UsedEffectIndexList = UsedParticleEffectIndexList.Find(ParticleSystem);
-		if(UsedEffectIndexList == nullptr)
-		{
-			// 지정된 ParticleEffect가 없습니다.
-			return nullptr;
-		}
-
-		// 사용 가능한 Index를 구합니다.
-		const int32 NewIndex = FindAvailableIndex(UsedEffectIndexList->Indexes);
-
-		// 사용 가능한 Index를 UsedEffectIndexList에 추가합니다.
-		UsedEffectIndexList->Indexes.Add(NewIndex);
-
-		// 새로운 ParticleEffect를 생성하고 초기화합니다.
-		const FPRParticleEffectSettings ParticleEffectSettings = GetParticleEffectSettingsFromDataTable(ParticleSystem);
-		if(ParticleEffectSettings != FPRParticleEffectSettings())
-		{
-			// 데이터 테이블에 ParticleEffect의 설정 값을 가지고 있을 경우 설정 값의 Lifespan을 적용합니다.
-			ActivateableParticleEffect = SpawnParticleEffectInWorld(ParticleSystem, NewIndex, ParticleEffectSettings.Lifespan);
-		}
-		else
-		{
-			// 데이터 테이블에 ParticleEffect의 설정 값을 가지고 있지 않을 경우 DynamicLifespan을 적용합니다.
-			ActivateableParticleEffect = SpawnParticleEffectInWorld(ParticleSystem, NewIndex, DynamicLifespan);
-		}
-		
-		if(!IsValid(ActivateableParticleEffect))
-		{
-			// 지정된 ParticleEffect가 없습니다.
-			return nullptr;
-		}
-		
-		// ActivateableParticleEffect의 OnParticleEffectDeactivate 이벤트에 대한 콜백 함수를 바인딩합니다.
-		// 동적으로 생성된 ParticleEffect에 대한 추가로 비활성화하는 함수입니다.
-		ActivateableParticleEffect->OnEffectDeactivateDelegate.AddDynamic(this, &UPREffectSystemComponent::OnDynamicParticleEffectDeactivate);
-
-		// 새로 생성한 ParticleEffect를 Pair에 추가합니다.
-		Pair->Effects.Emplace(ActivateableParticleEffect);
+		ActivateableParticleEffect = SpawnDynamicParticleEffectInWorld(ParticleSystem);
 	}
 	
 	// 동적으로 생성된 ParticleEffect일 경우 DynamicEffectDestroyTimer를 정지합니다.
@@ -671,7 +650,7 @@ void UPREffectSystemComponent::CreateParticleEffectPool(FPRParticleEffectSetting
 {
 	if(GetWorld() != nullptr && ParticleEffectSettings.ParticleSystem != nullptr)
 	{
-		// ParticleEffectPool에 추가할 Pair를 초기화하고 ParticleEffect를 생성하여 추가합니다.
+		// ParticleEffectPool에 저장할 Pair를 초기화하고 ParticleEffect를 생성하여 저장합니다.
 		FPRParticleEffectPool Pair;
 		for(int32 Index = 0; Index < ParticleEffectSettings.PoolSize; Index++)
 		{
@@ -682,7 +661,7 @@ void UPREffectSystemComponent::CreateParticleEffectPool(FPRParticleEffectSetting
 			}
 		}
 
-		// 초기화된 Pair를 ParticleEffectPool에 추가하고 ActivateParticleEffectIndexList와 UsedParticleEffectIndexList를 생성합니다.
+		// 초기화된 Pair를 ParticleEffectPool에 저장하고 ActivateParticleEffectIndexList와 UsedParticleEffectIndexList를 생성합니다.
 		ParticleEffectPool.Emplace(ParticleEffectSettings.ParticleSystem, Pair);
 		CreateActivateParticleEffectIndexList(ParticleEffectSettings.ParticleSystem);
 		CreateUsedParticleEffectIndexList(ParticleEffectSettings.ParticleSystem);
@@ -731,10 +710,63 @@ APRParticleEffect* UPREffectSystemComponent::SpawnParticleEffectInWorld(UParticl
 	ParticleEffect->InitializeParticleEffect(ParticleSystem, GetPROwner(), PoolIndex, Lifespan);
 
 	// ParticleEffect의 OnEffectDeactivateDelegate 이벤트에 대한 콜백 함수를 바인딩합니다.
-	// ParticleEffect->OnParticleEffectDeactivate.AddDynamic(this, &UPREffectSystemComponent::OnParticleEffectDeactivate);
 	ParticleEffect->OnEffectDeactivateDelegate.AddDynamic(this, &UPREffectSystemComponent::OnParticleEffectDeactivate);
 
 	return ParticleEffect;
+}
+
+APRParticleEffect* UPREffectSystemComponent::SpawnDynamicParticleEffectInWorld(UParticleSystem* ParticleSystem)
+{
+	APRParticleEffect* ActivateableParticleEffect = nullptr;
+	
+	FPRUsedIndexList* UsedEffectIndexList = UsedParticleEffectIndexList.Find(ParticleSystem);
+	if(UsedEffectIndexList == nullptr)
+	{
+		// 지정된 ParticleEffect가 없습니다.
+		return nullptr;
+	}
+
+	// 사용 가능한 Index를 구합니다.
+	const int32 NewIndex = FindAvailableIndex(UsedEffectIndexList->Indexes);
+
+	// 사용 가능한 Index를 UsedEffectIndexList에 저장합니다.
+	UsedEffectIndexList->Indexes.Add(NewIndex);
+
+	// 새로운 ParticleEffect를 생성하고 초기화합니다.
+	const FPRParticleEffectSettings ParticleEffectSettings = GetParticleEffectSettingsFromDataTable(ParticleSystem);
+	if(ParticleEffectSettings != FPRParticleEffectSettings())
+	{
+		// 데이터 테이블에 ParticleEffect의 설정 값을 가지고 있을 경우 설정 값의 Lifespan을 적용합니다.
+		ActivateableParticleEffect = SpawnParticleEffectInWorld(ParticleSystem, NewIndex, ParticleEffectSettings.Lifespan);
+	}
+	else
+	{
+		// 데이터 테이블에 ParticleEffect의 설정 값을 가지고 있지 않을 경우 DynamicLifespan을 적용합니다.
+		ActivateableParticleEffect = SpawnParticleEffectInWorld(ParticleSystem, NewIndex, DynamicLifespan);
+	}
+		
+	if(!IsValid(ActivateableParticleEffect))
+	{
+		// 지정된 ParticleEffect가 없습니다.
+		return nullptr;
+	}
+		
+	// ActivateableParticleEffect의 OnParticleEffectDeactivate 이벤트에 대한 콜백 함수를 바인딩합니다.
+	// 동적으로 생성된 ParticleEffect에 대한 추가로 비활성화하는 함수입니다.
+	ActivateableParticleEffect->OnEffectDeactivateDelegate.AddDynamic(this, &UPREffectSystemComponent::OnDynamicParticleEffectDeactivate);
+
+	// ParticleEffectPool에서 해당 ParticleEffect의 Pool을 얻습니다.
+	FPRParticleEffectPool* Pair = ParticleEffectPool.Find(ParticleSystem);
+	if(Pair == nullptr)
+	{
+		// 지정된 ParticleEffect가 업습니다.
+		return nullptr;
+	}
+	
+	// 새로 생성한 ParticleEffect를 Pair에 저장합니다.
+	Pair->Effects.Emplace(ActivateableParticleEffect);
+
+	return ActivateableParticleEffect;
 }
 
 void UPREffectSystemComponent::OnParticleEffectDeactivate(APREffect* Effect)
@@ -763,7 +795,7 @@ void UPREffectSystemComponent::OnDynamicParticleEffectDeactivate(APREffect* Effe
 			FTimerDelegate DynamicEffectDestroyDelegate = FTimerDelegate::CreateUObject(this, &UPREffectSystemComponent::DynamicParticleEffectDestroy, ParticleEffect);
 			GetWorld()->GetTimerManager().SetTimer(DynamicEffectDestroyTimerHandle, DynamicEffectDestroyDelegate, DynamicLifespan, false);
 
-			// 타이머를 DynamicDestroyParticleEffectList에 추가합니다.
+			// 타이머를 DynamicDestroyParticleEffectList에 저장합니다.
 			FPRDynamicParticleEffectPool* DynamicPair = DynamicParticleEffectPool.Find(ParticleEffect->GetParticleEffectAsset());
 			if(DynamicPair != nullptr)
 			{

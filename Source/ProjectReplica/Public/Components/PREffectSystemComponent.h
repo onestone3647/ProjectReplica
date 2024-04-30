@@ -298,6 +298,10 @@ private:
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
 	APRNiagaraEffect* SpawnNiagaraEffectInWorld(UNiagaraSystem* NiagaraSystem, int32 PoolIndex = -1, float Lifespan = 0.0f);
 
+	/** 인자로 받은 NiagaraSystem를 월드에 APRNiagaraEffect로 동적 Spawn하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
+	APRNiagaraEffect* SpawnDynamicNiagaraEffectInWorld(UNiagaraSystem* NiagaraSystem);	
+
 	/** 인자로 받은 NiagaraEffect가 비활성화될 때 실행하는 함수입니다. */
 	UFUNCTION()
 	void OnNiagaraEffectDeactivate(APREffect* Effect);
@@ -406,7 +410,11 @@ private:
 	
 	/** 인자로 받은 ParticleSystem를 월드에 APRParticleEffect로 Spawn하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|ParticleEffect")
-	APRParticleEffect* SpawnParticleEffectInWorld(UParticleSystem* NiagaraSystem, int32 PoolIndex = -1, float Lifespan = 0.0f);
+	APRParticleEffect* SpawnParticleEffectInWorld(UParticleSystem* ParticleSystem, int32 PoolIndex = -1, float Lifespan = 0.0f);
+	
+	/** 인자로 받은 ParticleSystem를 월드에 APRParticleEffect로 동적 Spawn하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
+	APRParticleEffect* SpawnDynamicParticleEffectInWorld(UParticleSystem* ParticleSystem);	
 
 	/** 인자로 받은 ParticleEffect가 비활성화될 때 실행하는 함수입니다. */
 	UFUNCTION()
