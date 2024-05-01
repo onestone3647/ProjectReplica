@@ -81,7 +81,7 @@ private:
 public:
 	/** 캐릭터가 사망했을 때 호출하는 함수입니다. */
 	virtual void Death() override;
-#pragma endregion 
+#pragma endregion
 
 #pragma region Camera
 protected:
@@ -373,5 +373,5 @@ protected:
 	/** 오브젝트를 뒤어넘고 착지하는 위치의 높이를 제한하는 Offset입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting|Landing")
 	float VaultLandLocationZOffset;
-#pragma endregion 
+#pragma endregion
 };
