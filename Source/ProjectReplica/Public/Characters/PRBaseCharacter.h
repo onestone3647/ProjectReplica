@@ -23,6 +23,7 @@ class UPRStateSystemComponent;
 class UPRObjectPoolSystemComponent;
 class UPREffectSystemComponent;
 class UPRMovementSystemComponent;
+class UPRWeaponSystemComponent;
 class UMotionWarpingComponent;
 
 // 임시
@@ -193,6 +194,17 @@ public:
 	/** MovementSystem을 반환하는 함수입니다. */
 	FORCEINLINE class UPRMovementSystemComponent* GetMovementSystem() const { return MovementSystem; }
 #pragma endregion
+
+#pragma region WeaponSystem
+private:
+	/** 캐릭터의 무기를 관리하는 ActorComponent 클래스입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WeaponSystem", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPRWeaponSystemComponent> WeaponSystem;
+
+public:
+	/** WeaponSystem을 반환하는 함수입니다. */
+	FORCEINLINE class UPRWeaponSystemComponent* GetWeaponSystem() const { return WeaponSystem; }
+#pragma endregion 
 
 #pragma region MotionWarping
 private:

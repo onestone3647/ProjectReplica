@@ -2,6 +2,7 @@
 
 
 #include "Effects/PREffect.h"
+#include "Particles/ParticleSystemComponent.h"
 
 APREffect::APREffect()
 {
@@ -29,11 +30,19 @@ void APREffect::SpawnEffectAtLocation(FVector Location, FRotator Rotation, FVect
 	}
 }
 
-void APREffect::SpawnEffectAttached(USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, bool bAutoActivate)
+void APREffect::SpawnEffectAttached(USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, EAttachLocation::Type LocationType, bool bAutoActivate)
 {
-	const FAttachmentTransformRules AttachmentTransformRules(EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, false);
+	const FAttachmentTransformRules AttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepRelative, false);
 	AttachToComponent(Parent, AttachmentTransformRules, AttachSocketName);
-	SetActorLocationAndRotation(Location, Rotation);
+	if (LocationType == EAttachLocation::KeepWorldPosition)
+	{
+		SetActorLocationAndRotation(Parent->GetSocketLocation(AttachSocketName) + Location, Parent->GetSocketRotation(AttachSocketName) + Rotation);
+	}
+	else
+	{
+		SetActorRelativeLocation(Location);
+		SetActorRelativeRotation(Rotation);
+	}
 	SetActorScale3D(Scale);
 	if(bAutoActivate)
 	{
@@ -48,11 +57,14 @@ bool APREffect::IsActivate() const
 
 void APREffect::Activate()
 {
+	PR_LOG_SCREEN("Activate");
 	bActivate = true;
 	SetActorHiddenInGame(!bActivate);
 
 	// 이펙트의 수명을 설정합니다. 이펙트의 수명이 끝나면 이펙트를 비활성화합니다.
 	SetEffectLifespan(EffectLifespan);
+
+	UKismetSystemLibrary::DrawDebugLine(GetWorld(), GetEffectOwner()->GetActorLocation(), GetActorLocation(), FLinearColor::Blue, 10, 0);
 }
 
 void APREffect::Deactivate()
@@ -65,6 +77,11 @@ void APREffect::Deactivate()
 
 	// 비활성화 델리게이트를 호출합니다.
 	OnEffectDeactivateDelegate.Broadcast(this);
+}
+
+UFXSystemComponent* APREffect::GetFXSystemComponent() const
+{
+	return nullptr;
 }
 
 void APREffect::InitializeEffect(AActor* NewEffectOwner, int32 NewPoolIndex, float NewLifespan)

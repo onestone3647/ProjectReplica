@@ -41,6 +41,11 @@ void APRNiagaraEffect::Deactivate()
 	}
 }
 
+UFXSystemComponent* APRNiagaraEffect::GetFXSystemComponent() const
+{
+	return NiagaraEffect;	
+}
+
 UNiagaraSystem* APRNiagaraEffect::GetNiagaraEffectAsset() const
 {
 	if(IsValid(NiagaraEffect))

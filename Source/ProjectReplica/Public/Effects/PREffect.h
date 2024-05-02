@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "PREffect.generated.h"
 
+class UFXSystemComponent;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEffectDeactivate, APREffect*, Effect);
 
 /**
@@ -42,10 +44,11 @@ public:
 	 * @param Location 이펙트를 생성할 위치
 	 * @param Rotation 이펙트에 적용한 회전 값
 	 * @param Scale 이펙트에 적용할 크기
+	 * @param LocationType 이펙트를 부착할 위치 타입
 	 * @param bAutoActivate true일 경우 이펙트를 Spawn하자마다 이펙트를 실행합니다. false일 경우 이펙트를 실행하지 않습니다.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PREffect")
-	virtual void SpawnEffectAttached(USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, bool bAutoActivate = true);
+	virtual void SpawnEffectAttached(USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, EAttachLocation::Type LocationType = EAttachLocation::KeepWorldPosition, bool bAutoActivate = true);
 	
 	/** 이펙트가 활성화되었는지 판별하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PREffect")
@@ -58,6 +61,10 @@ public:
 	/** 이펙트를 비활성화하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PREffect")
 	virtual void Deactivate();
+
+	/** FXSystemComponent를 반환하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "PREffect")
+	virtual UFXSystemComponent* GetFXSystemComponent() const; 
 
 protected:
 	/**

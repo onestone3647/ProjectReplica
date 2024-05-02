@@ -22,7 +22,8 @@ public class ProjectReplica : ModuleRules
 			"GameplayTasks",
 			"AnimationLocomotionLibraryRuntime",
 			"AnimGraphRuntime",
-			"MotionWarping"
+			"MotionWarping",
+			"NiagaraAnimNotifies"
 		});
 	}
 }

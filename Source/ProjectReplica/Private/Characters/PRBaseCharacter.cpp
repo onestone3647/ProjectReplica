@@ -9,6 +9,7 @@
 #include "Components/PRObjectPoolSystemComponent.h"
 #include "Components/PREffectSystemComponent.h"
 #include "Components/PRMovementSystemComponent.h"
+#include "Components/PRWeaponSystemComponent.h"
 #include "MotionWarpingComponent.h"
 
 // 임시
@@ -72,6 +73,9 @@ APRBaseCharacter::APRBaseCharacter()
 
 	// MovementSystem
 	MovementSystem = CreateDefaultSubobject<UPRMovementSystemComponent>(TEXT("MovementSystem"));
+
+	// WeaponSystem
+	WeaponSystem = CreateDefaultSubobject<UPRWeaponSystemComponent>(TEXT("WeaponSystem"));
 
 	// MotionWarping
 	MotionWarping = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("MotionWarping"));

@@ -41,6 +41,11 @@ void APRParticleEffect::Deactivate()
 	}
 }
 
+UFXSystemComponent* APRParticleEffect::GetFXSystemComponent() const
+{
+	return ParticleEffect;
+}
+
 UParticleSystem* APRParticleEffect::GetParticleEffectAsset() const
 {
 	if(IsValid(ParticleEffect))

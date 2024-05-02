@@ -38,6 +38,9 @@ public:
 	/** 이펙트를 비활성화하는 함수입니다. */
 	virtual void Deactivate() override;
 
+	/** FXSystemComponent를 반환하는 함수입니다. */
+	virtual UFXSystemComponent* GetFXSystemComponent() const; 
+
 	/** ParticleEffect의 에셋을 반환하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PRParticleEffect")
 	UParticleSystem* GetParticleEffectAsset() const;
