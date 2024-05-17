@@ -64,5 +64,5 @@ AProjectReplicaGameMode* UPRBaseActorComponent::GetPRGameMode() const
 
 APRBaseCharacter* UPRBaseActorComponent::GetPROwner() const
 {
-	return PROwner.Get();
+	return PROwner;
 }

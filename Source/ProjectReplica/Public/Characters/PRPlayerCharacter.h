@@ -374,4 +374,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vaulting|Landing")
 	float VaultLandLocationZOffset;
 #pragma endregion
+
+#pragma region Attack
+protected:
+	virtual void Attack() override;
+#pragma endregion 
 };

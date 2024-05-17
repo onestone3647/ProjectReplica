@@ -2,6 +2,7 @@
 
 
 #include "ProjectReplicaGameInstance.h"
+#include "Weapons/PRBaseWeapon.h"
 
 UProjectReplicaGameInstance::UProjectReplicaGameInstance()
 {
@@ -16,17 +17,21 @@ void UProjectReplicaGameInstance::Init()
 
 	// ElementColor
 	InitializeElementColors();
+
+	// WeaponInfo
+	InitializeWeaponInfo();
 }
 
-FLinearColor UProjectReplicaGameInstance::GetElementColor(EPRElement Element) const
+#pragma region ElementColor
+FLinearColor UProjectReplicaGameInstance::GetElementColor(EPRElementType ElementType) const
 {
-	if(ElementColors.Contains(Element))
+	if(ElementColors.Contains(ElementType))
 	{
-		return *ElementColors.Find(Element);
+		return *ElementColors.Find(ElementType);
 	}
 
 	// 존재하지 않는 속성일 경우 물리 속성의 색상을 반환합니다.
-	return *ElementColors.Find(EPRElement::Element_Physio);
+	return *ElementColors.Find(EPRElementType::ElementType_Physio);
 }
 
 void UProjectReplicaGameInstance::InitializeElementColors()
@@ -41,8 +46,44 @@ void UProjectReplicaGameInstance::InitializeElementColors()
 			FPRElementColor* DataTableRow = ElementColorDataTable->FindRow<FPRElementColor>(RowName, FString(""));
 			if(DataTableRow)
 			{
-				ElementColors.Emplace(DataTableRow->Element, DataTableRow->Color);
+				ElementColors.Emplace(DataTableRow->ElementType, DataTableRow->Color);
 			}
 		}
 	}
 }
+#pragma endregion 
+
+#pragma region WeaponInfo
+FPRWeaponStat UProjectReplicaGameInstance::GetWeaponStat(TSubclassOf<APRBaseWeapon> NewWeapon) const
+{
+	if(WeaponInfos.Contains(NewWeapon))
+	{
+		return *WeaponInfos.Find(NewWeapon);
+	}
+	
+	return FPRWeaponStat();
+}
+
+void UProjectReplicaGameInstance::InitializeWeaponInfo()
+{
+	WeaponInfos.Empty();
+	
+	if(WeaponInfoDataTable)
+	{
+		TArray<FName> RowNames = WeaponInfoDataTable->GetRowNames();
+		for(const auto& RowName : RowNames)
+		{
+			FPRWeaponInfo* DataTableRow = WeaponInfoDataTable->FindRow<FPRWeaponInfo>(RowName, FString(""));
+			if(DataTableRow)
+			{
+				WeaponInfos.Emplace(DataTableRow->WeaponClass, DataTableRow->WeaponStat);
+			}
+		}
+	}
+}
+
+TMap<TSubclassOf<APRBaseWeapon>, FPRWeaponStat> UProjectReplicaGameInstance::GetWeaponInfos() const
+{
+	return WeaponInfos;
+}
+#pragma endregion 

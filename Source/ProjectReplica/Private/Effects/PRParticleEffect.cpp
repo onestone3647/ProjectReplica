@@ -21,13 +21,13 @@ void APRParticleEffect::InitializeParticleEffect(UParticleSystem* ParticleSystem
 	}
 }
 
-void APRParticleEffect::Activate()
+void APRParticleEffect::Activate(bool bReset)
 {
 	Super::Activate();
 
 	if(IsValid(ParticleEffect))
 	{
-		ParticleEffect->Activate();
+		ParticleEffect->Activate(bReset);
 	}
 }
 
@@ -39,6 +39,11 @@ void APRParticleEffect::Deactivate()
 	{
 		ParticleEffect->Deactivate();
 	}
+}
+
+UFXSystemComponent* APRParticleEffect::GetFXSystemComponent() const
+{
+	return ParticleEffect;
 }
 
 UParticleSystem* APRParticleEffect::GetParticleEffectAsset() const

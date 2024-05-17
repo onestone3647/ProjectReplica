@@ -87,7 +87,7 @@ bool UPRDamageSystemComponent::TakeDamage(FPRDamageInfo DamageInfo)
 		{
 			if(GetPRGameMode() != nullptr)
 			{
-				GetPRGameMode()->ActivateDamageAmount(DamageInfo.ImpactLocation, DamageInfo.Amount, DamageInfo.bIsCritical, DamageInfo.DamageElement);
+				GetPRGameMode()->ActivateDamageAmount(DamageInfo.ImpactLocation, DamageInfo.Amount, DamageInfo.bIsCritical, DamageInfo.DamageElementType);
 			}
 		
 			StatSystem->SetHealth(CharacterStat.Health -= DamageInfo.Amount);

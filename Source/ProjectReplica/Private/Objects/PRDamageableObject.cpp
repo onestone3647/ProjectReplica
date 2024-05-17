@@ -25,7 +25,7 @@ bool APRDamageableObject::TakeDamage_Implementation(FPRDamageInfo DamageInfo)
 	AProjectReplicaGameMode* PRGameMode = Cast<AProjectReplicaGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if(IsValid(PRGameMode))
 	{
-		PRGameMode->ActivateDamageAmount(DamageInfo.ImpactLocation, DamageInfo.Amount, DamageInfo.bIsCritical, DamageInfo.DamageElement);
+		PRGameMode->ActivateDamageAmount(DamageInfo.ImpactLocation, DamageInfo.Amount, DamageInfo.bIsCritical, DamageInfo.DamageElementType);
 		Destroy();
 
 		return true;

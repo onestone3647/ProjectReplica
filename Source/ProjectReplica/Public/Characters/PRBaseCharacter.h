@@ -23,6 +23,7 @@ class UPRStateSystemComponent;
 class UPRObjectPoolSystemComponent;
 class UPREffectSystemComponent;
 class UPRMovementSystemComponent;
+class UPRWeaponSystemComponent;
 class UMotionWarpingComponent;
 
 // 임시
@@ -105,7 +106,7 @@ private:
 
 	// 임시
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "임시", meta = (AllowPrivateAccess = "true"))
-	EPRElement DamageElement;
+	EPRElementType DamageElementType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "임시", meta = (AllowPrivateAccess = "true"))
 	float DamageAmount;
@@ -194,6 +195,17 @@ public:
 	FORCEINLINE class UPRMovementSystemComponent* GetMovementSystem() const { return MovementSystem; }
 #pragma endregion
 
+#pragma region WeaponSystem
+private:
+	/** 캐릭터의 무기를 관리하는 ActorComponent 클래스입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WeaponSystem", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPRWeaponSystemComponent> WeaponSystem;
+
+public:
+	/** WeaponSystem을 반환하는 함수입니다. */
+	FORCEINLINE class UPRWeaponSystemComponent* GetWeaponSystem() const { return WeaponSystem; }
+#pragma endregion 
+
 #pragma region MotionWarping
 private:
 	/** MotionWarping을 실행하는 클래스입니다. */
@@ -232,5 +244,11 @@ public:
 
 	/** FootstepsSound를 반환하는 함수입니다. */
 	TObjectPtr<USoundBase> GetFootstepsSound() const;
+#pragma endregion
+
+#pragma region Attack
+protected:
+	UFUNCTION(BlueprintCallable, Category = "Attack")
+	virtual void Attack();
 #pragma endregion 
 };

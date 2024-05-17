@@ -180,13 +180,13 @@ bool UPREffectSystemComponent::IsDynamicNiagaraEffect(APRNiagaraEffect* NiagaraE
 	return false;
 }
 
-APRNiagaraEffect* UPREffectSystemComponent::SpawnNiagaraEffectAtLocation(UNiagaraSystem* SpawnEffect, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate)
+APRNiagaraEffect* UPREffectSystemComponent::SpawnNiagaraEffectAtLocation(UNiagaraSystem* SpawnEffect, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate, bool bReset)
 {
 	APRNiagaraEffect* ActivateableNiagaraEffect = GetActivateableNiagaraEffect(SpawnEffect);
 	if(IsValid(ActivateableNiagaraEffect))
 	{
 		// NiagaraEffect를 활성화하고 Spawn할 위치와 회전값, 크기, 자동실행 여부를 적용합니다.
-		ActivateableNiagaraEffect->SpawnEffectAtLocation(Location, Rotation, Scale, bEffectAutoActivate);
+		ActivateableNiagaraEffect->SpawnEffectAtLocation(Location, Rotation, Scale, bEffectAutoActivate, bReset);
 
 		// 활성화된 NiagaraEffect의 Index를 ActivateNiagaraEffectIndexList에 저장합니다.
 		ActivateNiagaraEffectIndexList.Find(SpawnEffect)->Indexes.Add(ActivateableNiagaraEffect->GetPoolIndex());
@@ -195,13 +195,13 @@ APRNiagaraEffect* UPREffectSystemComponent::SpawnNiagaraEffectAtLocation(UNiagar
 	return ActivateableNiagaraEffect;
 }
 
-APRNiagaraEffect* UPREffectSystemComponent::SpawnNiagaraEffectAttached(UNiagaraSystem* SpawnEffect,	USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate)
+APRNiagaraEffect* UPREffectSystemComponent::SpawnNiagaraEffectAttached(UNiagaraSystem* SpawnEffect,	USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate, bool bReset)
 {
 	APRNiagaraEffect* ActivateableNiagaraEffect = GetActivateableNiagaraEffect(SpawnEffect);
 	if(IsValid(ActivateableNiagaraEffect))
 	{
 		// NiagaraEffect를 활성화하고 Spawn하여 부착할 Component와 위치, 회전값, 크기, 자동실행 여부를 적용합니다.
-		ActivateableNiagaraEffect->SpawnEffectAttached(Parent, AttachSocketName, Location, Rotation, Scale, bEffectAutoActivate);
+		ActivateableNiagaraEffect->SpawnEffectAttached(Parent, AttachSocketName, Location, Rotation, Scale, EAttachLocation::KeepWorldPosition, bEffectAutoActivate, bReset);
 
 		// 활성화된 NiagaraEffect의 Index를 ActivateNiagaraEffectIndexList에 저장합니다.
 		ActivateNiagaraEffectIndexList.Find(SpawnEffect)->Indexes.Add(ActivateableNiagaraEffect->GetPoolIndex());
@@ -567,13 +567,13 @@ bool UPREffectSystemComponent::IsDynamicParticleEffect(APRParticleEffect* Partic
 	return false;
 }
 
-APRParticleEffect* UPREffectSystemComponent::SpawnParticleEffectAtLocation(UParticleSystem* SpawnEffect, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate)
+APRParticleEffect* UPREffectSystemComponent::SpawnParticleEffectAtLocation(UParticleSystem* SpawnEffect, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate, bool bReset)
 {
 	APRParticleEffect* ActivateableParticleEffect = GetActivateableParticleEffect(SpawnEffect);
 	if(IsValid(ActivateableParticleEffect))
 	{
 		// ParticleEffect를 활성화하고 Spawn할 위치와 회전값, 크기, 자동실행 여부를 적용합니다.
-		ActivateableParticleEffect->SpawnEffectAtLocation(Location, Rotation, Scale, bEffectAutoActivate);
+		ActivateableParticleEffect->SpawnEffectAtLocation(Location, Rotation, Scale, bEffectAutoActivate, bReset);
 
 		// 활성화된 ParticleEffect의 Index를 ActivateParticleEffectIndexList에 저장합니다.
 		ActivateParticleEffectIndexList.Find(SpawnEffect)->Indexes.Add(ActivateableParticleEffect->GetPoolIndex());
@@ -582,13 +582,13 @@ APRParticleEffect* UPREffectSystemComponent::SpawnParticleEffectAtLocation(UPart
 	return ActivateableParticleEffect;
 }
 
-APRParticleEffect* UPREffectSystemComponent::SpawnParticleEffectAttached(UParticleSystem* SpawnEffect, USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale,	bool bEffectAutoActivate)
+APRParticleEffect* UPREffectSystemComponent::SpawnParticleEffectAttached(UParticleSystem* SpawnEffect, USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale,	bool bEffectAutoActivate, bool bReset)
 {
 	APRParticleEffect* ActivateableParticleEffect = GetActivateableParticleEffect(SpawnEffect);
 	if(IsValid(ActivateableParticleEffect))
 	{
 		// ParticleEffect를 활성화하고 Spawn하여 부착할 Component와 위치, 회전값, 크기, 자동실행 여부를 적용합니다.
-		ActivateableParticleEffect->SpawnEffectAttached(Parent, AttachSocketName, Location, Rotation, Scale, bEffectAutoActivate);
+		ActivateableParticleEffect->SpawnEffectAttached(Parent, AttachSocketName, Location, Rotation, Scale, EAttachLocation::KeepWorldPosition, bEffectAutoActivate, bReset);
 
 		// 활성화된 ParticleEffect의 Index를 ActivateParticleEffectIndexList에 저장합니다.
 		ActivateParticleEffectIndexList.Find(SpawnEffect)->Indexes.Add(ActivateableParticleEffect->GetPoolIndex());

@@ -9,6 +9,7 @@
 #include "Components/PRObjectPoolSystemComponent.h"
 #include "Components/PREffectSystemComponent.h"
 #include "Components/PRMovementSystemComponent.h"
+#include "Components/PRWeaponSystemComponent.h"
 #include "MotionWarpingComponent.h"
 
 // 임시
@@ -73,6 +74,9 @@ APRBaseCharacter::APRBaseCharacter()
 	// MovementSystem
 	MovementSystem = CreateDefaultSubobject<UPRMovementSystemComponent>(TEXT("MovementSystem"));
 
+	// WeaponSystem
+	WeaponSystem = CreateDefaultSubobject<UPRWeaponSystemComponent>(TEXT("WeaponSystem"));
+
 	// MotionWarping
 	MotionWarping = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("MotionWarping"));
 
@@ -103,6 +107,9 @@ void APRBaseCharacter::PostInitializeComponents()
 void APRBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// WeaponSystem
+	GetWeaponSystem()->InitializeWeaponSystem();
 }
 
 void APRBaseCharacter::Tick(float DeltaTime)
@@ -214,7 +221,7 @@ void APRBaseCharacter::DoDamage()
 				UniqueActors.Emplace(HitResult.GetActor());
 				FPRDamageInfo DamageInfo;
 				DamageInfo.DamageType = EPRDamageType::DamageType_Melee;
-				DamageInfo.DamageElement = DamageElement;
+				DamageInfo.DamageElementType = DamageElementType;
 				DamageInfo.DamageResponse = EPRDamageResponse::DamageResponse_HitReaction;
 				DamageInfo.ImpactLocation = HitResult.ImpactPoint;
 
@@ -333,6 +340,13 @@ EPRGender APRBaseCharacter::GetGender() const
 TObjectPtr<USoundBase> APRBaseCharacter::GetFootstepsSound() const
 {
 	return FootstepsSound;
+}
+#pragma endregion 
+
+#pragma region Attack
+void APRBaseCharacter::Attack()
+{
+	GetWeaponSystem()->DrawWeapon(true);
 }
 #pragma endregion 
 
