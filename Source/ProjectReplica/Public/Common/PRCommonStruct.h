@@ -49,7 +49,7 @@ public:
 	FPRDamageInfo()
 		: Amount(0.0f)
 		, DamageType(EPRDamageType::DamageType_None)
-		, DamageElement(EPRElement::Element_None)
+		, DamageElementType(EPRElementType::ElementType_None)
 		, DamageResponse(EPRDamageResponse::DamageResponse_None)
 		, ImpactLocation(FVector::ZeroVector)
 		, bIsCritical(false)
@@ -59,11 +59,11 @@ public:
 		, bShouldForceInterrupt(false)
 	{}
    
-    FPRDamageInfo(float NewAmount, EPRDamageType NewDamageType, EPRElement NewDamageElement, EPRDamageResponse NewEPRDamageResponse, FVector NewImpactLocation,
+    FPRDamageInfo(float NewAmount, EPRDamageType NewDamageType, EPRElementType NewDamageElementType, EPRDamageResponse NewEPRDamageResponse, FVector NewImpactLocation,
     				bool bNewIsCritical, bool bNewShouldDamageInvincible, bool bNewCanBeBlocked, bool bNewCanBeParried, bool bNewShouldForceInterrupt)
 		: Amount(NewAmount)
 		, DamageType(NewDamageType)
-		, DamageElement(NewDamageElement)
+		, DamageElementType(NewDamageElementType)
 		, DamageResponse(NewEPRDamageResponse)
 		, ImpactLocation(NewImpactLocation)
 		, bIsCritical(bNewIsCritical)
@@ -84,7 +84,7 @@ public:
 
 	/** 대미지 속성입니다.*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DamageInfo")
-	EPRElement DamageElement;
+	EPRElementType DamageElementType;
 	
 	/** 대미지에 대한 반응입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DamageInfo")
@@ -131,21 +131,108 @@ struct FPRElementColor : public FTableRowBase
 
 public:
 	FPRElementColor()
-	: Element(EPRElement::Element_None)
+	: ElementType(EPRElementType::ElementType_None)
 	, Color(FLinearColor::White)
 	{}
 
-	FPRElementColor(EPRElement NewElement, FLinearColor NewColor)
-	: Element(NewElement)
+	FPRElementColor(EPRElementType NewElementType, FLinearColor NewColor)
+	: ElementType(NewElementType)
 	, Color(NewColor)
 	{}
 
 public:
 	/** 속성입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ElementColor")
-	EPRElement Element;
+	EPRElementType ElementType;
 	
 	/** 속성에 해당하는 색상입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ElementColor")
 	FLinearColor Color;
+};
+
+/** 무기의 능력치를 나타내는 구조체입니다. */
+USTRUCT(Atomic, BlueprintType)
+struct FPRWeaponStat
+{
+	GENERATED_BODY()
+
+public:
+	FPRWeaponStat()
+		: DefaultAttack(0.0f)
+		, SubStatType(EPRStatType::StatType_None)
+		, SubStatAmount(0.0f)
+	{}
+   
+	FPRWeaponStat(float NewDefaultAttack, EPRStatType NewSubStatType, float NewSubStatAmount)
+		: DefaultAttack(NewDefaultAttack)
+		, SubStatType(NewSubStatType)
+		, SubStatAmount(NewSubStatAmount)
+	{}
+   	
+public:
+	/** 무기의 기초 공격력입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponInfo")
+	float DefaultAttack;
+
+	/** 무기의 부 옵션입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponInfo")
+	EPRStatType SubStatType;
+
+	/** 무기의 부 옵션 수치입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponInfo")
+	float SubStatAmount;
+
+public:
+	/**
+	 * 인자로 받은 WeaponStat과 같은지 판별하는 ==연산자 오버로딩입니다.
+	 * 
+	 * @param NewWeaponStat 비교하는 WeaponStat과 같은지 판별할 WeaponStat입니다.
+	 * @return 인자로 받은 WeaponStat과 같을 경우 true를 다를 경우 false를 반환합니다.
+	 */
+	FORCEINLINE bool operator==(const FPRWeaponStat& NewWeaponStat) const
+	{
+		return this->DefaultAttack == NewWeaponStat.DefaultAttack
+				&& this->SubStatType == NewWeaponStat.SubStatType
+				&& this->SubStatAmount == NewWeaponStat.SubStatAmount;
+	}
+
+	/**
+	 * 인자로 받은 WeaponStat과 다른지 판별하는 !=연산자 오버로딩입니다.
+	 * 
+	 * @param NewWeaponStat 비교하는 WeaponStat과 같은지 판별할 WeaponStat입니다.
+	 * @return 인자로 받은 WeaponStat과 다를 경우 true를 같을 경우 false를 반환합니다.
+	 */
+	FORCEINLINE bool operator!=(const FPRWeaponStat& NewWeaponStat) const
+	{
+		return this->DefaultAttack != NewWeaponStat.DefaultAttack
+				|| this->SubStatType != NewWeaponStat.SubStatType
+				|| this->SubStatAmount != NewWeaponStat.SubStatAmount;
+	}
+};
+
+/** 무기의 정보를 나타내는 구조체입니다. */
+USTRUCT(Atomic, BlueprintType)
+struct FPRWeaponInfo : public FTableRowBase
+{
+	GENERATED_BODY()
+
+public:
+	FPRWeaponInfo()
+		: WeaponClass(nullptr)
+		, WeaponStat(FPRWeaponStat())
+	{}
+   
+	FPRWeaponInfo(TSubclassOf<class APRBaseWeapon> NewWeaponClass, FPRWeaponStat NewWeaponStat)
+		: WeaponClass(NewWeaponClass)
+		, WeaponStat(NewWeaponStat)
+	{}
+   	
+public:
+	/** Spawn할 무기의 클래스입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponInfo")
+	TSubclassOf<class APRBaseWeapon> WeaponClass;
+
+	/** 무기 능력치입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponInfo")
+	FPRWeaponStat WeaponStat;
 };

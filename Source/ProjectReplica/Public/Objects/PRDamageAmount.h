@@ -30,10 +30,10 @@ public:
 	 * @param SpawnLocation Spawn할 위치
 	 * @param DamageAmount 대미지의 양
 	 * @param bIsCritical 일반 대미지인지, 치명타 대미지인지 판별하는 인자
-	 * @param Element 대미지의 속성
+	 * @param ElementType 대미지의 속성
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DamageAmount")
-	void Initialize(FVector SpawnLocation, float DamageAmount, bool bIsCritical, EPRElement Element);
+	void Initialize(FVector SpawnLocation, float DamageAmount, bool bIsCritical, EPRElementType ElementType);
 
 private:
 	/** DamageAmount 위젯을 생성하는 함수입니다. */

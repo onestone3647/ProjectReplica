@@ -34,7 +34,7 @@ public:
 	 * @param bAutoActivate true일 경우 이펙트를 Spawn하자마다 이펙트를 실행합니다. false일 경우 이펙트를 실행하지 않습니다.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PREffect")
-	virtual void SpawnEffectAtLocation(FVector Location, FRotator Rotation, FVector Scale, bool bAutoActivate = true);
+	virtual void SpawnEffectAtLocation(FVector Location, FRotator Rotation, FVector Scale, bool bAutoActivate = true, bool bReset = false);
 
 	/**
 	 * 이펙트를 지정한 Component에 부착하여 Spawn하는 함수입니다.
@@ -48,15 +48,19 @@ public:
 	 * @param bAutoActivate true일 경우 이펙트를 Spawn하자마다 이펙트를 실행합니다. false일 경우 이펙트를 실행하지 않습니다.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PREffect")
-	virtual void SpawnEffectAttached(USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, EAttachLocation::Type LocationType = EAttachLocation::KeepWorldPosition, bool bAutoActivate = true);
+	virtual void SpawnEffectAttached(USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, EAttachLocation::Type LocationType = EAttachLocation::KeepWorldPosition, bool bAutoActivate = true, bool bReset = false);
 	
 	/** 이펙트가 활성화되었는지 판별하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PREffect")
 	bool IsActivate() const;	
 	
-	/** 이펙트를 활성화하는 함수입니다. */
+	/**
+	 * 이펙트를 활성화하는 함수입니다.
+	 *
+	 * @param bReset 처음부터 다시 재생할지 여부
+	 */
 	UFUNCTION(BlueprintCallable, Category = "PREffect")
-	virtual void Activate();
+	virtual void Activate(bool bReset = false);
 
 	/** 이펙트를 비활성화하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PREffect")

@@ -20,17 +20,17 @@ void APREffect::BeginPlay()
 	
 }
 
-void APREffect::SpawnEffectAtLocation(FVector Location, FRotator Rotation, FVector Scale, bool bAutoActivate)
+void APREffect::SpawnEffectAtLocation(FVector Location, FRotator Rotation, FVector Scale, bool bAutoActivate, bool bReset)
 {
 	SetActorLocationAndRotation(Location, Rotation);
 	SetActorScale3D(Scale);
 	if(bAutoActivate)
 	{
-		Activate();
+		Activate(bReset);
 	}
 }
 
-void APREffect::SpawnEffectAttached(USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, EAttachLocation::Type LocationType, bool bAutoActivate)
+void APREffect::SpawnEffectAttached(USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, EAttachLocation::Type LocationType, bool bAutoActivate, bool bReset)
 {
 	const FAttachmentTransformRules AttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepRelative, false);
 	AttachToComponent(Parent, AttachmentTransformRules, AttachSocketName);
@@ -46,7 +46,7 @@ void APREffect::SpawnEffectAttached(USceneComponent* Parent, FName AttachSocketN
 	SetActorScale3D(Scale);
 	if(bAutoActivate)
 	{
-		Activate();
+		Activate(bReset);
 	}
 }
 
@@ -55,16 +55,13 @@ bool APREffect::IsActivate() const
 	return bActivate;
 }
 
-void APREffect::Activate()
+void APREffect::Activate(bool bReset)
 {
-	PR_LOG_SCREEN("Activate");
 	bActivate = true;
 	SetActorHiddenInGame(!bActivate);
 
 	// 이펙트의 수명을 설정합니다. 이펙트의 수명이 끝나면 이펙트를 비활성화합니다.
 	SetEffectLifespan(EffectLifespan);
-
-	UKismetSystemLibrary::DrawDebugLine(GetWorld(), GetEffectOwner()->GetActorLocation(), GetActorLocation(), FLinearColor::Blue, 10, 0);
 }
 
 void APREffect::Deactivate()

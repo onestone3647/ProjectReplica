@@ -21,13 +21,13 @@ void APRNiagaraEffect::InitializeNiagaraEffect(UNiagaraSystem* NiagaraSystem, AA
 	}
 }
 
-void APRNiagaraEffect::Activate()
+void APRNiagaraEffect::Activate(bool bReset)
 {
 	Super::Activate();
 
 	if(IsValid(NiagaraEffect))
 	{
-		NiagaraEffect->Activate();
+		NiagaraEffect->Activate(bReset);
 	}
 }
 

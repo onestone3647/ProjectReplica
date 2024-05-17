@@ -74,8 +74,23 @@ enum class EPRDamageResponse : uint8
 };
 
 /**
- * 속성을 나타내는 열거형입니다.
+ * 속성의 종류를 나타내는 열거형입니다.
  */
+UENUM(BlueprintType)
+enum class EPRElementType : uint8
+{
+	ElementType_None			UMETA(DisplayName = "None"),
+	ElementType_Physio			UMETA(DisplayName = "Physio"),			// 물리 속성
+	ElementType_Pyro			UMETA(DisplayName = "Pyro"),			// 화염 속성
+	ElementType_Hydro			UMETA(DisplayName = "Hydro"),			// 물 속성
+	ElementType_Cryo			UMETA(DisplayName = "Cryo"),			// 얼음 속성
+	ElementType_Anemo			UMETA(DisplayName = "Anemo"),			// 바람 속성
+	ElementType_Electro			UMETA(DisplayName = "Electro"),			// 번개 속성
+	ElementType_Geo				UMETA(DisplayName = "Geo"),				// 땅 속성
+	ElementType_Photo			UMETA(DisplayName = "Photo"),			// 빛 속성
+	ElementType_Erebo			UMETA(DisplayName = "Erebo")			// 어둠 속성
+};
+
 UENUM(BlueprintType)
 enum class EPRElement : uint8
 {
@@ -89,4 +104,32 @@ enum class EPRElement : uint8
 	Element_Geo				UMETA(DisplayName = "Geo"),				// 땅 속성
 	Element_Photo			UMETA(DisplayName = "Photo"),			// 빛 속성
 	Element_Erebo			UMETA(DisplayName = "Erebo")			// 어둠 속성
+};
+
+/**
+ * 능력치의 종류를 나타내는 열거형입니다.
+ */
+UENUM(BlueprintType)
+enum class EPRStatType : uint8
+{
+	StatType_None					UMETA(DisplayName = "None"),
+	StatType_Health					UMETA(DisplayName = "Health"),					// 체력
+	StatType_HealthPercent			UMETA(DisplayName = "HealthPoint"),				// 체력 %
+	StatType_Attack					UMETA(DisplayName = "Attack"),					// 공격력
+	StatType_AttackPercent			UMETA(DisplayName = "AttackPoint"),				// 공격력 %
+	StatType_Defence				UMETA(DisplayName = "Defence"),					// 방어력
+	StatType_DefencePercent			UMETA(DisplayName = "DefencePoint"),			// 방어력 %
+	StatType_CriticalRate			UMETA(DisplayName = "CriticalRate"),			// 치명타 확률
+	StatType_CriticalDamage			UMETA(DisplayName = "CriticalDamage"),			// 치명타 피해
+	StatType_EnergyRechargeRate		UMETA(DisplayName = "EnergyRechargeRate"),		// 에너지 충전율
+	StatType_HealingBonus			UMETA(DisplayName = "HealingBonus"),			// 치유 보너스
+	StatType_PhysioDamageBonus		UMETA(DisplayName = "PhysioDamageBonus"),		// 물리 속성 피해 보너스
+	StatType_PyroDamageBonus		UMETA(DisplayName = "PyroDamageBonus"),			// 화염 속성 피해 보너스
+	StatType_HydroDamageBonus		UMETA(DisplayName = "HydroDamageBonus"),		// 물 속성 피해 보너스
+	StatType_CryoDamageBonus		UMETA(DisplayName = "CryoDamageBonus"),			// 얼음 속성 피해 보너스
+	StatType_AnemoDamageBonus		UMETA(DisplayName = "AnemoDamageBonus"),		// 바람 속성 피해 보너스
+	StatType_ElectroDamageBonus		UMETA(DisplayName = "ElectroDamageBonus"),		// 번개 속성 피해 보너스
+	StatType_GeoDamageBonus			UMETA(DisplayName = "GeoDamageBonus"),			// 땅 속성 피해 보너스
+	StatType_PhotoDamageBonus		UMETA(DisplayName = "PhotoDamageBonus"),		// 빛 속성 피해 보너스
+	StatType_EreboDamageBonus		UMETA(DisplayName = "EreboDamageBonus")			// 어둠 속성 피해 보너스
 };

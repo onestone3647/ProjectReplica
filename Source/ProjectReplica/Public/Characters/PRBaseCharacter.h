@@ -106,7 +106,7 @@ private:
 
 	// 임시
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "임시", meta = (AllowPrivateAccess = "true"))
-	EPRElement DamageElement;
+	EPRElementType DamageElementType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "임시", meta = (AllowPrivateAccess = "true"))
 	float DamageAmount;
@@ -244,5 +244,11 @@ public:
 
 	/** FootstepsSound를 반환하는 함수입니다. */
 	TObjectPtr<USoundBase> GetFootstepsSound() const;
+#pragma endregion
+
+#pragma region Attack
+protected:
+	UFUNCTION(BlueprintCallable, Category = "Attack")
+	virtual void Attack();
 #pragma endregion 
 };

@@ -111,6 +111,7 @@ Plugins/*/Intermediate/*
 /Content/UIResource
 /Content/VFX
 /Content/ControlRig
+/Content/Weapons
 
 # TestMap
 /Content/LevelPrototyping

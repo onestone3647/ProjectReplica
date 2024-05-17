@@ -107,6 +107,9 @@ void APRBaseCharacter::PostInitializeComponents()
 void APRBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// WeaponSystem
+	GetWeaponSystem()->InitializeWeaponSystem();
 }
 
 void APRBaseCharacter::Tick(float DeltaTime)
@@ -218,7 +221,7 @@ void APRBaseCharacter::DoDamage()
 				UniqueActors.Emplace(HitResult.GetActor());
 				FPRDamageInfo DamageInfo;
 				DamageInfo.DamageType = EPRDamageType::DamageType_Melee;
-				DamageInfo.DamageElement = DamageElement;
+				DamageInfo.DamageElementType = DamageElementType;
 				DamageInfo.DamageResponse = EPRDamageResponse::DamageResponse_HitReaction;
 				DamageInfo.ImpactLocation = HitResult.ImpactPoint;
 
@@ -337,6 +340,13 @@ EPRGender APRBaseCharacter::GetGender() const
 TObjectPtr<USoundBase> APRBaseCharacter::GetFootstepsSound() const
 {
 	return FootstepsSound;
+}
+#pragma endregion 
+
+#pragma region Attack
+void APRBaseCharacter::Attack()
+{
+	GetWeaponSystem()->DrawWeapon(true);
 }
 #pragma endregion 
 

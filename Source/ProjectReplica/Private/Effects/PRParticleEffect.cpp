@@ -21,13 +21,13 @@ void APRParticleEffect::InitializeParticleEffect(UParticleSystem* ParticleSystem
 	}
 }
 
-void APRParticleEffect::Activate()
+void APRParticleEffect::Activate(bool bReset)
 {
 	Super::Activate();
 
 	if(IsValid(ParticleEffect))
 	{
-		ParticleEffect->Activate();
+		ParticleEffect->Activate(bReset);
 	}
 }
 

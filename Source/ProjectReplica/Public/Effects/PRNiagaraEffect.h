@@ -32,14 +32,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PRNiagaraEffect")
 	void InitializeNiagaraEffect(UNiagaraSystem* NiagaraSystem = nullptr, AActor* NewEffectOwner = nullptr, int32 NewPoolIndex= -1, float NewLifespan = 0.0f);
 	
-	/** 이펙트를 활성화하는 함수입니다. */
-	virtual void Activate() override;
+	/**
+	 * 이펙트를 활성화하는 함수입니다.
+	 *
+	 * @param bReset 처음부터 다시 재생할지 여부
+	 */
+	virtual void Activate(bool bReset = false) override;
 
 	/** 이펙트를 비활성화하는 함수입니다. */
 	virtual void Deactivate() override;
 
 	/** FXSystemComponent를 반환하는 함수입니다. */
-	virtual UFXSystemComponent* GetFXSystemComponent() const; 
+	virtual UFXSystemComponent* GetFXSystemComponent() const override; 
 
 	/** NiagaraEffect의 에셋을 반환하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PRNiagaraEffect")

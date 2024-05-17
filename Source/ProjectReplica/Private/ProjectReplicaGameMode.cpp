@@ -30,7 +30,7 @@ void AProjectReplicaGameMode::PostInitializeComponents()
 	GetObjectPoolSystem()->InitializeObjectPool();
 }
 
-APRDamageAmount* AProjectReplicaGameMode::ActivateDamageAmount(FVector SpawnLocation, float DamageAmount, bool bIsCritical, EPRElement Element)
+APRDamageAmount* AProjectReplicaGameMode::ActivateDamageAmount(FVector SpawnLocation, float DamageAmount, bool bIsCritical, EPRElementType ElementType)
 {
 	if(GetWorld()
 		&& DamageAmountClass != nullptr)
@@ -38,7 +38,7 @@ APRDamageAmount* AProjectReplicaGameMode::ActivateDamageAmount(FVector SpawnLoca
 		APRDamageAmount* DamageAmountObject = Cast<APRDamageAmount>(GetObjectPoolSystem()->GetActivateablePooledObject(DamageAmountClass));
 		if(IsValid(DamageAmountObject))
 		{
-			DamageAmountObject->Initialize(SpawnLocation, DamageAmount, bIsCritical, Element);
+			DamageAmountObject->Initialize(SpawnLocation, DamageAmount, bIsCritical, ElementType);
 			if(GetObjectPoolSystem()->ActivatePooledObject(DamageAmountObject, SpawnLocation) != nullptr)
 			{
 				return DamageAmountObject;

@@ -258,9 +258,10 @@ public:
 	 * @param Rotation 이펙트에 적용한 회전 값
 	 * @param Scale 이펙트에 적용할 크기
 	 * @param bEffectAutoActivate true일 경우 이펙트를 Spawn하자마다 이펙트를 실행합니다. false일 경우 이펙트를 실행하지 않습니다.
+	 * @param bReset 처음부터 다시 재생할지 여부
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
-	APRNiagaraEffect* SpawnNiagaraEffectAtLocation(UNiagaraSystem* SpawnEffect, FVector Location, FRotator Rotation = FRotator::ZeroRotator, FVector Scale = FVector(1.0f), bool bEffectAutoActivate = true);
+	APRNiagaraEffect* SpawnNiagaraEffectAtLocation(UNiagaraSystem* SpawnEffect, FVector Location, FRotator Rotation = FRotator::ZeroRotator, FVector Scale = FVector(1.0f), bool bEffectAutoActivate = true, bool bReset = false);
 
 	
 	/**
@@ -273,9 +274,10 @@ public:
 	 * @param Rotation 이펙트에 적용한 회전 값
 	 * @param Scale 이펙트에 적용할 크기
 	 * @param bEffectAutoActivate true일 경우 이펙트를 Spawn하자마다 이펙트를 실행합니다. false일 경우 이펙트를 실행하지 않습니다.
+	 * @param bReset 처음부터 다시 재생할지 여부
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
-	APRNiagaraEffect* SpawnNiagaraEffectAttached(UNiagaraSystem* SpawnEffect, USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate = true);
+	APRNiagaraEffect* SpawnNiagaraEffectAttached(UNiagaraSystem* SpawnEffect, USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate = true, bool bReset = false);
 
 private:
 	/** 인자에 해당하는 활성화할 수 있는 NiagaraSystem을 반환하는 함수입니다. */
@@ -372,9 +374,10 @@ public:
 	 * @param Rotation 이펙트에 적용한 회전 값
 	 * @param Scale 이펙트에 적용할 크기
 	 * @param bEffectAutoActivate true일 경우 이펙트를 Spawn하자마다 이펙트를 실행합니다. false일 경우 이펙트를 실행하지 않습니다.
+	 * @param bReset 처음부터 다시 재생할지 여부
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|ParticleEffect")
-	APRParticleEffect* SpawnParticleEffectAtLocation(UParticleSystem* SpawnEffect, FVector Location, FRotator Rotation = FRotator::ZeroRotator, FVector Scale = FVector(1.0f), bool bEffectAutoActivate = true);
+	APRParticleEffect* SpawnParticleEffectAtLocation(UParticleSystem* SpawnEffect, FVector Location, FRotator Rotation = FRotator::ZeroRotator, FVector Scale = FVector(1.0f), bool bEffectAutoActivate = true, bool bReset = false);
 
 	
 	/**
@@ -387,9 +390,10 @@ public:
 	 * @param Rotation 이펙트에 적용한 회전 값
 	 * @param Scale 이펙트에 적용할 크기
 	 * @param bEffectAutoActivate true일 경우 이펙트를 Spawn하자마다 이펙트를 실행합니다. false일 경우 이펙트를 실행하지 않습니다.
+	 * @param bReset 처음부터 다시 재생할지 여부
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|ParticleEffect")
-	APRParticleEffect* SpawnParticleEffectAttached(UParticleSystem* SpawnEffect, USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate = true);
+	APRParticleEffect* SpawnParticleEffectAttached(UParticleSystem* SpawnEffect, USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate = true, bool bReset = false);
 
 private:
 	/** 인자에 해당하는 활성화할 수 있는 ParticleSystem을 반환하는 함수입니다. */

@@ -69,7 +69,7 @@ bool APRDamageableObject_HasHealthPoint::TakeDamage_Implementation(FPRDamageInfo
 	AProjectReplicaGameMode* PRGameMode = Cast<AProjectReplicaGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if(IsValid(PRGameMode))
 	{
-		PRGameMode->ActivateDamageAmount(DamageInfo.ImpactLocation, DamageInfo.Amount, DamageInfo.bIsCritical, DamageInfo.DamageElement);
+		PRGameMode->ActivateDamageAmount(DamageInfo.ImpactLocation, DamageInfo.Amount, DamageInfo.bIsCritical, DamageInfo.DamageElementType);
 		Health -= DamageInfo.Amount;
 		if(Health <= 0.0f)
 		{

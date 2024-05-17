@@ -7,7 +7,7 @@
 #include "PRMeleeWeapon.generated.h"
 
 /**
- * 
+ * 근접 무기 클래스입니다.
  */
 UCLASS()
 class PROJECTREPLICA_API APRMeleeWeapon : public APRBaseWeapon
