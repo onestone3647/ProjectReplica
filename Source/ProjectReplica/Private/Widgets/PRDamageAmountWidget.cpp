@@ -15,7 +15,7 @@ UPRDamageAmountWidget::UPRDamageAmountWidget(const FObjectInitializer& ObjectIni
 	FadeOutWidgetAnim = nullptr;
 }
 
-void UPRDamageAmountWidget::InitializeDamageAmountWidget(float DamageAmount, bool bIsCritical, EPRElement Element)
+void UPRDamageAmountWidget::InitializeDamageAmountWidget(float DamageAmount, bool bIsCritical, EPRElementType ElementType)
 {
 	if(FadeOutWidgetAnim)
 	{
@@ -49,6 +49,6 @@ void UPRDamageAmountWidget::InitializeDamageAmountWidget(float DamageAmount, boo
 	UProjectReplicaGameInstance* PRGameInstance = Cast<UProjectReplicaGameInstance>(GetGameInstance());
 	if(PRGameInstance)
 	{
-		SetColorAndOpacity(PRGameInstance->GetElementColor(Element));
+		SetColorAndOpacity(PRGameInstance->GetElementColor(ElementType));
 	}
 }

@@ -21,6 +21,12 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+protected:
+	/** 이 오브젝트의 RootComponent로 지정할 SceneComponent 클래스입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRDamageableObject")
+	TObjectPtr<class USceneComponent> Root;
+
+
 #pragma region Interface_Damageable
 public:
 	/**

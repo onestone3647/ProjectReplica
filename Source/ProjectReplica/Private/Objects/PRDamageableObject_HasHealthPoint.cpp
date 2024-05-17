@@ -2,15 +2,13 @@
 
 
 #include "Objects/PRDamageableObject_HasHealthPoint.h"
+#include "ProjectReplicaGameMode.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/WidgetComponent.h"
 #include "Widgets/PRBaseHealthBarWidget.h"
 
 APRDamageableObject_HasHealthPoint::APRDamageableObject_HasHealthPoint()
 {
-	// Root
-	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-	SetRootComponent(Root);
-
 	// Health
 	MaxHealth = 100.0f;
 	Health = MaxHealth;
@@ -64,6 +62,24 @@ float APRDamageableObject_HasHealthPoint::GetCurrentHealth_Implementation()
 float APRDamageableObject_HasHealthPoint::GetMaxHealth_Implementation()
 {
 	return MaxHealth;
+}
+
+bool APRDamageableObject_HasHealthPoint::TakeDamage_Implementation(FPRDamageInfo DamageInfo)
+{
+	AProjectReplicaGameMode* PRGameMode = Cast<AProjectReplicaGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if(IsValid(PRGameMode))
+	{
+		PRGameMode->ActivateDamageAmount(DamageInfo.ImpactLocation, DamageInfo.Amount, DamageInfo.bIsCritical, DamageInfo.DamageElementType);
+		Health -= DamageInfo.Amount;
+		if(Health <= 0.0f)
+		{
+			Destroy();
+		}
+
+		return true;
+	}
+
+	return false;
 }
 
 void APRDamageableObject_HasHealthPoint::CreateHealthBarWidget()

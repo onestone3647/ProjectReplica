@@ -8,6 +8,10 @@
 APRDamageAmount::APRDamageAmount()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	
+	// Root
+	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	SetRootComponent(Root);
 
 	// DamageAmountWidgetClass;
 	DamageAmountWidgetClass = nullptr;
@@ -22,7 +26,7 @@ APRDamageAmount::APRDamageAmount()
 
 	// DamageAmountWidget
 	DamageAmountWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("DamageAmountWidget"));
-	DamageAmountWidget->SetupAttachment(RootComponent);
+	DamageAmountWidget->SetupAttachment(Root);
 	DamageAmountWidget->SetWidgetSpace(EWidgetSpace::Screen);
 	DamageAmountWidget->SetDrawSize(FVector2D(500.0f, 120.0f));
 	if(DamageAmountWidgetClass)
@@ -38,16 +42,16 @@ void APRDamageAmount::BeginPlay()
 	CreateDamageAmountWidget();
 }
 
-void APRDamageAmount::Initialize(FVector SpawnLocation, float DamageAmount, bool bIsCritical, EPRElement Element)
+void APRDamageAmount::Initialize(FVector SpawnLocation, float DamageAmount, bool bIsCritical, EPRElementType ElementType)
 {
 	SetActorLocation(SpawnLocation);
 
 	if(IsValid(DamageAmountWidgetInstance))
 	{
-		// WidgetAnimation이 종료되었을 때 OnFadeOutAnimFinish 함수를 실행하기 위해 Delegate에 함수를 바인딩합니다.
-		DamageAmountWidgetInstance->OnFadeOutWidgetAnimFinishedDelegate.BindUFunction(this, TEXT("OnFadeOutAnimFinish"));
+		// WidgetAnimation이 종료되었을 때 Deactivate 함수를 실행하기 위해 Delegate에 함수를 바인딩합니다.
+		DamageAmountWidgetInstance->OnFadeOutWidgetAnimFinishedDelegate.BindDynamic(this, &APRPooledObject::Deactivate);
 		
-		DamageAmountWidgetInstance->InitializeDamageAmountWidget(DamageAmount, bIsCritical, Element);
+		DamageAmountWidgetInstance->InitializeDamageAmountWidget(DamageAmount, bIsCritical, ElementType);
 	}
 }
 
@@ -65,10 +69,5 @@ UPRDamageAmountWidget* APRDamageAmount::CreateDamageAmountWidget()
 	}
 
 	return nullptr;
-}
-
-void APRDamageAmount::OnFadeOutAnimFinish()
-{
-	Destroy();
 }
 

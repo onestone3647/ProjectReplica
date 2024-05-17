@@ -8,9 +8,23 @@
 #include "Interfaces/Interface_PRDamageable.h"
 #include "PRBaseCharacter.generated.h"
 
+/** 캐릭터의 성별을 나타내는 열거형입니다. */
+UENUM(BlueprintType)
+enum class EPRGender : uint8
+{
+	Gender_None				UMETA(DisplayName = "None"),
+	Gender_Male		    	UMETA(DisplayName = "Male"),
+	Gender_Female 		  	UMETA(DisplayName = "Female")
+};
+
 class UPRDamageSystemComponent;
 class UPRStatSystemComponent;
 class UPRStateSystemComponent;
+class UPRObjectPoolSystemComponent;
+class UPREffectSystemComponent;
+class UPRMovementSystemComponent;
+class UPRWeaponSystemComponent;
+class UMotionWarpingComponent;
 
 // 임시
 class UNiagaraSystem;
@@ -30,7 +44,6 @@ public:
 protected:
 	/** 액터에 속한 모든 컴포넌트의 세팅이 완료되면 호출되는 함수입니다. */
 	virtual void PostInitializeComponents() override;
-	
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
@@ -93,7 +106,7 @@ private:
 
 	// 임시
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "임시", meta = (AllowPrivateAccess = "true"))
-	EPRElement DamageElement;
+	EPRElementType DamageElementType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "임시", meta = (AllowPrivateAccess = "true"))
 	float DamageAmount;
@@ -138,33 +151,104 @@ public:
 	FORCEINLINE class UPRStateSystemComponent* GetStateSystem() const { return StateSystem; }
 #pragma endregion
 
+#pragma region ObjectPoolSystem
+private:
+	/** 오브젝트 풀을 관리하는 ActorComponent 클래스입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "ObjectPoolSystem", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPRObjectPoolSystemComponent> ObjectPoolSystem;
+
+public:
+	/** ObjectPoolSystem을 반환하는 함수입니다. */
+	FORCEINLINE class UPRObjectPoolSystemComponent* GetObjectPoolSystem() const { return ObjectPoolSystem; }
+#pragma endregion
+
+#pragma region EffectSystem
+private:
+	/** 이펙트를 관리하는 ActorComponent 클래스입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "EffectSystem", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPREffectSystemComponent> EffectSystem;
+
+public:
+	/** ObjectPoolSystem을 반환하는 함수입니다. */
+	FORCEINLINE class UPREffectSystemComponent* GetEffectSystem() const { return EffectSystem; }
+#pragma endregion 
+
+#pragma region MovementSystem
+public:
+	/**
+	 * 공중에 뜬(에어리얼) 상태를 활성화하는 함수입니다.
+	 *
+	 * @param bNewActivateAerial: ture일 경우 이동을 중지(속도를 0으로 설정, 가속이 있는 구성요소의 경우 가속을 0으로 설정)하고
+	 *								캐릭터의 GravityScale을 0.0f으로 설정합니다.
+	 *								false일 경우 캐럭터의 GravityScale을 DefaultGravityScale로 설정합니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "MovementSystem|Aerial")
+	void ActivateAerial(bool bNewActivateAerial);
+	
+private:
+	/** 캐릭터의 움직임에 관련된 정보를 관리하는 ActorComponent 클래스입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MovementSystem", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPRMovementSystemComponent> MovementSystem;
+
+public:
+	/** MovementSystem을 반환하는 함수입니다. */
+	FORCEINLINE class UPRMovementSystemComponent* GetMovementSystem() const { return MovementSystem; }
+#pragma endregion
+
+#pragma region WeaponSystem
+private:
+	/** 캐릭터의 무기를 관리하는 ActorComponent 클래스입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WeaponSystem", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPRWeaponSystemComponent> WeaponSystem;
+
+public:
+	/** WeaponSystem을 반환하는 함수입니다. */
+	FORCEINLINE class UPRWeaponSystemComponent* GetWeaponSystem() const { return WeaponSystem; }
+#pragma endregion 
+
+#pragma region MotionWarping
+private:
+	/** MotionWarping을 실행하는 클래스입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MovementSystem", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UMotionWarpingComponent> MotionWarping;
+
+public:
+	/** MotionWarping을 반환하는 함수입니다. */
+	FORCEINLINE class UMotionWarpingComponent* GetMotionWarping() const { return MotionWarping; }
+#pragma endregion 
+
 #pragma region Locomotion
 public:
-	/** 캐릭터의 걷기 상태를 설정하는 함수입니다. */
+	/** 캐릭터의 Locomotion을 걷기상태로 설정하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "Locomotion")
-	void ToggleWalk();
+	virtual void ToggleWalk();
 
+	/** 캐릭터가 전력질주하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "Locomotion")
-	void SetWalkLocomotion();
+	virtual void ToggleSprint();
+#pragma endregion
 
-	UFUNCTION(BlueprintCallable, Category = "Locomotion")
-	void SetRunLocomotion();
+#pragma region CharacterInfo
+private:
+	/** 캐릭터의 성별입니다. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterInfo", meta = (AllowPrivateAccess = "true"))
+	EPRGender Gender;
 
-protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Locomotion")
-	float WalkSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Locomotion")
-	float RunSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Locomotion")
-	float SprintSpeed;
+	/** 캐릭터의 발소리입니다. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterInfo", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USoundBase> FootstepsSound;
 
 public:
-	float GetWalkSpeed() const;
+	/** Gender를 반환하는 함수입니다. */
+	EPRGender GetGender() const;
 
-	float GetRunSpeed() const;
-
-	float GetSprintSpeed() const;
+	/** FootstepsSound를 반환하는 함수입니다. */
+	TObjectPtr<USoundBase> GetFootstepsSound() const;
 #pragma endregion
+
+#pragma region Attack
+protected:
+	UFUNCTION(BlueprintCallable, Category = "Attack")
+	virtual void Attack();
+#pragma endregion 
 };

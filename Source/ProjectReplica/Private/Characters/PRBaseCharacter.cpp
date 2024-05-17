@@ -6,6 +6,11 @@
 #include "Components/PRDamageSystemComponent.h"
 #include "Components/PRStatSystemComponent.h"
 #include "Components/PRStateSystemComponent.h"
+#include "Components/PRObjectPoolSystemComponent.h"
+#include "Components/PREffectSystemComponent.h"
+#include "Components/PRMovementSystemComponent.h"
+#include "Components/PRWeaponSystemComponent.h"
+#include "MotionWarpingComponent.h"
 
 // 임시
 #include "NiagaraComponent.h"
@@ -20,15 +25,20 @@ APRBaseCharacter::APRBaseCharacter()
 	GetCapsuleComponent()->InitCapsuleSize(30.0f, 94.0f);
 
 	// CharacterMovement
-	GetCharacterMovement()->MaxAcceleration = 1000.0f;
-	GetCharacterMovement()->BrakingFrictionFactor = 0.5f;
-	GetCharacterMovement()->GroundFriction = 5.0f;
-	// GetCharacterMovement()->MaxWalkSpeed = 550.0f;
-	GetCharacterMovement()->MinAnalogWalkSpeed = 20.0f;
+	GetCharacterMovement()->bUseControllerDesiredRotation = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->MaxAcceleration = 2048.0f;
+	GetCharacterMovement()->bUseSeparateBrakingFriction = true;
+	GetCharacterMovement()->MaxWalkSpeed = 550.0f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 1000.0f;
+	GetCharacterMovement()->MinAnalogWalkSpeed = 120.0f;
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
+	GetCharacterMovement()->GravityScale = 1.75f;
+	GetCharacterMovement()->JumpZVelocity = 700.0f;
 	
-	// Advanced Movement System 용
-	// GetCharacterMovement()->RotationRate = FRotator::ZeroRotator;
+	// LockOn일 때
+	// GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	// GetCharacterMovement()->bOrientRotationToMovement = false;
 
 	// Pawn
 	// 컨트롤러가 회전할 때 캐릭터가 같이 회전하지 않도록 설정합니다.
@@ -55,35 +65,56 @@ APRBaseCharacter::APRBaseCharacter()
 	// StateSystem
 	StateSystem = CreateDefaultSubobject<UPRStateSystemComponent>(TEXT("StateSystem"));
 
-	// Locomotion
-	WalkSpeed = 225.0f;
-	RunSpeed = 550.0f;
-	SprintSpeed = 700.0f;
+	// ObjectPoolSystem
+	ObjectPoolSystem = CreateDefaultSubobject<UPRObjectPoolSystemComponent>(TEXT("ObjectPoolSystem"));
+
+	// EffectSystem
+	EffectSystem = CreateDefaultSubobject<UPREffectSystemComponent>(TEXT("EffectSystem"));
+
+	// MovementSystem
+	MovementSystem = CreateDefaultSubobject<UPRMovementSystemComponent>(TEXT("MovementSystem"));
+
+	// WeaponSystem
+	WeaponSystem = CreateDefaultSubobject<UPRWeaponSystemComponent>(TEXT("WeaponSystem"));
+
+	// MotionWarping
+	MotionWarping = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("MotionWarping"));
+
+	// CharacterInfo
+	Gender = EPRGender::Gender_None;
+	FootstepsSound = nullptr;
 }
 
 void APRBaseCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	// CharacterMovement
-	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
-
 	// DamageSystem
 	GetDamageSystem()->OnDeathDelegate.AddDynamic(this, &APRBaseCharacter::Death);
 	GetDamageSystem()->OnBlockedDelegate.AddDynamic(this, &APRBaseCharacter::Blocked);
 	GetDamageSystem()->OnDamageResponseDelegate.AddDynamic(this, &APRBaseCharacter::DamageResponse);
+
+	// ObjectPoolSystem
+	GetObjectPoolSystem()->InitializeObjectPool();
+
+	// EffectSystem
+	GetEffectSystem()->InitializeEffectPool();
+
+	// MovementSystem
+	GetMovementSystem()->SetAllowGait(EPRGait::Gait_Run);
 }
 
 void APRBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	// WeaponSystem
+	GetWeaponSystem()->InitializeWeaponSystem();
 }
 
 void APRBaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 #pragma region Interface_Damageable
@@ -187,12 +218,10 @@ void APRBaseCharacter::DoDamage()
 				&& HitResult.GetActor()->GetClass()->ImplementsInterface(UInterface_PRDamageable::StaticClass())
 				&& UniqueActors.Find(HitResult.GetActor()) == nullptr)
 			{
-				PR_LOG_SCREEN("Hit Actor Name: %s", *HitResult.GetActor()->GetName());
-				
 				UniqueActors.Emplace(HitResult.GetActor());
 				FPRDamageInfo DamageInfo;
 				DamageInfo.DamageType = EPRDamageType::DamageType_Melee;
-				DamageInfo.DamageElement = DamageElement;
+				DamageInfo.DamageElementType = DamageElementType;
 				DamageInfo.DamageResponse = EPRDamageResponse::DamageResponse_HitReaction;
 				DamageInfo.ImpactLocation = HitResult.ImpactPoint;
 
@@ -256,49 +285,68 @@ bool APRBaseCharacter::IsBlocking() const
 }
 #pragma endregion
 
+#pragma region MovementSystem
+void APRBaseCharacter::ActivateAerial(bool bNewActivateAerial)
+{
+	if(GetMovementSystem())
+	{
+		GetMovementSystem()->ActivateAerial(bNewActivateAerial);
+	}
+}
+#pragma endregion 
+
 #pragma region Locomotion
 void APRBaseCharacter::ToggleWalk()
 {
-	if(GetCharacterMovement())
+	if(GetCharacterMovement() && GetMovementSystem())
 	{
-		if(GetCharacterMovement()->MaxWalkSpeed != WalkSpeed)
+		if(!GetMovementSystem()->IsEqualAllowGait(EPRGait::Gait_Walk))
 		{
-			// Walk
-			SetWalkLocomotion();
+			// 걷기 상태
+			GetMovementSystem()->SetAllowGait(EPRGait::Gait_Walk);
 		}
 		else
 		{
-			// Run
-			SetRunLocomotion();
+			// 달리기 상태
+			GetMovementSystem()->SetAllowGait(EPRGait::Gait_Run);
 		}
 	}
 }
 
-void APRBaseCharacter::SetWalkLocomotion()
+void APRBaseCharacter::ToggleSprint()
 {
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-	GetCharacterMovement()->MaxAcceleration = 350.0f;
+	if(GetCharacterMovement() && GetMovementSystem())
+	{
+		if(!GetMovementSystem()->IsEqualAllowGait(EPRGait::Gait_Sprint))
+		{
+			// 전력질주 상태
+			GetMovementSystem()->SetAllowGait(EPRGait::Gait_Sprint);
+		}
+		else
+		{
+			// 달리기 상태
+			GetMovementSystem()->SetAllowGait(EPRGait::Gait_Run);
+		}
+	}
+}
+#pragma endregion 
+
+#pragma region CharacterInfo
+EPRGender APRBaseCharacter::GetGender() const
+{
+	return Gender;
 }
 
-void APRBaseCharacter::SetRunLocomotion()
+TObjectPtr<USoundBase> APRBaseCharacter::GetFootstepsSound() const
 {
-	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
-	GetCharacterMovement()->MaxAcceleration = 1000.0f;
+	return FootstepsSound;
 }
+#pragma endregion 
 
-float APRBaseCharacter::GetWalkSpeed() const
+#pragma region Attack
+void APRBaseCharacter::Attack()
 {
-	return WalkSpeed;
-}
-
-float APRBaseCharacter::GetRunSpeed() const
-{
-	return RunSpeed;
-}
-
-float APRBaseCharacter::GetSprintSpeed() const
-{
-	return SprintSpeed;
+	GetWeaponSystem()->DrawWeapon(true);
 }
 #pragma endregion 
 

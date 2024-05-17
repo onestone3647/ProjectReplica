@@ -26,9 +26,9 @@ public:
 	 *
 	 * @param DamageAmount 대미지의 양
 	 * @param bIsCritical 일반 대미지인지, 치명타 대미지인지 판별하는 인자
-	 * @param Element 대미지의 속성
+	 * @param ElementType 대미지의 속성
 	 */
-	void InitializeDamageAmountWidget(float DamageAmount, bool bIsCritical, EPRElement Element);
+	void InitializeDamageAmountWidget(float DamageAmount, bool bIsCritical, EPRElementType ElementType);
 
 private:
 	/** 대미지를 나타내는 TextBlock입니다. */

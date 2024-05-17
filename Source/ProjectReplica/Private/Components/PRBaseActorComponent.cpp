@@ -3,7 +3,9 @@
 
 #include "Components/PRBaseActorComponent.h"
 #include "ProjectReplicaGameInstance.h"
+#include "ProjectReplicaGameMode.h"
 #include "Characters/PRBaseCharacter.h"
+#include "Kismet/GameplayStatics.h"
 
 UPRBaseActorComponent::UPRBaseActorComponent()
 {
@@ -37,7 +39,7 @@ UProjectReplicaGameInstance* UPRBaseActorComponent::GetPRGameInstance() const
 	if(GetOwner() && GetOwner()->GetWorld())
 	{
 		UProjectReplicaGameInstance* PRGameInstance = Cast<UProjectReplicaGameInstance>(GetOwner()->GetWorld()->GetGameInstance());
-		if(PRGameInstance)
+		if(PRGameInstance != nullptr)
 		{
 			return PRGameInstance;
 		}
@@ -46,7 +48,21 @@ UProjectReplicaGameInstance* UPRBaseActorComponent::GetPRGameInstance() const
 	return nullptr;
 }
 
+AProjectReplicaGameMode* UPRBaseActorComponent::GetPRGameMode() const
+{
+	if(GetOwner() && GetOwner()->GetWorld())
+	{
+		AProjectReplicaGameMode* PRGameMode = Cast<AProjectReplicaGameMode>(UGameplayStatics::GetGameMode(GetWorld()));	
+		if(PRGameMode != nullptr)
+		{
+			return PRGameMode;
+		}
+	}
+
+	return nullptr;
+}
+
 APRBaseCharacter* UPRBaseActorComponent::GetPROwner() const
 {
-	return PROwner.Get();
+	return PROwner;
 }

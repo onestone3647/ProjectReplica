@@ -37,16 +37,10 @@ void UPRBaseHealthBarWidget::UpdateHealthBarBuffer()
 {
 	if(HealthBarBuffer && IsImplementsDamageableInterface(DamageableActor.GetObject()))
 	{
-		PR_LOG_SCREEN("buffer true");
-
 		const float CurrentHealth = DamageableActor->Execute_GetCurrentHealth(DamageableActor.GetObject());
 		const float MaxHealth = DamageableActor->Execute_GetMaxHealth(DamageableActor.GetObject());
 		HealthBuffer = FMath::Lerp(HealthBuffer, CurrentHealth / MaxHealth, HealthBufferLerpSpeed);
 		HealthBarBuffer->SetPercent(HealthBuffer);
-	}
-	else
-	{
-		PR_LOG_SCREEN("buffer false");
 	}
 }
 
@@ -54,15 +48,10 @@ float UPRBaseHealthBarWidget::GetHealthBarPercent() const
 {
 	if(HealthBar && IsImplementsDamageableInterface(DamageableActor.GetObject()))
 	{
-		PR_LOG_SCREEN("Bar true");
 		const float CurrentHealth = DamageableActor->Execute_GetCurrentHealth(DamageableActor.GetObject());
 		const float MaxHealth = DamageableActor->Execute_GetMaxHealth(DamageableActor.GetObject());
 
 		return CurrentHealth / MaxHealth;
-	}
-	else
-	{
-		PR_LOG_SCREEN("Bar false");
 	}
 
 	return 0.0f;

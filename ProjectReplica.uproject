@@ -7,7 +7,11 @@
 		{
 			"Name": "ProjectReplica",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"NiagaraAnimNotifies"
+			]
 		}
 	],
 	"Plugins": [
@@ -24,6 +28,14 @@
 		},
 		{
 			"Name": "AnimationWarping",
+			"Enabled": true
+		},
+		{
+			"Name": "CascadeToNiagaraConverter",
+			"Enabled": true
+		},
+		{
+			"Name": "MotionWarping",
 			"Enabled": true
 		}
 	]
