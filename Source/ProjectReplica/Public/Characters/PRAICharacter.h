@@ -32,5 +32,13 @@ protected:
 	/** HealthBar 위젯의 클래스 레퍼런스입니다. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HealthBar")
 	TSubclassOf<class UUserWidget> HealthBarWidgetClass;
+#pragma endregion
+
+#pragma region Chase
+protected:
+	/** Player를 추적하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "AICharacter|Chase")
+	void ChasePlayer();
+	virtual void ChasePlayer_Implementation();
 #pragma endregion 
 };

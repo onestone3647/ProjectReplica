@@ -7,7 +7,7 @@
 #include "PRBaseAIController.generated.h"
 
 /**
- * 
+ * 기본 AI Controller 클래스입니다.
  */
 UCLASS()
 class PROJECTREPLICA_API APRBaseAIController : public AAIController

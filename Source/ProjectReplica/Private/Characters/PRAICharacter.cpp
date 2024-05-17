@@ -2,7 +2,10 @@
 
 
 #include "Characters/PRAICharacter.h"
+
+#include "Controllers/PRBaseAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 APRAICharacter::APRAICharacter()
 {
@@ -22,3 +25,14 @@ void APRAICharacter::CreateHealthBarWidget()
 {
 	// 자식 클래스에서 구현합니다.
 }
+
+#pragma region Chase
+void APRAICharacter::ChasePlayer_Implementation()
+{
+	APRBaseAIController* AIController = Cast<APRBaseAIController>(GetController());
+	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	if(IsValid(AIController) && IsValid(PlayerCharacter))
+	{
+	}
+}
+#pragma endregion 
