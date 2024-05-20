@@ -30,6 +30,14 @@ protected:
 	TObjectPtr<USkeletalMeshComponent> SpawnAIMesh;
 
 	/** Spawn할 AI 캐릭터의 클래스입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AISpawner")
-	TSubclassOf<ACharacter> SpawnAICharacterClass;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AISpawner")
+	TSubclassOf<APRBaseCharacter> SpawnAICharacterClass;
+
+	/** Spawn할 AI 캐릭터의 레벨입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AISpawner")
+	int32 SpawnAICharacterLevel;
+
+	/** Spawn된 AI 캐릭터입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AISpawner")
+	TObjectPtr<APRBaseCharacter> SpawnedAICharacter;
 };

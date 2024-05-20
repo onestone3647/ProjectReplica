@@ -5,7 +5,14 @@
 
 UPRStatSystemComponent::UPRStatSystemComponent()
 {
+	Level = 1;
 	CharacterStat = FPRCharacterStat();
+}
+
+void UPRStatSystemComponent::InitializeStatSystem(int32 NewLevel, const FPRCharacterStat& NewCharacterStat)
+{
+	Level = NewLevel;
+	SetCharacterStat(NewCharacterStat);
 }
 
 void UPRStatSystemComponent::SetHealth(float NewHealth)
@@ -13,7 +20,7 @@ void UPRStatSystemComponent::SetHealth(float NewHealth)
 	CharacterStat.Health = NewHealth;
 }
 
-void UPRStatSystemComponent::SetCharacterStat(FPRCharacterStat NewCharacterStat)
+void UPRStatSystemComponent::SetCharacterStat(const FPRCharacterStat& NewCharacterStat)
 {
 	CharacterStat = NewCharacterStat;
 }
