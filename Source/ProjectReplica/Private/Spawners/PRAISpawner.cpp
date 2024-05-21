@@ -2,7 +2,10 @@
 
 
 #include "Spawners/PRAISpawner.h"
-#include "GameFramework/Character.h"
+#include "ProjectReplicaGameInstance.h"
+#include "Characters/PRBaseCharacter.h"
+#include "Components/PRStatSystemComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 APRAISpawner::APRAISpawner()
 {
@@ -10,12 +13,28 @@ APRAISpawner::APRAISpawner()
 
 	SpawnAIMesh	= CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SpawnAIMesh"));
 	RootComponent = SpawnAIMesh;
+
+	SpawnAICharacterClass = nullptr;
+	SpawnAICharacterLevel = 1;
+	SpawnedAICharacter = nullptr;
+
+	// 게임에서 숨깁니다.
+	AActor::SetActorHiddenInGame(true);
 }
 
 void APRAISpawner::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	if(SpawnAICharacterClass)
+	{
+		SpawnedAICharacter = GetWorld()->SpawnActor<APRBaseCharacter>(SpawnAICharacterClass);
+		if(IsValid(SpawnedAICharacter))
+		{
+			SpawnedAICharacter->SetActorLocation(GetActorLocation());
+			SpawnedAICharacter->GetStatSystem()->InitializeStatByLevel(SpawnAICharacterLevel);
+		}
+	}
 }
 
 #if WITH_EDITOR
