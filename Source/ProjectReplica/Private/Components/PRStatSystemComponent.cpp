@@ -2,6 +2,8 @@
 
 
 #include "Components/PRStatSystemComponent.h"
+#include "ProjectReplicaGameInstance.h"
+#include "Characters/PRBaseCharacter.h"
 
 UPRStatSystemComponent::UPRStatSystemComponent()
 {
@@ -9,15 +11,25 @@ UPRStatSystemComponent::UPRStatSystemComponent()
 	CharacterStat = FPRCharacterStat();
 }
 
-void UPRStatSystemComponent::InitializeStatSystem(int32 NewLevel, const FPRCharacterStat& NewCharacterStat)
+void UPRStatSystemComponent::InitializeStatByLevel(int32 NewLevel)
 {
-	Level = NewLevel;
-	SetCharacterStat(NewCharacterStat);
+	if(GetPROwner() && GetPRGameInstance())
+	{
+		Level = NewLevel;
+		
+		const FPRCharacterStat NewCharacterStat = GetPRGameInstance()->GetCharacterStat(GetPROwner()->GetClass(), NewLevel);
+		SetCharacterStat(NewCharacterStat);
+	}
 }
 
 void UPRStatSystemComponent::SetHealth(float NewHealth)
 {
 	CharacterStat.Health = NewHealth;
+}
+
+FPRCharacterStat UPRStatSystemComponent::GetCharacterStat() const
+{
+	return CharacterStat;
 }
 
 void UPRStatSystemComponent::SetCharacterStat(const FPRCharacterStat& NewCharacterStat)

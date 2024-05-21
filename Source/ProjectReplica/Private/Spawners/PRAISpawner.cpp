@@ -29,12 +29,10 @@ void APRAISpawner::BeginPlay()
 	if(SpawnAICharacterClass)
 	{
 		SpawnedAICharacter = GetWorld()->SpawnActor<APRBaseCharacter>(SpawnAICharacterClass);
-		SpawnedAICharacter->SetActorLocation(GetActorLocation());
-		UProjectReplicaGameInstance* PRGameInstance = Cast<UProjectReplicaGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-
-		if(IsValid(SpawnedAICharacter) && PRGameInstance)
+		if(IsValid(SpawnedAICharacter))
 		{
-			SpawnedAICharacter->GetStatSystem()->InitializeStatSystem(SpawnAICharacterLevel, PRGameInstance->GetCharacterStat(SpawnedAICharacter.GetClass(), SpawnAICharacterLevel));
+			SpawnedAICharacter->SetActorLocation(GetActorLocation());
+			SpawnedAICharacter->GetStatSystem()->InitializeStatByLevel(SpawnAICharacterLevel);
 		}
 	}
 }

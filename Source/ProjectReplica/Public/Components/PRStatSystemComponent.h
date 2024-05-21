@@ -19,9 +19,9 @@ public:
 	UPRStatSystemComponent();
 
 public:
-	/** StatSystem을 초기화하는 함수입니다. */
+	/** 캐릭터의 능력치를 인자로 받은 레벨에 해당하는 능력치로 초기화하는 함수입니다. */
 	UFUNCTION(Blueprintable, Category = "StatSystem")
-	void InitializeStatSystem(int32 NewLevel, const FPRCharacterStat& NewCharacterStat);
+	void InitializeStatByLevel(int32 NewLevel);
 	
 	UFUNCTION(BlueprintCallable, Category = "StatSystem")
 	void SetHealth(float NewHealth);
@@ -40,7 +40,7 @@ public:
 	int32 GetLevel() const { return Level; }
 	
 	/** CharacterStat을 반환하는 함수입니다. */
-	FPRCharacterStat GetCharacterStat() const { return CharacterStat; }
+	FPRCharacterStat GetCharacterStat() const;
 
 	/** 입력받은 인자로 CharacterStat을 설정하는 함수입니다. */
 	void SetCharacterStat(const FPRCharacterStat& NewCharacterStat);
