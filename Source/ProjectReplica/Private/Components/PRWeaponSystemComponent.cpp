@@ -8,7 +8,7 @@
 UPRWeaponSystemComponent::UPRWeaponSystemComponent()
 {
 	EquippedWeaponClass = nullptr;
-	WeaponState = EPRWeaponState::WeaponState_Sheath;
+	WeaponState = EPRWeaponState::WeaponState_Sheathe;
 	EquippedWeapon = nullptr;
 }
 
@@ -22,19 +22,19 @@ void UPRWeaponSystemComponent::InitializeWeaponSystem()
 
 void UPRWeaponSystemComponent::DrawWeapon(bool bSpawnActivateEffect)
 {
-	if(IsValid(GetPROwner()) && IsValid(EquippedWeapon) && IsSheathWeapon())
+	if(IsValid(GetPROwner()) && IsValid(EquippedWeapon) && IsSheatheWeapon())
 	{
 		WeaponState = EPRWeaponState::WeaponState_Draw;
 		EquippedWeapon->Draw(bSpawnActivateEffect);
 	}
 }
 
-void UPRWeaponSystemComponent::SheathWeapon(bool bSpawnActivateEffect, bool bVisible)
+void UPRWeaponSystemComponent::SheatheWeapon(bool bSpawnActivateEffect, bool bVisible)
 {
 	if(IsValid(GetPROwner()) && IsValid(EquippedWeapon) && IsDrawWeapon())
 	{
-		WeaponState = EPRWeaponState::WeaponState_Sheath;
-		EquippedWeapon->Sheath(bSpawnActivateEffect, bVisible);
+		WeaponState = EPRWeaponState::WeaponState_Sheathe;
+		EquippedWeapon->Sheathe(bSpawnActivateEffect, bVisible);
 	}
 }
 
@@ -56,7 +56,7 @@ APRBaseWeapon* UPRWeaponSystemComponent::EquipWeapon(TSubclassOf<APRBaseWeapon> 
 				
 				NewEquipWeapon->InitializeWeapon(GetPROwner(), WeaponStat);
 				EquippedWeapon = NewEquipWeapon;
-				SheathWeapon(false);
+				SheatheWeapon(false);
 			}
 		}
 	}
@@ -69,7 +69,7 @@ void UPRWeaponSystemComponent::UnequipWeapon()
 	if(IsValid(EquippedWeapon))
 	{
 		// 기존에 장착한 무기는 비활성화하고 월드에서 제거합니다.
-		SheathWeapon(false);
+		SheatheWeapon(false);
 		EquippedWeapon->Deactivate();
 		EquippedWeapon->Destroy();
 		EquippedWeapon = nullptr;
@@ -81,12 +81,17 @@ bool UPRWeaponSystemComponent::IsDrawWeapon() const
 	return WeaponState == EPRWeaponState::WeaponState_Draw;
 }
 
-bool UPRWeaponSystemComponent::IsSheathWeapon() const
+bool UPRWeaponSystemComponent::IsSheatheWeapon() const
 {
-	return WeaponState == EPRWeaponState::WeaponState_Sheath;
+	return WeaponState == EPRWeaponState::WeaponState_Sheathe;
 }
 
 APRBaseWeapon* UPRWeaponSystemComponent::SpawnWeaponInWorld(TSubclassOf<APRBaseWeapon> SpawnWeaponClass)
 {
 	return GetWorld()->SpawnActor<APRBaseWeapon>(SpawnWeaponClass);
+}
+
+APRBaseWeapon* UPRWeaponSystemComponent::GetEquippedWeapon() const
+{
+	return EquippedWeapon;
 }

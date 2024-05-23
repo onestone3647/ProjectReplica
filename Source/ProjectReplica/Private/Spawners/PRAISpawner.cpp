@@ -3,7 +3,7 @@
 
 #include "Spawners/PRAISpawner.h"
 #include "ProjectReplicaGameInstance.h"
-#include "Characters/PRBaseCharacter.h"
+#include "Characters/PRAICharacter.h"
 #include "Components/PRStatSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -26,13 +26,19 @@ void APRAISpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SpawnAI();
+}
+
+void APRAISpawner::SpawnAI()
+{
 	if(SpawnAICharacterClass)
 	{
-		SpawnedAICharacter = GetWorld()->SpawnActor<APRBaseCharacter>(SpawnAICharacterClass);
+		SpawnedAICharacter = GetWorld()->SpawnActor<APRAICharacter>(SpawnAICharacterClass);
 		if(IsValid(SpawnedAICharacter))
 		{
-			SpawnedAICharacter->SetActorLocation(GetActorLocation());
+			SpawnedAICharacter->SetActorLocationAndRotation(GetActorLocation(), GetActorRotation());
 			SpawnedAICharacter->GetStatSystem()->InitializeStatByLevel(SpawnAICharacterLevel);
+			SpawnedAICharacter->Activate();
 		}
 	}
 }

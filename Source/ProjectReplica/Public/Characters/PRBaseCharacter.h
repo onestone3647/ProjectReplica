@@ -8,6 +8,8 @@
 #include "Interfaces/Interface_PRDamageable.h"
 #include "PRBaseCharacter.generated.h"
 
+
+
 /** 캐릭터의 성별을 나타내는 열거형입니다. */
 UENUM(BlueprintType)
 enum class EPRGender : uint8
@@ -25,6 +27,8 @@ class UPREffectSystemComponent;
 class UPRMovementSystemComponent;
 class UPRWeaponSystemComponent;
 class UMotionWarpingComponent;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackEnd);
 
 // 임시
 class UNiagaraSystem;
@@ -248,7 +252,14 @@ public:
 
 #pragma region Attack
 protected:
-	UFUNCTION(BlueprintCallable, Category = "Attack")
-	virtual void Attack();
+	/** 공격을 실행하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Attack")
+	void Attack();
+	virtual void Attack_Implementation();
+	
+public:
+	/** 공격이 끝났을 때 호출하는 델리게이트입니다. */
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Attack")
+	FOnAttackEnd OnAttackEndDelegate;
 #pragma endregion 
 };

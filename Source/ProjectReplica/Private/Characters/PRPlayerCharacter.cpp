@@ -21,6 +21,11 @@ APRPlayerCharacter::APRPlayerCharacter()
 {
 	// CharacterMovement
 	GetCharacterMovement()->bOrientRotationToMovement = true;		// 캐릭터가 이동하는 방향으로 회전합니다.
+	// GetCharacterMovement()->bUseControllerDesiredRotation = false;
+
+	// LockOn일 때
+	// GetCharacterMovement()->bOrientRotationToMovement = false;
+	// GetCharacterMovement()->bUseControllerDesiredRotation = true;
 
 	// Input
 	DefaultMappingContext = nullptr;
@@ -200,7 +205,7 @@ void APRPlayerCharacter::Move(const FInputActionValue& Value)
 		// 캐릭터가 이동할 때 무기를 발도 상태일 경우 납도합니다.
 		if(!MovementVector.IsZero() && GetWeaponSystem()->IsDrawWeapon())
 		{
-			GetWeaponSystem()->SheathWeapon(true, false);
+			GetWeaponSystem()->SheatheWeapon(true, false);
 		}
 
 		AddPlayerMovementInput(MovementVector);
@@ -223,7 +228,7 @@ void APRPlayerCharacter::Jump()
 	// 무기를 발도하고 있을 경우 납도합니다.
 	if(GetWeaponSystem()->IsDrawWeapon())
 	{
-		GetWeaponSystem()->SheathWeapon(true, false);
+		GetWeaponSystem()->SheatheWeapon(true, false);
 	}
 	
 	if(GetCharacterMovement()->IsFalling() == false)
@@ -736,9 +741,9 @@ void APRPlayerCharacter::OnVaultCollisionBeginOverlap(UPrimitiveComponent* Overl
 	ExecuteVault();
 }
 
-void APRPlayerCharacter::Attack()
+void APRPlayerCharacter::Attack_Implementation()
 {
-	Super::Attack();
+	Super::Attack_Implementation();
 
 	DoDamage();
 }

@@ -11,11 +11,11 @@
 #include "Components/PRMovementSystemComponent.h"
 #include "Components/PRWeaponSystemComponent.h"
 #include "MotionWarpingComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // 임시
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
-#include "GameFramework/CharacterMovementComponent.h"
 
 APRBaseCharacter::APRBaseCharacter()
 {
@@ -35,10 +35,6 @@ APRBaseCharacter::APRBaseCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
 	GetCharacterMovement()->GravityScale = 1.75f;
 	GetCharacterMovement()->JumpZVelocity = 700.0f;
-	
-	// LockOn일 때
-	// GetCharacterMovement()->bUseControllerDesiredRotation = true;
-	// GetCharacterMovement()->bOrientRotationToMovement = false;
 
 	// Pawn
 	// 컨트롤러가 회전할 때 캐릭터가 같이 회전하지 않도록 설정합니다.
@@ -344,9 +340,8 @@ TObjectPtr<USoundBase> APRBaseCharacter::GetFootstepsSound() const
 #pragma endregion 
 
 #pragma region Attack
-void APRBaseCharacter::Attack()
+void APRBaseCharacter::Attack_Implementation()
 {
-	GetWeaponSystem()->DrawWeapon(true);
 }
 #pragma endregion 
 

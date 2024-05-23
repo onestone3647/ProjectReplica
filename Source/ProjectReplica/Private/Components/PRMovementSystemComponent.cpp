@@ -2,6 +2,8 @@
 
 
 #include "Components/PRMovementSystemComponent.h"
+
+#include "Characters/PRAICharacter_General.h"
 #include "Characters/PRBaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -50,7 +52,7 @@ void UPRMovementSystemComponent::UpdateGait()
 		Velocity = GetPROwner()->GetCharacterMovement()->Velocity;
 		GroundSpeed = Velocity.Size2D();
 		Acceleration = GetPROwner()->GetCharacterMovement()->GetCurrentAcceleration();
-		
+
 		if(GroundSpeed > 0.0f			// or 1.0f
 			&& Acceleration.Size() > MinAccelerationToRunGait
 			&& GetPROwner()->GetCharacterMovement()->MaxWalkSpeed > GaitSettings.Find(EPRGait::Gait_Walk)->MovementSpeed

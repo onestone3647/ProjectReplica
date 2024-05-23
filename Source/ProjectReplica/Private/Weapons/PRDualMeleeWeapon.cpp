@@ -24,11 +24,11 @@ APRDualMeleeWeapon::APRDualMeleeWeapon()
 	SubWeaponMesh->SetupAttachment(SubWeapon);
 	SubWeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);			// 무기의 외형은 콜리전을 가지지 않습니다.
 	SubWeaponDrawSocketName = TEXT("SubWeapon");
-	SubWeaponSheathSocketName = TEXT("SubWeaponSheath");
+	SubWeaponSheatheSocketName = TEXT("SubWeaponSheathe");
 	SubWeaponDrawLocationOffset = FVector::ZeroVector;
 	SubWeaponDrawRotationOffset = FRotator::ZeroRotator;
-	SubWeaponSheathLocationOffset = FVector::ZeroVector;
-	SubWeaponSheathRotationOffset = FRotator::ZeroRotator;
+	SubWeaponSheatheLocationOffset = FVector::ZeroVector;
+	SubWeaponSheatheRotationOffset = FRotator::ZeroRotator;
 }
 
 void APRDualMeleeWeapon::Draw(bool bActivateSpawnEffect)
@@ -79,7 +79,7 @@ void APRDualMeleeWeapon::Draw(bool bActivateSpawnEffect)
 	}
 }
 
-void APRDualMeleeWeapon::Sheath(bool bActivateSpawnEffect, bool bVisible)
+void APRDualMeleeWeapon::Sheathe(bool bActivateSpawnEffect, bool bVisible)
 {
 	if(IsValid(GetPROwner()))
 	{
@@ -121,9 +121,9 @@ void APRDualMeleeWeapon::Sheath(bool bActivateSpawnEffect, bool bVisible)
 		
 		const FAttachmentTransformRules AttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
 		AttachToComponent(GetPROwner()->GetMesh(), AttachmentTransformRules);
-		MainWeapon->AttachToComponent(GetPROwner()->GetMesh(), AttachmentTransformRules, MainWeaponSheathSocketName);
-		MainWeaponMesh->SetRelativeLocationAndRotation(MainWeaponSheathLocationOffset, MainWeaponSheathRotationOffset);
-		SubWeapon->AttachToComponent(GetPROwner()->GetMesh(), AttachmentTransformRules, SubWeaponSheathSocketName);
-		SubWeaponMesh->SetRelativeLocationAndRotation(SubWeaponSheathLocationOffset, SubWeaponSheathRotationOffset);
+		MainWeapon->AttachToComponent(GetPROwner()->GetMesh(), AttachmentTransformRules, MainWeaponSheatheSocketName);
+		MainWeaponMesh->SetRelativeLocationAndRotation(MainWeaponSheatheLocationOffset, MainWeaponSheatheRotationOffset);
+		SubWeapon->AttachToComponent(GetPROwner()->GetMesh(), AttachmentTransformRules, SubWeaponSheatheSocketName);
+		SubWeaponMesh->SetRelativeLocationAndRotation(SubWeaponSheatheLocationOffset, SubWeaponSheatheRotationOffset);
 	}
 }

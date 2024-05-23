@@ -20,6 +20,28 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+#pragma region Activate
+public:
+	/** AI 캐릭터가 활성화되었는지 판별하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "Activate")
+	bool IsActivate() const;	
+	
+	/** AI 캐릭터를 활성화하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Activate")
+	void Activate();
+	virtual void Activate_Implementation();
+
+	/** AI 캐릭터를 비활성화 하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Activate")
+	void DeActivate();
+	virtual void DeActivate_Implementation();
+
+protected:
+	/** AI 캐릭터의 활성화를 나타내는 변수입니다. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Activate")
+	bool bActivate;
+#pragma endregion 
+
 #pragma region HealthBar
 protected:
 	/**
@@ -34,11 +56,9 @@ protected:
 	TSubclassOf<class UUserWidget> HealthBarWidgetClass;
 #pragma endregion
 
-#pragma region Chase
+#pragma region Attack
 protected:
-	/** Player를 추적하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "AICharacter|Chase")
-	void ChasePlayer();
-	virtual void ChasePlayer_Implementation();
+	/** 공격을 실행하는 함수입니다. */
+	virtual void Attack_Implementation();
 #pragma endregion 
 };

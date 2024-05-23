@@ -35,11 +35,11 @@ APRBaseWeapon::APRBaseWeapon()
 	MainWeaponMesh->SetupAttachment(MainWeapon);
 	MainWeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);			// 무기의 외형은 콜리전을 가지지 않습니다.
 	MainWeaponDrawSocketName = TEXT("MainWeapon");
-	MainWeaponSheathSocketName = TEXT("MainWeaponSheath");
+	MainWeaponSheatheSocketName = TEXT("MainWeaponSheathe");
 	MainWeaponDrawLocationOffset = FVector::ZeroVector;
 	MainWeaponDrawRotationOffset = FRotator::ZeroRotator;
-	MainWeaponSheathLocationOffset = FVector::ZeroVector;
-	MainWeaponSheathRotationOffset = FRotator::ZeroRotator;
+	MainWeaponSheatheLocationOffset = FVector::ZeroVector;
+	MainWeaponSheatheRotationOffset = FRotator::ZeroRotator;
 }
 
 void APRBaseWeapon::BeginPlay()
@@ -108,7 +108,7 @@ void APRBaseWeapon::Draw(bool bActivateSpawnEffect)
 	}
 }
 
-void APRBaseWeapon::Sheath(bool bActivateSpawnEffect, bool bVisible)
+void APRBaseWeapon::Sheathe(bool bActivateSpawnEffect, bool bVisible)
 {
 	if(IsValid(GetPROwner()))
 	{
@@ -136,8 +136,8 @@ void APRBaseWeapon::Sheath(bool bActivateSpawnEffect, bool bVisible)
 		
 		const FAttachmentTransformRules AttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
 		AttachToComponent(GetPROwner()->GetMesh(), AttachmentTransformRules);
-		MainWeapon->AttachToComponent(GetPROwner()->GetMesh(), AttachmentTransformRules, MainWeaponSheathSocketName);
-		MainWeaponMesh->SetRelativeLocationAndRotation(MainWeaponSheathLocationOffset, MainWeaponSheathRotationOffset);
+		MainWeapon->AttachToComponent(GetPROwner()->GetMesh(), AttachmentTransformRules, MainWeaponSheatheSocketName);
+		MainWeaponMesh->SetRelativeLocationAndRotation(MainWeaponSheatheLocationOffset, MainWeaponSheatheRotationOffset);
 	}
 }
 

@@ -91,14 +91,14 @@ private:
 	
 public:
 	/** 사망했을 때 호출하는 델리게이트입니다. */
-	UPROPERTY(BlueprintAssignable, Category = "DamageSystem")
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "DamageSystem")
 	FOnDeathDelegate OnDeathDelegate;
 
 	/** 방어했을 때 호출하는 델리게이트입니다. */
-	UPROPERTY(BlueprintAssignable, Category = "DamageSystem")
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "DamageSystem")
 	FOnBlockedDelegate OnBlockedDelegate;
 
 	/** 대미지에 반응할 때 호출하는 델리게이트입니다. */
-	UPROPERTY(BlueprintAssignable, Category = "DamageSystem")
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "DamageSystem")
 	FOnDamageResponseDelegate OnDamageResponseDelegate;
 };

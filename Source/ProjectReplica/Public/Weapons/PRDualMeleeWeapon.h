@@ -31,7 +31,7 @@ public:
 	  * @param bActivateSpawnEffect Spawn 이펙트 활성화 여부
 	  * @param bVisible 무기 숨김 여부
 	 */
-	virtual void Sheath(bool bActivateSpawnEffect = false, bool bVisible = true) override;
+	virtual void Sheathe(bool bActivateSpawnEffect = false, bool bVisible = true) override;
 
 #pragma region SubWeapon
 protected:
@@ -49,7 +49,7 @@ protected:
 
 	/** 서브 무기를 납도하는 Socket의 이름입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PRBaseWeapon|SubWeapon")
-	FName SubWeaponSheathSocketName;
+	FName SubWeaponSheatheSocketName;
 	
 	/** 서브 무기의 발도 위치 Offset입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PRBaseWeapon|SubWeapon")
@@ -61,10 +61,10 @@ protected:
 
 	/** 서브 무기의 납도 위치 Offset입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PRBaseWeapon|SubWeapon")
-	FVector SubWeaponSheathLocationOffset;
+	FVector SubWeaponSheatheLocationOffset;
 
 	/** 서브 무기의 납도 회전 값 Offset입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PRBaseWeapon|SubWeapon")
-	FRotator SubWeaponSheathRotationOffset;
+	FRotator SubWeaponSheatheRotationOffset;
 #pragma endregion 
 };

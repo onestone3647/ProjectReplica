@@ -13,7 +13,7 @@ enum class EPRWeaponState : uint8
 {
 	WeaponState_None		UMETA(DisplayName = "None"),
 	WeaponState_Draw		UMETA(DisplayName = "Draw"),		// 발도
-	WeaponState_Sheath		UMETA(DisplayName = "Sheath")		// 납도
+	WeaponState_Sheathe		UMETA(DisplayName = "Sheathe")		// 납도
 };
 
 /**
@@ -46,7 +46,7 @@ public:
  	 * @param bVisible 무기 숨김 여부
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PRWeaponSystem")
-	void SheathWeapon(bool bSpawnActivateEffect = false, bool bVisible = true);
+	void SheatheWeapon(bool bSpawnActivateEffect = false, bool bVisible = true);
 
 	/** 무기를 장착하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PRWeaponSystem")
@@ -62,7 +62,7 @@ public:
 
 	/** 무기가 납도 상태인지 판별하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PRWeaponSystem")
-	bool IsSheathWeapon() const;
+	bool IsSheatheWeapon() const;
 
 protected:
 	/** 인자로 받은 PRBaseWeapon 클래스 레퍼런스로 월드에 무기를 Spawn하는 함수입니다. */
@@ -81,4 +81,8 @@ private:
 	/** 장착한 무기입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRWeaponSystem", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<APRBaseWeapon> EquippedWeapon;
+
+public:
+	/** EquippedWeapon을 반환하는 함수입니다. */
+	class APRBaseWeapon* GetEquippedWeapon() const;
 };

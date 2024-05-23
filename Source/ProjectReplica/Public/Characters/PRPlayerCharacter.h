@@ -377,6 +377,6 @@ protected:
 
 #pragma region Attack
 protected:
-	virtual void Attack() override;
+	virtual void Attack_Implementation() override;
 #pragma endregion 
 };

@@ -6,7 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "PRAISpawner.generated.h"
 
-class APRBaseCharacter;
+class APRAICharacter;
+
 /**
  * AI를 현재 위치에 Spawn하는 Actor 클래스입니다. 
  */
@@ -20,6 +21,9 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+	/** SpawnAICharacterClass에 해당하는 AI 캐릭터를 월드에 Spawn하는 함수입니다. */
+	void SpawnAI();
 
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
@@ -39,5 +43,5 @@ protected:
 
 	/** Spawn된 AI 캐릭터입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AISpawner")
-	TObjectPtr<APRBaseCharacter> SpawnedAICharacter;
+	TObjectPtr<APRAICharacter> SpawnedAICharacter;
 };

@@ -72,7 +72,7 @@ public:
  	 * @param bVisible 무기 숨김 여부
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PRBaseWeapon")
-	virtual void Sheath(bool bActivateSpawnEffect = false, bool bVisible = true);
+	virtual void Sheathe(bool bActivateSpawnEffect = false, bool bVisible = true);
 
 protected:
 	/** 무기의 RootComponent입니다. */
@@ -135,7 +135,7 @@ protected:
 
 	/** 메인 무기를 납도하는 Socket의 이름입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PRBaseWeapon|MainWeapon")
-	FName MainWeaponSheathSocketName;
+	FName MainWeaponSheatheSocketName;
 	
 	/** 메인 무기의 발도 위치 Offset입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PRBaseWeapon|MainWeapon")
@@ -147,10 +147,10 @@ protected:
 
 	/** 메인 무기의 납도 위치 Offset입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PRBaseWeapon|MainWeapon")
-	FVector MainWeaponSheathLocationOffset;
+	FVector MainWeaponSheatheLocationOffset;
 
 	/** 메인 무기의 납도 회전 값 Offset입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PRBaseWeapon|MainWeapon")
-	FRotator MainWeaponSheathRotationOffset;
+	FRotator MainWeaponSheatheRotationOffset;
 #pragma endregion
 };
