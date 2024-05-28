@@ -94,7 +94,7 @@ class PROJECTREPLICA_API UPRObjectPoolSystemComponent : public UPRBaseActorCompo
 public:
 	UPRObjectPoolSystemComponent();
 
-protected:
+public:
 	virtual void DestroyComponent(bool bPromoteChildren) override;
 
 public:

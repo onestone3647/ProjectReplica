@@ -4,11 +4,11 @@
 
 #include "ProjectReplica.h"
 #include "UObject/Interface.h"
-#include "Interface_PRDamageable.generated.h"
+#include "PRDamageableInterface.generated.h"
 
 // This class does not need to be modified.
-UINTERFACE(MinimalAPI, BlueprintType)
-class UInterface_PRDamageable : public UInterface
+UINTERFACE(MinimalAPI)
+class UPRDamageableInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -16,7 +16,7 @@ class UInterface_PRDamageable : public UInterface
 /**
  * 대미지에 관련된 Interface 클래스입니다.
  */
-class PROJECTREPLICA_API IInterface_PRDamageable
+class PROJECTREPLICA_API IPRDamageableInterface
 {
 	GENERATED_BODY()
 

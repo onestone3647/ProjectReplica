@@ -200,7 +200,7 @@ class PROJECTREPLICA_API UPREffectSystemComponent : public UPRBaseActorComponent
 public:
 	UPREffectSystemComponent();
 
-protected:
+public:
 	virtual void DestroyComponent(bool bPromoteChildren) override;
 
 public:

@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "PRBaseHealthBarWidget.generated.h"
 
-class IInterface_PRDamageable;
+class IPRDamageableInterface;
 class UProgressBar;
 
 /**
@@ -53,20 +53,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "BaseHealthBar")
 	float HealthBufferLerpSpeed;
 
-#pragma region DamageableActor
+#pragma region DamageableTarget
 public:
-	/** 입력받은 인자로 DamageableActor를 초기화하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, Category = "BaseHealthBar|DamageableActor")
-	void InitializeDamageableActor(TScriptInterface<IInterface_PRDamageable> NewDamageableActor);
+	/** 입력받은 인자로 DamageableTarget을 초기화하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, Category = "BaseHealthBar|DamageableTarget")
+	void InitializeDamageableTarget(TScriptInterface<IPRDamageableInterface> NewDamageableTarget);
 	
 protected:
 	/** 입력받은 오브젝트가 Damageable 인터페이스를 가지고 있는지 판별하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, Category = "BaseHealthBar|DamageableActor")
+	UFUNCTION(BlueprintCallable, Category = "BaseHealthBar|DamageableTarget")
 	bool IsImplementsDamageableInterface(UObject* DamageableObject) const;
 	
 private:
 	/** Damageable 인터페이스를 가지고 있는 액터입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "BaseHealthBar|DamageableActor", meta = (AllowPrivateAccess = "true"))
-	TScriptInterface<IInterface_PRDamageable> DamageableActor;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "BaseHealthBar|DamageableTarget", meta = (AllowPrivateAccess = "true"))
+	TScriptInterface<IPRDamageableInterface> DamageableTarget;
 #pragma endregion 
 };

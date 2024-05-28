@@ -37,8 +37,8 @@ void APRAICharacter_General::CreateHealthBarWidget()
 		UPRBaseHealthBarWidget* HealthBarWidgetInstance = CreateWidget<UPRBaseHealthBarWidget>(GetWorld(), HealthBarWidgetClass);
 		if(IsValid(HealthBarWidgetInstance))
 		{
-			// HealthBar의 DamageableActor를 초기화합니다.
-			HealthBarWidgetInstance->InitializeDamageableActor(this);
+			// HealthBar의 DamageableTarget을 초기화합니다.
+			HealthBarWidgetInstance->InitializeDamageableTarget(this);
 			
 			HealthBarWidget->SetWidget(HealthBarWidgetInstance);
 		}
