@@ -45,5 +45,9 @@ public:
 
 	/** 오브젝트의 PoolIndex를 반환하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
-	int32 GetPoolIndex();
+	int32 GetPoolIndex() const;
+
+	/** 오브젝트의 이름을 반환하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
+	FName GetObjectName() const;
 };

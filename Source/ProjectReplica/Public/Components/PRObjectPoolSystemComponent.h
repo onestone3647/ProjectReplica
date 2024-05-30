@@ -8,6 +8,7 @@
 
 class APRPooledObject;
 
+#pragma region Struct
 /**
  * ObjectPool의 설정 값을 나타내는 구조체입니다. 
  */
@@ -29,11 +30,11 @@ public:
 
 public:
 	/** 풀에 넣을 오브젝트의 클래스 레퍼런스입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRObjectPoolSettings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ObjectPoolSettings")
 	TSubclassOf<APRPooledObject> PooledObjectClass;
 
 	/** 풀의 크기입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRObjectPoolSettings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ObjectPoolSettings")
 	int32 PoolSize;	
 };
 
@@ -56,7 +57,7 @@ public:
 
 public:
 	/** 풀에 넣을 오브젝트의 클래스 레퍼런스입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRObjectPool")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ObjectPool")
 	TArray<TObjectPtr<class APRPooledObject>> Objects;
 };
 
@@ -82,6 +83,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRDynamicDestroyObjectList")
 	TMap<TObjectPtr<class APRPooledObject>, FTimerHandle> Objects;
 };
+#pragma endregion
 
 /**
  * 오브젝트 풀을 관리하는 ActorComponent 클래스입니다.

@@ -8,7 +8,7 @@
 
 #pragma region Struct
 /**
- * 오브젝트들을 넣은 ObjectPool을 나타내는 구조체입니다.
+ * 오브젝트를 클래스 이름으로 구분하여 보관하는 풀을 나타내는 구조체입니다.
  */
 USTRUCT(Atomic, BlueprintType)
 struct FPRPool
@@ -17,59 +17,218 @@ struct FPRPool
 
 public:
 	FPRPool()
-		: Objects()
+		: PoolByName()
 	{}
 
-	FPRPool(const TArray<TObjectPtr<class UObject>>& NewObjects)
-		: Objects(NewObjects)
+	FPRPool(const TMap<FName, FPRObjectArray>& NewPoolByName)
+		: PoolByName(NewPoolByName)
+	{}
+
+public:
+	/** 클래스 이름과 오브젝트 배열을 보관하는 맵입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pool")
+	TMap<FName, FPRObjectArray> PoolByName;
+};
+
+/**
+ * 오브젝트들을 보관하는 풀을 나타내는 구조체입니다.
+ */
+USTRUCT(Atomic, BlueprintType)
+struct FPRObjectPool
+{
+	GENERATED_BODY()
+
+public:
+	FPRObjectPool()
+		: Pool()
+	{}
+
+	FPRObjectPool(const TMap<TSubclassOf<UObject>, FPRPool>& NewPool)
+		: Pool(NewPool)
 	{}
 
 public:
 	/** 풀에 넣을 오브젝트의 클래스 레퍼런스입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRObjectPool")
-	TArray<TObjectPtr<class UObject>> Objects;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ObjectPool")
+	TMap<TSubclassOf<UObject>, FPRPool> Pool;
 };
 
 /**
- * 동적으로 생성한 오브젝트와 해당 오브젝트를 제거하는 수명을 관리하는 TimerHandle을 나타내는 구조체입니다.
+ * 활성화된 오브젝트들의 인덱스를 클래스 이름으로 구분하여 보관하는 목록을 나타내는 구조체입니다.
  */
 USTRUCT(Atomic, BlueprintType)
-struct FPRDynamicDestroyObjectList1
+struct FPRActivateObjectList
 {
 	GENERATED_BODY()
 
 public:
-	FPRDynamicDestroyObjectList1()
-		: Objects()
+	FPRActivateObjectList()
+		: ActivateIndexesListByName()
 	{}
 
-	FPRDynamicDestroyObjectList1(const TMap<TObjectPtr<class UObject>, FTimerHandle>& NewObjects)
-		: Objects(NewObjects)
+	FPRActivateObjectList(const TMap<FName, FPRActivateIndexList>& NewActivateIndexesListByName)
+		: ActivateIndexesListByName(NewActivateIndexesListByName)
+	{}
+
+public:
+	/** 클래스 이름과 활성화된 인덱스를 보관한 맵입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ActivateObjectList")
+	TMap<FName, FPRActivateIndexList> ActivateIndexesListByName;
+};
+
+/**
+ * 활성화된 오브젝트들의 인덱스를 보관한 구조체입니다.
+ */
+USTRUCT(Atomic, BlueprintType)
+struct FPRActivateObjectIndexList
+{
+	GENERATED_BODY()
+
+public:
+	FPRActivateObjectIndexList()
+		: List()
+	{}
+
+	FPRActivateObjectIndexList(const TMap<TSubclassOf<UObject>, FPRActivateObjectList>& NewList)
+		: List(NewList)
+	{}
+
+public:
+	/** 클래스 레퍼런스와 활성화된 인덱스를 보관한 맵입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AcitvateObjectIndexList")
+	TMap<TSubclassOf<UObject>, FPRActivateObjectList> List;
+};
+
+/**
+ * 이전에 사용된 오브젝트들의 인덱스를 클래스 이름으로 구분하여 보관하는 목록을 나타내는 구조체입니다.
+ */
+USTRUCT(Atomic, BlueprintType)
+struct FPRUsedObjectList
+{
+	GENERATED_BODY()
+
+public:
+	FPRUsedObjectList()
+		: UsedIndexesListByName()
+	{}
+
+	FPRUsedObjectList(const TMap<FName, FPRUsedIndexList>& NewUsedIndexesListByName)
+		: UsedIndexesListByName(NewUsedIndexesListByName)
+	{}
+
+public:
+	/** 클래스 이름과 이전에 사용된 인덱스를 보관한 맵입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UsedObjectList")
+	TMap<FName, FPRUsedIndexList> UsedIndexesListByName;
+};
+
+/**
+ * 이전에 사용된 오브젝트들의 인덱스를 보관한 구조체입니다.
+ */
+USTRUCT(Atomic, BlueprintType)
+struct FPRUsedObjectIndexList
+{
+	GENERATED_BODY()
+
+public:
+	FPRUsedObjectIndexList()
+		: List()
+	{}
+
+	FPRUsedObjectIndexList(const TMap<TSubclassOf<UObject>, FPRUsedIndexList>& NewList)
+		: List(NewList)
+	{}
+
+public:
+	/** 클래스 레퍼런스와 이전에 사용된 인덱스를 보관한 맵입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UsedObjectIndexList")
+	TMap<TSubclassOf<UObject>, FPRUsedIndexList> List;
+};
+
+/**
+ * 동적으로 생성한 오브젝트와 해당 오브젝트를 제거하는 수명을 관리하는 타이머 핸들을 나타내는 구조체입니다.
+ */
+USTRUCT(Atomic, BlueprintType)
+struct FPRDynamicDestroyObject
+{
+	GENERATED_BODY()
+
+public:
+	FPRDynamicDestroyObject()
+		: Timers()
+	{}
+
+	FPRDynamicDestroyObject(const TMap<TObjectPtr<UObject>, FTimerHandle>& NewTimers)
+		: Timers(NewTimers)
+	{}
+
+public:
+	/** 오브젝트와 해당 오브젝트를 제거하는 타이머 핸들을 보관하는 맵입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicDestroyObject")
+	TMap<TObjectPtr<UObject>, FTimerHandle> Timers;
+};
+
+/**
+ * 동적으로 생성한 오브젝트와 해당 오브젝트를 제거하는 수명을 관리하는 타이머 핸들을 보관한 풀을 나타내는 구조체입니다.
+ */
+USTRUCT(Atomic, BlueprintType)
+struct FPRDynamicDestroyPool
+{
+	GENERATED_BODY()
+
+public:
+	FPRDynamicDestroyPool()
+		: DestroyPoolByName()
+	{}
+
+	FPRDynamicDestroyPool(const TMap<FName, FPRDynamicDestroyObject>& NewDestroyPoolByName)
+		: DestroyPoolByName(NewDestroyPoolByName)
 	{}
 	
 public:
-	/** 동적으로 생성한 오브젝트와 해당 오브젝트를 제거하는 수명을 관리하는 TimerHandle을 보관한 Map입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRDynamicDestroyObjectList")
-	TMap<TObjectPtr<class UObject>, FTimerHandle> Objects;
+	/** 클래스 이름과 해당 오브젝트를 제거하는 수명을 관리하는 타이머 핸들을 보관한 맵입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicDestroyPool")
+	TMap<FName, FPRDynamicDestroyObject> DestroyPoolByName;
 };
-#pragma endregion 
 
-#pragma region NameFix
+/**
+ * 동적으로 생성한 오브젝트와 해당 오브젝트를 제거하는 수명을 관리하는 타이머 핸들을 보관한 풀을 나타내는 구조체입니다.
+ */
+USTRUCT(Atomic, BlueprintType)
+struct FPRDynamicDestroyObjectPool
+{
+	GENERATED_BODY()
+
+public:
+	FPRDynamicDestroyObjectPool()
+		: DynamicDestroyPool()
+	{}
+
+	FPRDynamicDestroyObjectPool(const TMap<TSubclassOf<UObject>, FPRDynamicDestroyPool>& NewDynamicDestroyPool)
+		: DynamicDestroyPool(NewDynamicDestroyPool)
+	{}
+	
+public:
+	/** 클래스 레퍼런스와 해당 오브젝트를 제거하는 수명을 관리하는 타이머 핸들을 보관한 맵입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicDestroyObjectPool")
+	TMap<TSubclassOf<UObject>, FPRDynamicDestroyPool> DynamicDestroyPool;
+};
+
 /**
  * ObjectPool의 설정 값을 나타내는 구조체입니다. 
  */
 USTRUCT(Atomic, BlueprintType)
-struct FPRObjectPoolSettings1 : public FTableRowBase
+struct FPRObjectPoolSettings : public FTableRowBase
 {
 	GENERATED_BODY()
 
 public:
-	FPRObjectPoolSettings1()
+	FPRObjectPoolSettings()
 		: PooledObjectClass(nullptr)
 		, PoolSize(0)
 	{}
 
-	FPRObjectPoolSettings1(TSubclassOf<UObject> NewPooledObjectClass, int32 NewPoolSize)
+	FPRObjectPoolSettings(TSubclassOf<UObject> NewPooledObjectClass, int32 NewPoolSize)
 		: PooledObjectClass(NewPooledObjectClass)
 		, PoolSize(NewPoolSize)
 	{}
@@ -82,29 +241,6 @@ public:
 	/** 풀의 크기입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRObjectPoolSettings")
 	int32 PoolSize;	
-};
-
-/**
- * 오브젝트들을 넣은 ObjectPool을 나타내는 구조체입니다.
- */
-USTRUCT(Atomic, BlueprintType)
-struct FPRObjectPool1
-{
-	GENERATED_BODY()
-
-public:
-	FPRObjectPool1()
-		: Pools()
-	{}
-
-	FPRObjectPool1(const TMap<TSubclassOf<UObject>, FPRPool>& NewPools)
-		: Pools(NewPools)
-	{}
-
-public:
-	/** 풀에 넣을 오브젝트의 클래스 레퍼런스입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRObjectPool")
-	TMap<TSubclassOf<UObject>, FPRPool> Pools;
 };
 #pragma endregion
 
