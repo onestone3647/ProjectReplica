@@ -29,7 +29,7 @@ void APRAICharacter::BeginPlay()
 	SpawnDefaultController();
 }
 
-bool APRAICharacter::IsActivate() const
+bool APRAICharacter::IsActivate_Implementation() const
 {
 	return bActivate;
 }
@@ -38,12 +38,14 @@ void APRAICharacter::Activate_Implementation()
 {
 	bActivate = true;
 	SetActorHiddenInGame(!bActivate);
+	SetActorTickEnabled(bActivate);
 }
 
-void APRAICharacter::DeActivate_Implementation()
+void APRAICharacter::Deactivate_Implementation()
 {
 	bActivate = false;
 	SetActorHiddenInGame(!bActivate);
+	SetActorTickEnabled(bActivate);
 }
 
 void APRAICharacter::CreateHealthBarWidget()

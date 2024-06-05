@@ -8,8 +8,6 @@
 #include "Interfaces/PRDamageableInterface.h"
 #include "PRBaseCharacter.generated.h"
 
-
-
 /** 캐릭터의 성별을 나타내는 열거형입니다. */
 UENUM(BlueprintType)
 enum class EPRGender : uint8

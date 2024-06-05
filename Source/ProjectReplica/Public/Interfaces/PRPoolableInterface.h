@@ -21,33 +21,31 @@ class PROJECTREPLICA_API IPRPoolableInterface
 	GENERATED_BODY()
 
 public:
-	/**
-	 * 오브젝트를 초기화하는 함수입니다.
-	 * 
-	 * @param NewOwner 오브젝트의 소유자
-	 * @param NewPoolIndex 오브젝트 풀의 Index
-	 * @param NewLifespan 오브젝트의 수명
-	 */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
-	void Initialize(AActor* NewOwner = nullptr, int32 NewPoolIndex = -1, float NewLifespan);
-
-	/** 오브젝트가 활성화 되었는지 판별하는 함수입니다. */
+	/** 활성화 되었는지 확인하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
 	bool IsActivate() const;
 	
-	/** 오브젝트를 활성화하는 함수입니다. */
+	/** 활성화하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
 	void Activate();
 
-	/** 오브젝트를 비활성화하는 함수입니다. */
+	/** 비활성화하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
 	void Deactivate();
-
-	/** 오브젝트의 PoolIndex를 반환하는 함수입니다. */
+	
+	/** PoolIndex를 반환하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
 	int32 GetPoolIndex() const;
 
-	/** 오브젝트의 이름을 반환하는 함수입니다. */
+	/** 동적으로 생성되었는지 확인하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
-	FName GetObjectName() const;
+	bool IsDynamicObject() const;
+
+	/**
+	 * 동적으로 생성되었는지 설정하는 함수입니다.
+	 * 
+	 * @param bIsDynamicObject 동적으로 생성되었다면 true를 입력합니다. 동적으로 생성되지 않았다면 false를 입력합니다. 
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
+	void SetIsDynamicObject(bool bIsDynamicObject);	
 };

@@ -4,13 +4,14 @@
 
 #include "ProjectReplica.h"
 #include "Characters/PRBaseCharacter.h"
+#include "Interfaces/PRPoolableInterface.h"
 #include "PRAICharacter.generated.h"
 
 /**
  * AI 캐릭터 클래스입니다.
  */
 UCLASS()
-class PROJECTREPLICA_API APRAICharacter : public APRBaseCharacter
+class PROJECTREPLICA_API APRAICharacter : public APRBaseCharacter, public IPRPoolableInterface
 {
 	GENERATED_BODY()
 
@@ -23,18 +24,13 @@ protected:
 #pragma region Activate
 public:
 	/** AI 캐릭터가 활성화되었는지 판별하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, Category = "Activate")
-	bool IsActivate() const;	
+	virtual bool IsActivate_Implementation() const override;	
 	
 	/** AI 캐릭터를 활성화하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Activate")
-	void Activate();
-	virtual void Activate_Implementation();
+	virtual void Activate_Implementation() override;
 
 	/** AI 캐릭터를 비활성화 하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Activate")
-	void DeActivate();
-	virtual void DeActivate_Implementation();
+	virtual void Deactivate_Implementation() override;
 
 protected:
 	/** AI 캐릭터의 활성화를 나타내는 변수입니다. */
