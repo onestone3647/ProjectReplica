@@ -211,7 +211,7 @@ void APRBaseCharacter::DoDamage()
 		for(FHitResult HitResult : HitResults)
 		{
 			if(IsValid(HitResult.GetActor())
-				&& HitResult.GetActor()->GetClass()->ImplementsInterface(UInterface_PRDamageable::StaticClass())
+				&& HitResult.GetActor()->GetClass()->ImplementsInterface(UPRDamageableInterface::StaticClass())
 				&& UniqueActors.Find(HitResult.GetActor()) == nullptr)
 			{
 				UniqueActors.Emplace(HitResult.GetActor());
@@ -237,7 +237,7 @@ void APRBaseCharacter::DoDamage()
 					DamageInfo.Amount = DamageAmount;
 				}
 				
-				bool bWasDamaged = IInterface_PRDamageable::Execute_TakeDamage(HitResult.GetActor(), DamageInfo);
+				bool bWasDamaged = IPRDamageableInterface::Execute_TakeDamage(HitResult.GetActor(), DamageInfo);
 				if(bWasDamaged)
 				{
 					// GetEffectSystem()->SpawnNiagaraEffectAtLocation(HitEffect,HitResult.Location);

@@ -12,7 +12,7 @@
  */
 
 /**
- * 활성화된 Index를 보관한 목록을 나타내는 구조체입니다.
+ * 활성화된 Index를 보관하는 구조체입니다.
  */
 USTRUCT(Atomic, BlueprintType)
 struct FPRActivateIndexList
@@ -20,13 +20,13 @@ struct FPRActivateIndexList
 	GENERATED_BODY()
 
 public:
-	/** 활성화된 Index를 보관한 Set입니다. */
+	/** 활성화된 인덱스를 보관하는 Set입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "ActivateIndexList")
 	TSet<int32> Indexes;
 };
 
 /**
- * 이전에 사용된 Index를 보관한 목록을 나타내는 구조체입니다. 
+ * 이전에 사용된 Index를 보관하는 구조체입니다. 
  */
 USTRUCT(Atomic, BlueprintType)
 struct FPRUsedIndexList
@@ -34,9 +34,32 @@ struct FPRUsedIndexList
 	GENERATED_BODY()
 
 public:
-	/** 이전에 사용된 Index를 추적하기 위한 Set입니다. */
+	/** 이전에 사용된 Index를 보관하는 Set입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "UsedIndexList")
 	TSet<int32> Indexes;
+};
+
+/**
+ * 액터 배열을 보관하는 구조체입니다. 
+ */
+USTRUCT(Atomic, BlueprintType)
+struct FPRActorArray
+{
+	GENERATED_BODY()
+	
+public:
+	FPRActorArray()
+		: Actors()
+	{}
+
+	FPRActorArray(const TArray<TObjectPtr<AActor>>& NewActors)
+		: Actors(NewActors)
+	{}
+	
+public:
+	/** 액터를 보관한 배열입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ObjectArray")
+	TArray<TObjectPtr<AActor>> Actors;
 };
 
 /** 대미지 정보를 나타내는 구조체입니다. */

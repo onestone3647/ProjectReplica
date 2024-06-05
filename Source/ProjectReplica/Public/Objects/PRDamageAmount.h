@@ -35,6 +35,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "DamageAmount")
 	void Initialize(FVector SpawnLocation, float DamageAmount, bool bIsCritical, EPRElementType ElementType);
 
+protected:
+	/** FadeOut 위젯 애니메이션이 끝났을 때 실행하는 함수입니다. */
+	UFUNCTION()
+	void OnFadeOutWidgetAnimFinished();
+
 private:
 	/** DamageAmount 위젯을 생성하는 함수입니다. */
 	class UPRDamageAmountWidget* CreateDamageAmountWidget();

@@ -2,7 +2,7 @@
 
 
 #include "Widgets/PRBaseHealthBarWidget.h"
-#include "Interfaces/Interface_PRDamageable.h"
+#include "Interfaces/PRDamageableInterface.h"
 #include "Components/ProgressBar.h"
 
 UPRBaseHealthBarWidget::UPRBaseHealthBarWidget(const FObjectInitializer& ObjectInitializer)
@@ -14,8 +14,8 @@ UPRBaseHealthBarWidget::UPRBaseHealthBarWidget(const FObjectInitializer& ObjectI
 	HealthBuffer = 1.0f;
 	HealthBufferLerpSpeed = 0.02f;
 
-	// DamageableActor
-	DamageableActor = nullptr;
+	// DamageableTarget
+	DamageableTarget = nullptr;
 }
 
 void UPRBaseHealthBarWidget::NativeConstruct()
@@ -35,10 +35,10 @@ void UPRBaseHealthBarWidget::NativeTick(const FGeometry& MyGeometry, float InDel
 
 void UPRBaseHealthBarWidget::UpdateHealthBarBuffer()
 {
-	if(HealthBarBuffer && IsImplementsDamageableInterface(DamageableActor.GetObject()))
+	if(HealthBarBuffer && IsImplementsDamageableInterface(DamageableTarget.GetObject()))
 	{
-		const float CurrentHealth = DamageableActor->Execute_GetCurrentHealth(DamageableActor.GetObject());
-		const float MaxHealth = DamageableActor->Execute_GetMaxHealth(DamageableActor.GetObject());
+		const float CurrentHealth = DamageableTarget->Execute_GetCurrentHealth(DamageableTarget.GetObject());
+		const float MaxHealth = DamageableTarget->Execute_GetMaxHealth(DamageableTarget.GetObject());
 		HealthBuffer = FMath::Lerp(HealthBuffer, CurrentHealth / MaxHealth, HealthBufferLerpSpeed);
 		HealthBarBuffer->SetPercent(HealthBuffer);
 	}
@@ -46,10 +46,10 @@ void UPRBaseHealthBarWidget::UpdateHealthBarBuffer()
 
 float UPRBaseHealthBarWidget::GetHealthBarPercent() const
 {
-	if(HealthBar && IsImplementsDamageableInterface(DamageableActor.GetObject()))
+	if(HealthBar && IsImplementsDamageableInterface(DamageableTarget.GetObject()))
 	{
-		const float CurrentHealth = DamageableActor->Execute_GetCurrentHealth(DamageableActor.GetObject());
-		const float MaxHealth = DamageableActor->Execute_GetMaxHealth(DamageableActor.GetObject());
+		const float CurrentHealth = DamageableTarget->Execute_GetCurrentHealth(DamageableTarget.GetObject());
+		const float MaxHealth = DamageableTarget->Execute_GetMaxHealth(DamageableTarget.GetObject());
 
 		return CurrentHealth / MaxHealth;
 	}
@@ -57,15 +57,15 @@ float UPRBaseHealthBarWidget::GetHealthBarPercent() const
 	return 0.0f;
 }
 
-#pragma region DamageableActor
-void UPRBaseHealthBarWidget::InitializeDamageableActor(TScriptInterface<IInterface_PRDamageable> NewDamageableActor)
+#pragma region DamageableTarget
+void UPRBaseHealthBarWidget::InitializeDamageableTarget(TScriptInterface<IPRDamageableInterface> NewDamageableTarget)
 {
-	DamageableActor = NewDamageableActor;
+	DamageableTarget = NewDamageableTarget;
 }
 
 bool UPRBaseHealthBarWidget::IsImplementsDamageableInterface(UObject* DamageableObject) const
 {
-	return IsValid(DamageableObject) && DamageableObject->GetClass()->ImplementsInterface(UInterface_PRDamageable::StaticClass());
+	return IsValid(DamageableObject) && DamageableObject->GetClass()->ImplementsInterface(UPRDamageableInterface::StaticClass());
 }
 #pragma endregion
 

@@ -4,14 +4,14 @@
 
 #include "ProjectReplica.h"
 #include "GameFramework/Actor.h"
-#include "Interfaces/Interface_PRDamageable.h"
+#include "Interfaces/PRDamageableInterface.h"
 #include "PRDamageableObject.generated.h"
 
 /**
  * 대미지를 받으면 파괴되는 오브젝트 클래스입니다.
  */
 UCLASS()
-class PROJECTREPLICA_API APRDamageableObject : public AActor, public IInterface_PRDamageable
+class PROJECTREPLICA_API APRDamageableObject : public AActor, public IPRDamageableInterface
 {
 	GENERATED_BODY()
 	
@@ -26,8 +26,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRDamageableObject")
 	TObjectPtr<class USceneComponent> Root;
 
-
-#pragma region Interface_Damageable
+#pragma region DamageableInterface
 public:
 	/**
 	 * 대미지를 받는 함수입니다.

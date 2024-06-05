@@ -5,10 +5,8 @@
 #include "ProjectReplica.h"
 #include "Common/PRCommonStruct.h"
 #include "GameFramework/Character.h"
-#include "Interfaces/Interface_PRDamageable.h"
+#include "Interfaces/PRDamageableInterface.h"
 #include "PRBaseCharacter.generated.h"
-
-
 
 /** 캐릭터의 성별을 나타내는 열거형입니다. */
 UENUM(BlueprintType)
@@ -38,7 +36,7 @@ class UNiagaraComponent;
  * 캐릭터 클래스입니다.
  */
 UCLASS()
-class PROJECTREPLICA_API APRBaseCharacter : public ACharacter, public IInterface_PRDamageable
+class PROJECTREPLICA_API APRBaseCharacter : public ACharacter, public IPRDamageableInterface
 {
 	GENERATED_BODY()
 

@@ -38,7 +38,7 @@ void APRAISpawner::SpawnAI()
 		{
 			SpawnedAICharacter->SetActorLocationAndRotation(GetActorLocation(), GetActorRotation());
 			SpawnedAICharacter->GetStatSystem()->InitializeStatByLevel(SpawnAICharacterLevel);
-			SpawnedAICharacter->Activate();
+			IPRPoolableInterface::Execute_Activate(SpawnedAICharacter);
 		}
 	}
 }
