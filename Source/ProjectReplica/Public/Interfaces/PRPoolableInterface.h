@@ -37,6 +37,18 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
 	int32 GetPoolIndex() const;
 
+	/** 수명을 반환하는 함수입니다. */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
+	float GetLifespan() const;
+
+	/**
+	 * 수명을 설정하는 함수입니다.
+	 * 
+	 * @param NewLifespan 설정할 수명입니다.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
+	void SetLifespan(float NewLifespan);
+
 	/** 동적으로 생성되었는지 확인하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
 	bool IsDynamicObject() const;
@@ -47,5 +59,5 @@ public:
 	 * @param bIsDynamicObject 동적으로 생성되었다면 true를 입력합니다. 동적으로 생성되지 않았다면 false를 입력합니다. 
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
-	void SetIsDynamicObject(bool bIsDynamicObject);	
+	void SetIsDynamicObject(bool bIsDynamicObject);
 };

@@ -38,6 +38,13 @@ public:
 	/** 오브젝트의 PoolIndex를 반환하는 함수입니다. */
 	virtual int32 GetPoolIndex_Implementation() const override;
 
+	/**
+	 * 수명을 설정하는 함수입니다.
+	 * 
+	 * @param NewLifespan 설정할 수명입니다.
+	 */
+	virtual void SetLifespan_Implementation(float NewLifespan) override;
+
 	/** 동적으로 생성되었는지 확인하는 함수입니다. */
 	virtual bool IsDynamicObject_Implementation() const override;
 
@@ -60,9 +67,6 @@ public:
 	void ActivateAndSetLocation(const FVector& NewLocation);
 
 protected:
-	/** 입력받은 인자로 오브젝트의 수명을 설정하는 함수입니다. */
-	void SetLifespan(float NewLifespan);
-
 	/** 오브젝트가 비활성화될 때 실행하는 함수입니다. */
 	UFUNCTION()
 	void OnDeactivate();
@@ -86,15 +90,15 @@ protected:
 	FTimerHandle LifespanTimerHandle;
 
 	/** 오브젝트의 소유자입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRPooledObject")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRPooledObject")
 	TObjectPtr<AActor> ObjectOwner;
 
 	/** Pool의 Index입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRPooledObject")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRPooledObject")
 	int32 PoolIndex;
 
 	/** 동적으로 생성된 오브젝트인지 나타내는 변수입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRPooledObject")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRPooledObject")
 	bool bDynamicObject;	
 
 public:

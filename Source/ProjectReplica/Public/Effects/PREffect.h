@@ -4,6 +4,7 @@
 
 #include "ProjectReplica.h"
 #include "GameFramework/Actor.h"
+#include "Interfaces/PRPoolableInterface.h"
 #include "PREffect.generated.h"
 
 class UFXSystemComponent;
@@ -14,7 +15,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEffectDeactivate, APREffect*, Eff
  * EffectSystem이 관리하는 이펙트 클래스입니다.
  */
 UCLASS()
-class PROJECTREPLICA_API APREffect : public AActor
+class PROJECTREPLICA_API APREffect : public AActor, public IPRPoolableInterface
 {
 	GENERATED_BODY()
 	
@@ -23,6 +24,31 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+#pragma region PooledableInterface
+public:
+	/** 오브젝트가 활성화 되었는지 확인하는 함수입니다. */
+	virtual bool IsActivate_Implementation() const override;
+	
+	/** 오브젝트를 활성화하는 함수입니다. */
+	virtual void Activate_Implementation() override;
+
+	/** 오브젝트를 비활성화하는 함수입니다. */
+	virtual void Deactivate_Implementation() override;
+	
+	/** 오브젝트의 PoolIndex를 반환하는 함수입니다. */
+	virtual int32 GetPoolIndex_Implementation() const override;
+
+	/** 동적으로 생성되었는지 확인하는 함수입니다. */
+	virtual bool IsDynamicObject_Implementation() const override;
+
+	/**
+	 * 동적으로 생성되었는지 설정하는 함수입니다.
+	 * 
+	 * @param bIsDynamicObject 동적으로 생성되었다면 true를 입력합니다. 동적으로 생성되지 않았다면 false를 입력합니다. 
+	 */
+	virtual void SetIsDynamicObject_Implementation(bool bIsDynamicObject) override;	
+#pragma endregion
 
 public:
 	/**
@@ -50,21 +76,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PREffect")
 	virtual void SpawnEffectAttached(USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, EAttachLocation::Type LocationType = EAttachLocation::KeepWorldPosition, bool bAutoActivate = true, bool bReset = false);
 	
-	/** 이펙트가 활성화되었는지 판별하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, Category = "PREffect")
-	bool IsActivate() const;	
-	
 	/**
 	 * 이펙트를 활성화하는 함수입니다.
 	 *
 	 * @param bReset 처음부터 다시 재생할지 여부
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PREffect")
-	virtual void Activate(bool bReset = false);
+	virtual void ActivateEffect(bool bReset = false);
 
 	/** 이펙트를 비활성화하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PREffect")
-	virtual void Deactivate();
+	virtual void DeactivateEffect();
 
 	/** FXSystemComponent를 반환하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PREffect")
@@ -84,6 +106,10 @@ protected:
 	/** 입력받은 인자로 이펙트의 수명을 설정하는 함수입니다. */
 	void SetEffectLifespan(float NewEffectLifespan);
 
+	/** 이펙트가 비활성화될 때 실행하는 함수입니다. */
+	UFUNCTION()
+	void OnDeactivate();
+
 protected:
 	/** 이펙트의 활성화를 나타내는 변수입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffect")
@@ -98,12 +124,16 @@ protected:
 	FTimerHandle EffectLifespanTimerHandle;
 
 	/** 이펙트의 소유자입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffect")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PREffect")
 	TObjectPtr<AActor> EffectOwner;
 
 	/** 풀의 Index입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffect")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PREffect")
 	int32 PoolIndex;
+
+	/** 동적으로 생성된 이펙트인지 나타내는 변수입니다. */	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PREffect")
+	bool bDynamicEffect;
 
 public:
 	/** EffectLifespan을 반환하는 함수입니다. */
@@ -111,9 +141,6 @@ public:
 	
 	/** EffectOwner를 반환하는 함수입니다. */
 	FORCEINLINE AActor* GetEffectOwner() const { return EffectOwner; }
-
-	/** PoolIndex를 반환하는 함수입니다. */
-	int32 GetPoolIndex() const;
 
 public:
 	/** 이펙트가 비활성화될 때 실행하는 델리게이트입니다. */

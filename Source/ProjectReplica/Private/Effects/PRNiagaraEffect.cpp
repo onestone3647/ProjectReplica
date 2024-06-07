@@ -21,9 +21,9 @@ void APRNiagaraEffect::InitializeNiagaraEffect(UNiagaraSystem* NiagaraSystem, AA
 	}
 }
 
-void APRNiagaraEffect::Activate(bool bReset)
+void APRNiagaraEffect::ActivateEffect(bool bReset)
 {
-	Super::Activate();
+	Super::ActivateEffect();
 
 	if(IsValid(NiagaraEffect))
 	{
@@ -31,9 +31,9 @@ void APRNiagaraEffect::Activate(bool bReset)
 	}
 }
 
-void APRNiagaraEffect::Deactivate()
+void APRNiagaraEffect::DeactivateEffect()
 {
-	Super::Deactivate();
+	Super::DeactivateEffect();
 
 	if(IsValid(NiagaraEffect))
 	{

@@ -37,13 +37,13 @@ public:
 	 *
 	 * @param bReset 처음부터 다시 재생할지 여부
 	 */
-	virtual void Activate(bool bReset = false) override;
-
+	virtual void ActivateEffect(bool bReset = false) override;
+	
 	/** 이펙트를 비활성화하는 함수입니다. */
-	virtual void Deactivate() override;
+	virtual void DeactivateEffect() override;
 
 	/** FXSystemComponent를 반환하는 함수입니다. */
-	virtual UFXSystemComponent* GetFXSystemComponent() const; 
+	virtual UFXSystemComponent* GetFXSystemComponent() const override; 
 
 	/** ParticleEffect의 에셋을 반환하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PRParticleEffect")

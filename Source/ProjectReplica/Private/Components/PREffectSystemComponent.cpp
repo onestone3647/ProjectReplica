@@ -154,7 +154,7 @@ bool UPREffectSystemComponent::IsActivateNiagaraEffect(APRNiagaraEffect* Niagara
 		const FPRActivateIndexList* ActivateIndexList = ActivateNiagaraEffectIndexList.Find(NiagaraEffect->GetNiagaraEffectAsset());
 		if(ActivateIndexList != nullptr)
 		{
-			return NiagaraEffect->IsActivate() && ActivateIndexList->Indexes.Contains(NiagaraEffect->GetPoolIndex());
+			return IPRPoolableInterface::Execute_IsActivate(NiagaraEffect) && ActivateIndexList->Indexes.Contains(IPRPoolableInterface::Execute_GetPoolIndex(NiagaraEffect));
 		}
 	}
 	
@@ -189,7 +189,7 @@ APRNiagaraEffect* UPREffectSystemComponent::SpawnNiagaraEffectAtLocation(UNiagar
 		ActivateableNiagaraEffect->SpawnEffectAtLocation(Location, Rotation, Scale, bEffectAutoActivate, bReset);
 
 		// 활성화된 NiagaraEffect의 Index를 ActivateNiagaraEffectIndexList에 저장합니다.
-		ActivateNiagaraEffectIndexList.Find(SpawnEffect)->Indexes.Add(ActivateableNiagaraEffect->GetPoolIndex());
+		ActivateNiagaraEffectIndexList.Find(SpawnEffect)->Indexes.Add(IPRPoolableInterface::Execute_GetPoolIndex(ActivateableNiagaraEffect));
 	}
 	
 	return ActivateableNiagaraEffect;
@@ -204,7 +204,7 @@ APRNiagaraEffect* UPREffectSystemComponent::SpawnNiagaraEffectAttached(UNiagaraS
 		ActivateableNiagaraEffect->SpawnEffectAttached(Parent, AttachSocketName, Location, Rotation, Scale, EAttachLocation::KeepWorldPosition, bEffectAutoActivate, bReset);
 
 		// 활성화된 NiagaraEffect의 Index를 ActivateNiagaraEffectIndexList에 저장합니다.
-		ActivateNiagaraEffectIndexList.Find(SpawnEffect)->Indexes.Add(ActivateableNiagaraEffect->GetPoolIndex());
+		ActivateNiagaraEffectIndexList.Find(SpawnEffect)->Indexes.Add(IPRPoolableInterface::Execute_GetPoolIndex(ActivateableNiagaraEffect));
 	}
 	
 	return ActivateableNiagaraEffect;
@@ -298,7 +298,7 @@ void UPREffectSystemComponent::CreateUsedNiagaraEffectIndexList(UNiagaraSystem* 
 	FPRUsedIndexList UsedEffectIndexList;
 	for(const auto& NiagaraEffect : Pair->Effects)
 	{
-		UsedEffectIndexList.Indexes.Add(NiagaraEffect->GetPoolIndex());
+		UsedEffectIndexList.Indexes.Add(IPRPoolableInterface::Execute_GetPoolIndex(NiagaraEffect));
 	}
 
 	UsedNiagaraEffectIndexList.Emplace(NiagaraSystem, UsedEffectIndexList);
@@ -391,7 +391,7 @@ void UPREffectSystemComponent::OnNiagaraEffectDeactivate(APREffect* Effect)
 		if(ActivateIndexList != nullptr)
 		{
 			// 비활성화된 NiagaraEffect의 Index를 ActivateIndexList에서 제거합니다.
-			ActivateIndexList->Indexes.Remove(NiagaraEffect->GetPoolIndex());
+			ActivateIndexList->Indexes.Remove(IPRPoolableInterface::Execute_GetPoolIndex(NiagaraEffect));
 		}
 	}
 }
@@ -442,7 +442,7 @@ void UPREffectSystemComponent::DynamicNiagaraEffectDestroy(APRNiagaraEffect* Nia
 	FPRUsedIndexList* UsedIndexList = UsedNiagaraEffectIndexList.Find(NiagaraEffect->GetNiagaraEffectAsset());
 	if(UsedIndexList != nullptr)
 	{
-		UsedIndexList->Indexes.Remove(NiagaraEffect->GetPoolIndex());
+		UsedIndexList->Indexes.Remove(IPRPoolableInterface::Execute_GetPoolIndex(NiagaraEffect));
 	}
 
 	// NiagaraEffectPool에서 해당 NiagaraEffect를 제거하고, 월드에서 제거합니다.
@@ -541,7 +541,7 @@ bool UPREffectSystemComponent::IsActivateParticleEffect(APRParticleEffect* Parti
 		const FPRActivateIndexList* ActivateIndexList = ActivateParticleEffectIndexList.Find(ParticleEffect->GetParticleEffectAsset());
 		if(ActivateIndexList != nullptr)
 		{
-			return ParticleEffect->IsActivate() && ActivateIndexList->Indexes.Contains(ParticleEffect->GetPoolIndex());
+			return IPRPoolableInterface::Execute_IsActivate(ParticleEffect) && ActivateIndexList->Indexes.Contains(IPRPoolableInterface::Execute_GetPoolIndex(ParticleEffect));
 		}
 	}
 	
@@ -576,7 +576,7 @@ APRParticleEffect* UPREffectSystemComponent::SpawnParticleEffectAtLocation(UPart
 		ActivateableParticleEffect->SpawnEffectAtLocation(Location, Rotation, Scale, bEffectAutoActivate, bReset);
 
 		// 활성화된 ParticleEffect의 Index를 ActivateParticleEffectIndexList에 저장합니다.
-		ActivateParticleEffectIndexList.Find(SpawnEffect)->Indexes.Add(ActivateableParticleEffect->GetPoolIndex());
+		ActivateParticleEffectIndexList.Find(SpawnEffect)->Indexes.Add(IPRPoolableInterface::Execute_GetPoolIndex(ActivateableParticleEffect));
 	}
 	
 	return ActivateableParticleEffect;
@@ -591,7 +591,7 @@ APRParticleEffect* UPREffectSystemComponent::SpawnParticleEffectAttached(UPartic
 		ActivateableParticleEffect->SpawnEffectAttached(Parent, AttachSocketName, Location, Rotation, Scale, EAttachLocation::KeepWorldPosition, bEffectAutoActivate, bReset);
 
 		// 활성화된 ParticleEffect의 Index를 ActivateParticleEffectIndexList에 저장합니다.
-		ActivateParticleEffectIndexList.Find(SpawnEffect)->Indexes.Add(ActivateableParticleEffect->GetPoolIndex());
+		ActivateParticleEffectIndexList.Find(SpawnEffect)->Indexes.Add(IPRPoolableInterface::Execute_GetPoolIndex(ActivateableParticleEffect));
 	}
 	
 	return ActivateableParticleEffect;
@@ -685,7 +685,7 @@ void UPREffectSystemComponent::CreateUsedParticleEffectIndexList(UParticleSystem
 	FPRUsedIndexList UsedEffectIndexList;
 	for(const auto& ParticleEffect : Pair->Effects)
 	{
-		UsedEffectIndexList.Indexes.Add(ParticleEffect->GetPoolIndex());
+		UsedEffectIndexList.Indexes.Add(IPRPoolableInterface::Execute_GetPoolIndex(ParticleEffect));
 	}
 
 	UsedParticleEffectIndexList.Emplace(ParticleSystem, UsedEffectIndexList);
@@ -778,7 +778,7 @@ void UPREffectSystemComponent::OnParticleEffectDeactivate(APREffect* Effect)
 		if(ActivateIndexList != nullptr)
 		{
 			// 비활성화된 ParticleEffect의 Index를 ActivateIndexList에서 제거합니다.
-			ActivateIndexList->Indexes.Remove(ParticleEffect->GetPoolIndex());
+			ActivateIndexList->Indexes.Remove(IPRPoolableInterface::Execute_GetPoolIndex(ParticleEffect));
 		}
 	}
 }
@@ -829,7 +829,7 @@ void UPREffectSystemComponent::DynamicParticleEffectDestroy(APRParticleEffect* P
 	FPRUsedIndexList* UsedIndexList = UsedParticleEffectIndexList.Find(ParticleEffect->GetParticleEffectAsset());
 	if(UsedIndexList != nullptr)
 	{
-		UsedIndexList->Indexes.Remove(ParticleEffect->GetPoolIndex());
+		UsedIndexList->Indexes.Remove(IPRPoolableInterface::Execute_GetPoolIndex(ParticleEffect));
 	}
 
 	// ParticleEffectPool에서 해당 ParticleEffect를 제거하고, 월드에서 제거합니다.
