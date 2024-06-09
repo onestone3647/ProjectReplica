@@ -44,16 +44,6 @@ public:
 	 * @param NewLifespan 설정할 수명입니다.
 	 */
 	virtual void SetLifespan_Implementation(float NewLifespan) override;
-
-	/** 동적으로 생성되었는지 확인하는 함수입니다. */
-	virtual bool IsDynamicObject_Implementation() const override;
-
-	/**
-	 * 동적으로 생성되었는지 설정하는 함수입니다.
-	 * 
-	 * @param bIsDynamicObject 동적으로 생성되었다면 true를 입력합니다. 동적으로 생성되지 않았다면 false를 입력합니다. 
-	 */
-	virtual void SetIsDynamicObject_Implementation(bool bIsDynamicObject) override;	
 #pragma endregion
 	
 public:
@@ -96,10 +86,6 @@ protected:
 	/** Pool의 Index입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRPooledObject")
 	int32 PoolIndex;
-
-	/** 동적으로 생성된 오브젝트인지 나타내는 변수입니다. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PRPooledObject")
-	bool bDynamicObject;	
 
 public:
 	/** ObjectOwner를 반환하는 함수입니다. */

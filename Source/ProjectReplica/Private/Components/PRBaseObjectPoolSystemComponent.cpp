@@ -64,6 +64,57 @@ bool UPRBaseObjectPoolSystemComponent::IsPoolableObjectClass(TSubclassOf<UObject
 	return IsValid(PoolableObjectClass) && PoolableObjectClass->ImplementsInterface(UPRPoolableInterface::StaticClass());
 }
 
+void UPRBaseObjectPoolSystemComponent::ActivateObject(UObject* PoolableObject)
+{
+	if(IsPoolableObject(PoolableObject))
+	{
+		IPRPoolableInterface::Execute_Activate(PoolableObject);
+	}
+}
+
+void UPRBaseObjectPoolSystemComponent::DeactivateObject(UObject* PoolableObject)
+{
+	if(IsPoolableObject(PoolableObject))
+	{
+		IPRPoolableInterface::Execute_Deactivate(PoolableObject);
+	}
+}
+
+float UPRBaseObjectPoolSystemComponent::GetLifespan(UObject* PoolableObject) const
+{
+	if(IsPoolableObject(PoolableObject))
+	{
+		return IPRPoolableInterface::Execute_GetLifespan(PoolableObject);
+	}
+	
+	// 유효하지 않은 float 값을 나타내기 위해 NAN을 반환합니다.
+	return NAN;
+}
+
+void UPRBaseObjectPoolSystemComponent::SetLifespan(UObject* PoolableObject, float NewLifespan)
+{
+	if(IsPoolableObject(PoolableObject))
+	{
+		IPRPoolableInterface::Execute_SetLifespan(PoolableObject, NewLifespan);
+	}
+}
+
+bool UPRBaseObjectPoolSystemComponent::IsActivateObject(UObject* PoolableObject) const
+{
+	return IsPoolableObject(PoolableObject) && IPRPoolableInterface::Execute_IsActivate(PoolableObject);
+}
+
+int32 UPRBaseObjectPoolSystemComponent::GetPoolIndex(UObject* PoolableObject) const
+{
+	if(IsPoolableObject(PoolableObject))
+	{
+		return IPRPoolableInterface::Execute_GetPoolIndex(PoolableObject);
+	}
+
+	// 유효하지 않은 Index를 반환합니다.
+	return INDEX_NONE;
+}
+
 int32 UPRBaseObjectPoolSystemComponent::FindAvailableIndex(const TSet<int32>& UsedIndexes)
 {
 	int32 NewIndex = 0;

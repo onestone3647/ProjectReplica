@@ -48,16 +48,4 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
 	void SetLifespan(float NewLifespan);
-
-	/** 동적으로 생성되었는지 확인하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
-	bool IsDynamicObject() const;
-
-	/**
-	 * 동적으로 생성되었는지 설정하는 함수입니다.
-	 * 
-	 * @param bIsDynamicObject 동적으로 생성되었다면 true를 입력합니다. 동적으로 생성되지 않았다면 false를 입력합니다. 
-	 */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
-	void SetIsDynamicObject(bool bIsDynamicObject);
 };

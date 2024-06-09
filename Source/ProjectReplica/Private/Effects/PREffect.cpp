@@ -11,8 +11,7 @@ APREffect::APREffect()
 	bActivate = false;
 	EffectLifespan = 0.0f;
 	EffectOwner = nullptr;
-	PoolIndex = -1;
-	bDynamicEffect = false;
+	PoolIndex = INDEX_NONE;
 }
 
 void APREffect::BeginPlay()
@@ -40,16 +39,6 @@ void APREffect::Deactivate_Implementation()
 int32 APREffect::GetPoolIndex_Implementation() const
 {
 	return PoolIndex;
-}
-
-bool APREffect::IsDynamicObject_Implementation() const
-{
-	return bDynamicEffect;
-}
-
-void APREffect::SetIsDynamicObject_Implementation(bool bIsDynamicObject)
-{
-	bDynamicEffect = bIsDynamicObject;
 }
 #pragma endregion 
 

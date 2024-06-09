@@ -38,16 +38,6 @@ public:
 	
 	/** 오브젝트의 PoolIndex를 반환하는 함수입니다. */
 	virtual int32 GetPoolIndex_Implementation() const override;
-
-	/** 동적으로 생성되었는지 확인하는 함수입니다. */
-	virtual bool IsDynamicObject_Implementation() const override;
-
-	/**
-	 * 동적으로 생성되었는지 설정하는 함수입니다.
-	 * 
-	 * @param bIsDynamicObject 동적으로 생성되었다면 true를 입력합니다. 동적으로 생성되지 않았다면 false를 입력합니다. 
-	 */
-	virtual void SetIsDynamicObject_Implementation(bool bIsDynamicObject) override;	
 #pragma endregion
 
 public:
@@ -130,10 +120,6 @@ protected:
 	/** 풀의 Index입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PREffect")
 	int32 PoolIndex;
-
-	/** 동적으로 생성된 이펙트인지 나타내는 변수입니다. */	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PREffect")
-	bool bDynamicEffect;
 
 public:
 	/** EffectLifespan을 반환하는 함수입니다. */
