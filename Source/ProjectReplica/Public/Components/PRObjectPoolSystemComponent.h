@@ -28,7 +28,7 @@ public:
 
 public:
 	/** 풀에 보관된 오브젝트들의 Array입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pool")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRPool")
 	TArray<TObjectPtr<APRPooledObject>> PooledObjects;
 };
 
@@ -51,7 +51,7 @@ public:
 
 public:
 	/** 오브젝트 클래스와 해당 풀의 Map입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ObjectPool")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRObjectPool")
 	TMap<TSubclassOf<APRPooledObject>, FPRPool> Pool;
 };
 
@@ -75,18 +75,18 @@ public:
 	{}
 
 public:
-	/** 풀에 넣을 오브젝트의 클래스입니다. */
+	/** Pool에 넣을 오브젝트의 클래스입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRObjectPoolSettings")
 	TSubclassOf<APRPooledObject> PooledObjectClass;
 
-	/** 풀의 크기입니다. */
+	/** Pool의 크기입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRObjectPoolSettings")
 	int32 PoolSize;	
 };
 #pragma endregion
 
 /**
- * 오브젝트 풀을 관리하는 ActorComponent 클래스입니다.
+ * ObjectPool을 관리하는 ActorComponent 클래스입니다.
  */
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PROJECTREPLICA_API UPRObjectPoolSystemComponent : public UPRBaseObjectPoolSystemComponent
@@ -96,10 +96,7 @@ class PROJECTREPLICA_API UPRObjectPoolSystemComponent : public UPRBaseObjectPool
 public:
 	UPRObjectPoolSystemComponent();
 
-public:
-	virtual void DestroyComponent(bool bPromoteChildren) override;
-
-#pragma region BaseObjectPoolSystem
+#pragma region PRBaseObjectPoolSystem
 public:
 	/** 기존의 ObjectPool을 제거하고, 새로 ObjectPool을 생성하여 초기화하는 함수입니다. */
 	virtual void InitializeObjectPool() override;
@@ -189,6 +186,7 @@ public:
 	UFUNCTION(Blueprintable, Category = "PRObjectPoolSystem")
 	bool IsDynamicPooledObject(APRPooledObject* PooledObject) const;
 
+private:
 	/**
 	 * 주어진 ObjectPool을 제거하는 함수입니다.
 	 *
@@ -196,8 +194,7 @@ public:
 	 */
 	UFUNCTION(Blueprintable, Category = "PRObjectPoolSystem")
 	void ClearObjectPool(FPRObjectPool& NewObjectPool);
-
-private:
+	
 	/**
 	 * 주어진 오브젝트 클래스를 월드에 Spawn하는 함수입니다.
 	 * 
@@ -233,7 +230,7 @@ private:
 	 * @param ObjectPoolSettings ObjectPool을 생성할 설정 값입니다.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PRObjectPoolSystem")
-	void CreateObjectPool(FPRObjectPoolSettings ObjectPoolSettings);
+	void CreateObjectPool(const FPRObjectPoolSettings& ObjectPoolSettings);
 
 	/**
 	 * 주어진 오브젝트 클래스의 ActivateObjectIndexList를 생성하는 함수입니다.
@@ -291,7 +288,7 @@ private:
 
 	/**
 	 * 이전에 사용된 오브젝트들의 Index 목록입니다.
-	 * 돟적으로 생성하는 오브젝트의 Index에 오류가 생기지 않도록 합니다.
+	 * 동적으로 생성하는 오브젝트의 Index에 오류가 생기지 않도록 합니다.
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PRObjectPoolSystem", meta = (AllowPrivateAccess = "true"))
 	FPRUsedObjectIndexList UsedObjectIndexList;

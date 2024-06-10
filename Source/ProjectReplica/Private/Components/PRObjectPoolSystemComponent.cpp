@@ -15,26 +15,19 @@ UPRObjectPoolSystemComponent::UPRObjectPoolSystemComponent()
 	DynamicDestroyObjectList = FPRDynamicDestroyObjectList();
 }
 
-void UPRObjectPoolSystemComponent::DestroyComponent(bool bPromoteChildren)
-{
-	ClearAllObjectPool();
-	
-	Super::DestroyComponent(bPromoteChildren);
-}
-
-#pragma region BaseObjectPoolSystem
+#pragma region PRBaseObjectPoolSystem
 void UPRObjectPoolSystemComponent::InitializeObjectPool()
 {
 	ClearAllObjectPool();
 
 	// ObjectPoolSettings 데이터 테이블을 기반으로 ObjectPool을 생성합니다.
-	if(ObjectPoolSettingsDataTable != nullptr)
+	if(ObjectPoolSettingsDataTable)
 	{
 		TArray<FName> RowNames = ObjectPoolSettingsDataTable->GetRowNames();
 		for(const FName& RowName : RowNames)
 		{
 			FPRObjectPoolSettings* ObjectPoolSettings = ObjectPoolSettingsDataTable->FindRow<FPRObjectPoolSettings>(RowName, FString(""));
-			if(ObjectPoolSettings != nullptr)
+			if(ObjectPoolSettings)
 			{
 				CreateObjectPool(*ObjectPoolSettings);
 			}
@@ -44,16 +37,9 @@ void UPRObjectPoolSystemComponent::InitializeObjectPool()
 
 void UPRObjectPoolSystemComponent::ClearAllObjectPool()
 {
-	// ActivateObjectIndexList를 비웁니다.
 	ActivateObjectIndexList.List.Empty();
-
-	// UsedObjectIndexList를 비웁니다.
 	UsedObjectIndexList.List.Empty();
-
-	// DynamicDestroyObjectList의 모든 List를 제거합니다.
 	ClearDynamicDestroyObjectList(DynamicDestroyObjectList);
-
-	// ObjectPool의 모든 오브젝트를 제거합니다.
 	ClearObjectPool(ObjectPool);
 }
 #pragma endregion
@@ -226,7 +212,6 @@ void UPRObjectPoolSystemComponent::ClearObjectPool(FPRObjectPool& NewObjectPool)
 	for(auto& PoolEntry : NewObjectPool.Pool)
 	{
 		FPRPool& Pool = PoolEntry.Value;
-
 		for(auto& PooledObject : Pool.PooledObjects)
 		{
 			if(IsValid(PooledObject))
@@ -323,7 +308,7 @@ APRPooledObject* UPRObjectPoolSystemComponent::SpawnAndInitializeObject(TSubclas
 	return SpawnObject;
 }
 
-void UPRObjectPoolSystemComponent::CreateObjectPool(FPRObjectPoolSettings ObjectPoolSettings)
+void UPRObjectPoolSystemComponent::CreateObjectPool(const FPRObjectPoolSettings& ObjectPoolSettings)
 {
 	if(GetWorld()
 		&& ObjectPoolSettings.PooledObjectClass

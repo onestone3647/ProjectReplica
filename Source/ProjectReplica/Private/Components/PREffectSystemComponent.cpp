@@ -10,80 +10,130 @@
 
 UPREffectSystemComponent::UPREffectSystemComponent()
 {
-	// EffectSystem
-	DynamicLifespan = 30.0f;
-	
-	// NiagaraEffect
-	NiagaraEffectSettingsDataTable = nullptr;
-	NiagaraEffectPool.Empty();
-	DynamicNiagaraEffectPool.Empty();
-	ActivateNiagaraEffectIndexList.Empty();
-	UsedNiagaraEffectIndexList.Empty();
-	
-	// ParticleEffect
-	ParticleEffectSettingsDataTable = nullptr;
-	ParticleEffectPool.Empty();
-	DynamicParticleEffectPool.Empty();
-	ActivateParticleEffectIndexList.Empty();
-	UsedParticleEffectIndexList.Empty();
+	// NiagaraSystem
+	NiagaraPoolSettingsDataTable = nullptr;
+	NiagaraPool = FPRNiagaraSystemObjectPool();
+	ActivateNiagaraIndexList = FPRActivateObjectIndexList();
+	UsedNiagaraIndexList = FPRUsedObjectIndexList();
+	DynamicDestroyNiagaraList = FPRDynamicDestroyObjectList();
+
+	// ParticleSystem
+	ParticlePoolSettingsDataTable = nullptr;
+	ParticlePool = FPRParticleSystemObjectPool();
+	ActivateParticleIndexList = FPRActivateObjectIndexList();
+	UsedParticleIndexList = FPRUsedObjectIndexList();
+	DynamicDestroyParticleList = FPRDynamicDestroyObjectList();
 }
 
-void UPREffectSystemComponent::DestroyComponent(bool bPromoteChildren)
+#pragma region PRBaseObjectPoolSystem
+void UPREffectSystemComponent::InitializeObjectPool()
 {
-	EmptyAllEffectPool();
-	
-	Super::DestroyComponent(bPromoteChildren);
+	InitializeNiagaraPool();
+	InitializeParticlePool();
 }
 
-void UPREffectSystemComponent::InitializeEffectPool()
+void UPREffectSystemComponent::ClearAllObjectPool()
 {
-	// 기존의 EffectPool을 초기화합니다.
-	EmptyAllEffectPool();
+	ClearNiagaraPool();
+	ClearParticlePool();
+}
+#pragma endregion 
 
-	// DataTable의 정보를 기반으로 NiagaraEffectPool을 생성합니다.
-	if(NiagaraEffectSettingsDataTable != nullptr)
-	{
-		TArray<FName> RowNames = NiagaraEffectSettingsDataTable->GetRowNames();
-		for(const FName& RowName: RowNames)
-		{
-			const FPRNiagaraEffectSettings* NiagaraEffectSettings = NiagaraEffectSettingsDataTable->FindRow<FPRNiagaraEffectSettings>(RowName, FString(""));
-			if(NiagaraEffectSettings != nullptr)
-			{
-				CreateNiagaraEffectPool(*NiagaraEffectSettings);
-			}
-		}
-	}
+#pragma region NiagaraSystem
+void UPREffectSystemComponent::InitializeNiagaraPool()
+{
+	ClearNiagaraPool();
 	
-	// DataTable의 정보를 기반으로 ParticleEffectPool을 생성합니다.
-	if(ParticleEffectSettingsDataTable != nullptr)
+	// NiagaraSystemPoolSettings 데이터 테이블을 기반으로 NiagaraSystemObjectPool을 생성합니다.
+	if(NiagaraPoolSettingsDataTable)
 	{
-		TArray<FName> RowNames = ParticleEffectSettingsDataTable->GetRowNames();
-		for(const FName& RowName: RowNames)
+		TArray<FName> RowNames = NiagaraPoolSettingsDataTable->GetRowNames();
+		for(const FName& RowName : RowNames)
 		{
-			const FPRParticleEffectSettings* ParticleEffectSettings = ParticleEffectSettingsDataTable->FindRow<FPRParticleEffectSettings>(RowName, FString(""));
-			if(ParticleEffectSettings != nullptr)
+			FPRNiagaraSystemPoolSettings* NiagaraSettings = NiagaraPoolSettingsDataTable->FindRow<FPRNiagaraSystemPoolSettings>(RowName, FString(""));
+			if(NiagaraSettings)
 			{
-				CreateParticleEffectPool(*ParticleEffectSettings);
+				CreateNiagaraPool(*NiagaraSettings);
 			}
 		}
 	}
 }
+
+void UPREffectSystemComponent::ClearNiagaraPool()
+{
+	ActivateNiagaraIndexList.List.Empty();
+	UsedNiagaraIndexList.List.Empty();
+	ClearDynamicDestroyObjectList(DynamicDestroyNiagaraList);
+
+	// NiagaraPool을 제거합니다.
+	for(auto& PoolEntry : NiagaraPool.Pool)
+	{
+		FPRNiagaraEffectPool& Pool = PoolEntry.Value;
+		for(auto& PooledEffect : Pool.PooledEffects)
+		{
+			if(IsValid(PooledEffect))
+			{
+				// Effect를 제거합니다.
+				PooledEffect->ConditionalBeginDestroy();
+				PooledEffect = nullptr;
+			}
+		}
+
+		Pool.PooledEffects.Empty();
+	}
+
+	NiagaraPool.Pool.Empty();
+}
+
+void UPREffectSystemComponent::CreateNiagaraPool(const FPRNiagaraSystemPoolSettings& NiagaraPoolSettings)
+{
+}
+#pragma endregion 
+
+#pragma region ParticleSystem
+void UPREffectSystemComponent::InitializeParticlePool()
+{
+}
+
+void UPREffectSystemComponent::ClearParticlePool()
+{
+}
+#pragma endregion 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void UPREffectSystemComponent::EmptyAllEffectPool()
 {
 	EmptyAllNiagaraEffectPool();
 	EmptyAllParticleEffectPool();
-}
-
-int32 UPREffectSystemComponent::FindAvailableIndex(const TSet<int32>& UsedIndexes)
-{
-	int32 NewIndex = 0;
-	while(UsedIndexes.Contains(NewIndex))
-	{
-		NewIndex++;
-	}
-
-	return NewIndex;
 }
 
 #pragma region NiagaraEffect

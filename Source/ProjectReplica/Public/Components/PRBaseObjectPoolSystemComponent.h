@@ -176,14 +176,6 @@ public:
 	virtual void ClearAllObjectPool();
 	
 	/**
-	 * 주어진 DynamicDestroyObjectList를 제거하는 함수입니다.
-	 * 
-	 * @param NewDynamicDestroyObjectList 제거할 DynamicDestroyObjectList입니다.
-	 */
-	UFUNCTION(Blueprintable, Category = "PRBaseObjectPoolSystem")
-	virtual void ClearDynamicDestroyObjectList(FPRDynamicDestroyObjectList& NewDynamicDestroyObjectList);
-	
-	/**
 	 * 주어진 객체가 유효한 풀링 가능한 객체인지 확인하는 함수입니다.
 	 *
 	 * @param PoolableObject 확인할 객체입니다.
@@ -260,6 +252,15 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PRBaseObjectPoolSystem")
 	int32 FindAvailableIndex(const TSet<int32>& UsedIndexes);
+
+protected:
+	/**
+	 * 주어진 DynamicDestroyObjectList를 제거하는 함수입니다.
+	 * 
+	 * @param NewDynamicDestroyObjectList 제거할 DynamicDestroyObjectList입니다.
+	 */
+	UFUNCTION(Blueprintable, Category = "PRBaseObjectPoolSystem")
+	virtual void ClearDynamicDestroyObjectList(FPRDynamicDestroyObjectList& NewDynamicDestroyObjectList);
 
 protected:
 	/**
