@@ -27,7 +27,7 @@ public:
 
 public:
 	/** 클래스 레퍼런스와 활성화된 Index를 보관하는 Map입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AcitvateObjectIndexList")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRAcitvateObjectIndexList")
 	TMap<TSubclassOf<UObject>, FPRActivateIndexList> List;
 
 public:
@@ -74,7 +74,7 @@ public:
 
 public:
 	/** 클래스 레퍼런스와 해당 클래스의 이전에 사용된 Index를 보관하는 Map입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UsedObjectIndexList")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRUsedObjectIndexList")
 	TMap<TSubclassOf<UObject>, FPRUsedIndexList> List;
 };
 
@@ -97,7 +97,7 @@ public:
 
 public:
 	/** 오브젝트와 해당 오브젝트를 제거하는 TimerHandle을 보관하는 Map입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicDestroyObject")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRDynamicDestroyObject")
 	TMap<TObjectPtr<UObject>, FTimerHandle> TimerHandles;
 };
 
@@ -120,7 +120,7 @@ public:
 	
 public:
 	/** 클래스 레퍼런스와 동적으로 생성한 오브젝트와 해당 오브젝트를 제거하는 TimerHandle을 보관한 Map입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicDestroyObjectPool")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRDynamicDestroyObjectPool")
 	TMap<TSubclassOf<UObject>, FPRDynamicDestroyObject> List;
 
 public:
@@ -130,14 +130,14 @@ public:
 	 * @param ObjectToFind TimerHandle을 찾을 오브젝트입니다.
 	 * @return TimerHandle을 찾았을 경우 TimerHandle을 반환합니다. 못 찾았을 경우 nullptr을 반환합니다.
 	 */
-	FTimerHandle* FindTimerHandleForObject(UObject* ObjectToFind)
+	FTimerHandle* FindTimerHandleForObject(UObject& ObjectToFind)
 	{
-		if(!IsValid(ObjectToFind))
+		if(!IsValid(&ObjectToFind))
 		{
 			return nullptr;
 		}
 
-		FPRDynamicDestroyObject* DestroyObjects = List.Find(ObjectToFind->GetClass());
+		FPRDynamicDestroyObject* DestroyObjects = List.Find(ObjectToFind.GetClass());
 		if(DestroyObjects)
 		{
 			FTimerHandle* FoundTimerHandle = DestroyObjects->TimerHandles.Find(ObjectToFind);
@@ -210,15 +210,6 @@ public:
 	void DeactivateObject(UObject* PoolableObject);	
 
 	/**
-	 * 주어진 객체가 활성화 되었는지 확인하는 함수입니다.
-	 * 
-	 * @param PoolableObject 확인할 객체입니다.
-	 * @return 주어진 객체가 활성화 되었을 경우 true를 반환합니다. 그렇지 않으면 false를 반환합니다. 
-	 */
-	UFUNCTION(BlueprintCallable, Category = "PRBaseObjectPoolSystem")
-	bool IsActivateObject(UObject* PoolableObject) const;
-
-	/**
  	 * 주어진 객체의 PoolIndex를 반환하는 함수입니다.
  	 * 
  	 * @param PoolableObject PoolIndex를 반환할 객체입니다.
@@ -255,22 +246,68 @@ public:
 
 protected:
 	/**
-	 * 주어진 DynamicDestroyObjectList를 제거하는 함수입니다.
+	 * 주어진 객체가 활성화 되었는지 확인하는 함수입니다.
 	 * 
-	 * @param NewDynamicDestroyObjectList 제거할 DynamicDestroyObjectList입니다.
+	 * @param PoolableObject 확인할 객체입니다.
+	 * @return 주어진 객체가 활성화 되었을 경우 true를 반환합니다. 그렇지 않으면 false를 반환합니다. 
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PRBaseObjectPoolSystem")
+	bool IsActivateObject(UObject* PoolableObject) const;
+	
+	/**
+	 * 동적으로 생성한 오브젝트을 제거하는 함수입니다.
+	 * 
+	 * @param TargetDynamicDestroyObjectList 제거할 동적으로생성한 오브젝트의 목록입니다.
 	 */
 	UFUNCTION(Blueprintable, Category = "PRBaseObjectPoolSystem")
-	virtual void ClearDynamicDestroyObjectList(FPRDynamicDestroyObjectList& NewDynamicDestroyObjectList);
-
+	virtual void ClearDynamicDestroyObjectList(FPRDynamicDestroyObjectList& TargetDynamicDestroyObjectList);
+	
 protected:
 	/**
-	 * 동적으로 생성한 오브젝트를 제거하는 딜레이 시간입니다.
+	 * 동적으로 생성한 오브젝트의 수명입니다.
 	 * 동적으로 생성한 오브젝트가 비활성화 되었을 때, 해당 시간이 지난 후 오브젝트를 제거합니다. 
 	 */ 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRBaseObjectPoolSystem")
-	float DynamicDestroyDelay;
+	float DynamicLifespan;
 
 	/** 동적으로 생성하는 ObjectPool의 PoolSize입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRBaseObjectPoolSystem", meta = (ClampMin = "1"))
 	int32 DynamicPoolSize;
+
+#pragma region Template
+protected:
+	/**
+	 * Template를 사용한 동적으로 생성한 오브젝트들을 제거하는 함수입니다.
+	 *
+	 * @param List 동적으로 생성한 오브젝트의 목록입니다.
+	 */
+	template <typename KeyType>
+	void ClearDynamicDestroyObjects(TMap<KeyType, FPRDynamicDestroyObject>& List)
+	{
+		for(auto& ListEntry : List)
+		{
+			FPRDynamicDestroyObject& DynamicDestroyObject = ListEntry.Value;
+			if(&DynamicDestroyObject)
+			{
+				// DynamicDestroyObject의 모든 타이머를 해제하고 오브젝트를 제거합니다.
+				for(auto& TimerEntry : DynamicDestroyObject.TimerHandles)
+				{
+					if(IsValid(TimerEntry.Key))
+					{
+						// 타이머를 해제합니다.
+						GetWorld()->GetTimerManager().ClearTimer(TimerEntry.Value);
+
+						// 오브젝트를 제거합니다.
+						TimerEntry.Key->ConditionalBeginDestroy();		// 오브젝트를 안전하게 제거하는 함수입니다. 가비지 컬렉션 대상이 되기 전에 수동으로 메모리에서 해제합니다.
+						TimerEntry.Key = nullptr;
+					}
+				}
+
+				DynamicDestroyObject.TimerHandles.Empty();
+			}
+		}
+
+		List.Empty();
+	}
+#pragma endregion 
 };

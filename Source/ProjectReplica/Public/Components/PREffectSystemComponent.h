@@ -4,12 +4,12 @@
 
 #include "ProjectReplica.h"
 #include "PRBaseObjectPoolSystemComponent.h"
+#include "NiagaraSystem.h"
+#include "Particles/ParticleSystem.h"
+#include "Effects/PRNiagaraEffect.h"
+#include "Effects/PRParticleEffect.h"
 #include "PREffectSystemComponent.generated.h"
 
-class UNiagaraSystem;
-class UParticleSystem;
-class APRNiagaraEffect;
-class APRParticleEffect;
 
 #pragma region Structs
 /**
@@ -36,43 +36,43 @@ public:
 };
 
 /**
- * 여러 NiagaraSystem Pool을 보관하는 구조체입니다.
+ * 여러 NiagaraEffect Pool을 보관하는 구조체입니다.
  */
 USTRUCT(Atomic, BlueprintType)
-struct FPRNiagaraSystemObjectPool
+struct FPRNiagaraEffectObjectPool
 {
 	GENERATED_BODY()
 
 public:
-	FPRNiagaraSystemObjectPool()
+	FPRNiagaraEffectObjectPool()
 		: Pool()
 	{}
 
-	FPRNiagaraSystemObjectPool(const TMap<TSubclassOf<UNiagaraSystem>, FPRNiagaraEffectPool>& NewPool)
+	FPRNiagaraEffectObjectPool(const TMap<TObjectPtr<UNiagaraSystem>, FPRNiagaraEffectPool>& NewPool)
 		: Pool(NewPool)
 	{}
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRNiagaraSystemPool")
-	TMap<TSubclassOf<UNiagaraSystem>, FPRNiagaraEffectPool> Pool;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRNiagaraEffectObjectPool")
+	TMap<TObjectPtr<UNiagaraSystem>, FPRNiagaraEffectPool> Pool;
 };
 
 /**
- * NiagaraSystemPool의 설정 값을 나타내는 구조체입니다.
+ * NiagaraEffectPool의 설정 값을 나타내는 구조체입니다.
  */
 USTRUCT(Atomic, BlueprintType)
-struct FPRNiagaraSystemPoolSettings : public FTableRowBase
+struct FPRNiagaraEffectPoolSettings : public FTableRowBase
 {
 	GENERATED_BODY()
 
 public:
-	FPRNiagaraSystemPoolSettings()
+	FPRNiagaraEffectPoolSettings()
 		: NiagaraSystem(nullptr)
 		, PoolSize(0)
 		, EffectLifespan(0.0f)
 	{}
 
-	FPRNiagaraSystemPoolSettings(TObjectPtr<UNiagaraSystem> NewNiagaraSystem, int32 NewPoolSize, float NewEffectLifespan)
+	FPRNiagaraEffectPoolSettings(TObjectPtr<UNiagaraSystem> NewNiagaraSystem, int32 NewPoolSize, float NewEffectLifespan)
 		: NiagaraSystem(NewNiagaraSystem)
 		, PoolSize(NewPoolSize)
 		, EffectLifespan(NewEffectLifespan)
@@ -90,6 +90,125 @@ public:
 	/** 이펙트의 수명입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRNiagaraEffectPoolSettings")
 	float EffectLifespan;
+};
+
+/**
+ * NiagaraSystem별로 활성화된 NiagaraEffect들의 Index를 보관하는 구조체입니다.
+ */
+USTRUCT(Atomic, BlueprintType)
+struct FPRActivateNiagaraEffectIndexList
+{
+	GENERATED_BODY()
+
+public:
+	FPRActivateNiagaraEffectIndexList()
+		: List()
+	{}
+
+	FPRActivateNiagaraEffectIndexList(const TMap<TObjectPtr<UNiagaraSystem>, FPRActivateIndexList>& NewList)
+		: List(NewList)
+	{}
+
+public:
+	/** NiagaraSystem과 활성화된 Index를 보관하는 Map입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRActivateNiagaraEffectIndexList")
+	TMap<TObjectPtr<UNiagaraSystem>, FPRActivateIndexList> List;
+
+public:
+	/**
+	 * 주어진 NiagaraSystem에 해당하는 Indexes를 반환하는 함수입니다.
+	 *
+	 * @param NiagaraSystemToFind Indexes를 찾을 NiagaraSystem입니다.
+	 * @return Indexes를 찾을 경우 Indexes를 반환합니다. 못찾았을 경우 nullptr을 반환합니다.
+	 */
+	TSet<int32>* GetIndexesForNiagaraSystem(const UNiagaraSystem& NiagaraSystemToFind)
+	{
+		if(!IsValid(&NiagaraSystemToFind))
+		{
+			return nullptr;
+		}
+
+		FPRActivateIndexList* ActivateIndexList = List.Find(NiagaraSystemToFind);
+		if(ActivateIndexList)
+		{
+			return &ActivateIndexList->Indexes;
+		}
+		
+		return nullptr;
+	}
+};
+
+/**
+ * NiagaraSystem별로 사용된 NiagaraEffect들의 Index를 보관하는 구조체입니다.
+ */
+USTRUCT(Atomic, BlueprintType)
+struct FPRUsedNiagaraEffectIndexList
+{
+	GENERATED_BODY()
+
+public:
+	FPRUsedNiagaraEffectIndexList()
+		: List()
+	{}
+
+	FPRUsedNiagaraEffectIndexList(const TMap<TObjectPtr<UNiagaraSystem>, FPRUsedIndexList>& NewList)
+		: List(NewList)
+	{}
+
+public:
+	/** NiagaraSystem과 해당 NiagaraSystem의 이전에 사용된 Index를 보관하는 Map입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRUsedNiagaraEffectIndexList")
+	TMap<TObjectPtr<UNiagaraSystem>, FPRUsedIndexList> List;
+};
+
+/**
+ * 동적으로 생성한 NiagaraEffect 목록을 NiagaraSystem별로 보관하는 구조체입니다.
+ */
+USTRUCT(Atomic, BlueprintType)
+struct FPRDynamicDestroyNiagaraEffectList
+{
+	GENERATED_BODY()
+
+public:
+	FPRDynamicDestroyNiagaraEffectList()
+		: List()
+	{}
+
+	FPRDynamicDestroyNiagaraEffectList(const TMap<TObjectPtr<UNiagaraSystem>, FPRDynamicDestroyObject>& NewList)
+		: List(NewList)
+	{}
+	
+public:
+	/** NiagaraSystem과 동적으로 생성한 NiagaraEffect와 해당 NiagaraEffect를 제거하는 TimerHandle을 보관한 Map입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRDynamicDestroyNiagaraEffectList")
+	TMap<TObjectPtr<UNiagaraSystem>, FPRDynamicDestroyObject> List;
+
+public:
+	/**
+	 * 주어진 NiagaraEffect에 해당하는 TimerHandle을 반환하는 함수입니다.
+	 *
+	 * @param NiagaraEffectToFind TimerHandle을 찾을 NiagaraEffect입니다.
+	 * @return TimerHandle을 찾았을 경우 TimerHandle을 반환합니다. 못 찾았을 경우 nullptr을 반환합니다.
+	 */
+	FTimerHandle* FindTimerHandleForNiagaraEffect(APRNiagaraEffect& NiagaraEffectToFind)
+	{
+		if(!IsValid(&NiagaraEffectToFind))
+		{
+			return nullptr;
+		}
+
+		FPRDynamicDestroyObject* DestroyObjects = List.Find(NiagaraEffectToFind.GetNiagaraEffectAsset());
+		if(DestroyObjects)
+		{
+			FTimerHandle* FoundTimerHandle = DestroyObjects->TimerHandles.Find(NiagaraEffectToFind);
+			if(FoundTimerHandle)
+			{
+				return FoundTimerHandle;
+			}
+		}
+
+		return nullptr;
+	}
 };
 
 /**
@@ -116,50 +235,50 @@ public:
 };
 
 /**
- * 여러 ParticleSystem Pool을 보관하는 구조체입니다.
+ * 여러 ParticleEffect Pool을 보관하는 구조체입니다.
  */
 USTRUCT(Atomic, BlueprintType)
-struct FPRParticleSystemObjectPool
+struct FPRParticleEffectObjectPool
 {
 	GENERATED_BODY()
 
 public:
-	FPRParticleSystemObjectPool()
+	FPRParticleEffectObjectPool()
 		: Pool()
 	{}
 
-	FPRParticleSystemObjectPool(const TMap<TSubclassOf<UParticleSystem>, FPRParticleEffectPool>& NewPool)
+	FPRParticleEffectObjectPool(const TMap<TObjectPtr<UParticleSystem>, FPRParticleEffectPool>& NewPool)
 		: Pool(NewPool)
 	{}
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRParticleSystemPool")
-	TMap<TSubclassOf<UParticleSystem>, FPRParticleEffectPool> Pool;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRParticleEffectObjectPool")
+	TMap<TObjectPtr<UParticleSystem>, FPRParticleEffectPool> Pool;
 };
 
 /**
- * ParticleSystemPool의 설정 값을 나타내는 구조체입니다.
+ * ParticleEffectPool의 설정 값을 나타내는 구조체입니다.
  */
 USTRUCT(Atomic, BlueprintType)
-struct FPRParticleSystemPoolSettings : public FTableRowBase
+struct FPRParticleEffectPoolSettings : public FTableRowBase
 {
 	GENERATED_BODY()
 
 public:
-	FPRParticleSystemPoolSettings()
+	FPRParticleEffectPoolSettings()
 		: ParticleSystem(nullptr)
 		, PoolSize(0)
 		, EffectLifespan(0.0f)
 	{}
 
-	FPRParticleSystemPoolSettings(TObjectPtr<UParticleSystem> NewParticleSystem, int32 NewPoolSize, float NewEffectLifespan)
+	FPRParticleEffectPoolSettings(TObjectPtr<UParticleSystem> NewParticleSystem, int32 NewPoolSize, float NewEffectLifespan)
 		: ParticleSystem(NewParticleSystem)
 		, PoolSize(NewPoolSize)
 		, EffectLifespan(NewEffectLifespan)
 	{}
 
 public:
-	/** Pool에 넣을 ParticleSystem입니다.. */
+	/** Pool에 넣을 ParticleSystem입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRParticleEffectPoolSettings")
 	TObjectPtr<UParticleSystem> ParticleSystem;
 
@@ -170,6 +289,125 @@ public:
 	/** 이펙트의 수명입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRParticleEffectPoolSettings")
 	float EffectLifespan;
+};
+
+/**
+ * ParticleSystem별로 활성화된 ParticleEffect들의 Index를 보관하는 구조체입니다.
+ */
+USTRUCT(Atomic, BlueprintType)
+struct FPRActivateParticleEffectIndexList
+{
+	GENERATED_BODY()
+
+public:
+	FPRActivateParticleEffectIndexList()
+		: List()
+	{}
+
+	FPRActivateParticleEffectIndexList(const TMap<TObjectPtr<UParticleSystem>, FPRActivateIndexList>& NewList)
+		: List(NewList)
+	{}
+
+public:
+	/** ParticleSystem과 활성화된 Index를 보관하는 Map입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRActivateParticleEffectIndexList")
+	TMap<TObjectPtr<UParticleSystem>, FPRActivateIndexList> List;
+
+public:
+	/**
+	 * 주어진 ParticleSystem에 해당하는 Indexes를 반환하는 함수입니다.
+	 *
+	 * @param ParticleSystemToFind Indexes를 찾을 ParticleSystem입니다.
+	 * @return Indexes를 찾을 경우 Indexes를 반환합니다. 못찾았을 경우 nullptr을 반환합니다.
+	 */
+	TSet<int32>* GetIndexesForParticleSystem(const UParticleSystem& ParticleSystemToFind)
+	{
+		if(!IsValid(&ParticleSystemToFind))
+		{
+			return nullptr;
+		}
+
+		FPRActivateIndexList* ActivateIndexList = List.Find(ParticleSystemToFind);
+		if(ActivateIndexList)
+		{
+			return &ActivateIndexList->Indexes;
+		}
+		
+		return nullptr;
+	}
+};
+
+/**
+ * ParticleSystem별로 사용된 ParticleEffect들의 Index를 보관하는 구조체입니다.
+ */
+USTRUCT(Atomic, BlueprintType)
+struct FPRUsedParticleEffectIndexList
+{
+	GENERATED_BODY()
+
+public:
+	FPRUsedParticleEffectIndexList()
+		: List()
+	{}
+
+	FPRUsedParticleEffectIndexList(const TMap<TObjectPtr<UParticleSystem>, FPRUsedIndexList>& NewList)
+		: List(NewList)
+	{}
+
+public:
+	/** ParticleSystem과 해당 ParticleSystem의 이전에 사용된 Index를 보관하는 Map입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRUsedParticleEffectIndexList")
+	TMap<TObjectPtr<UParticleSystem>, FPRUsedIndexList> List;
+};
+
+/**
+ * 동적으로 생성한 ParticleEffect 목록을 ParticleSystem별로 보관하는 구조체입니다.
+ */
+USTRUCT(Atomic, BlueprintType)
+struct FPRDynamicDestroyParticleEffectList
+{
+	GENERATED_BODY()
+
+public:
+	FPRDynamicDestroyParticleEffectList()
+		: List()
+	{}
+
+	FPRDynamicDestroyParticleEffectList(const TMap<TObjectPtr<UParticleSystem>, FPRDynamicDestroyObject>& NewList)
+		: List(NewList)
+	{}
+	
+public:
+	/** ParticleSystem과 동적으로 생성한 ParticleEffect와 해당 ParticleEffect를 제거하는 TimerHandle을 보관한 Map입니다. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRDynamicDestroyParticleEffectList")
+	TMap<TObjectPtr<UParticleSystem>, FPRDynamicDestroyObject> List;
+
+public:
+	/**
+	 * 주어진 ParticleEffect에 해당하는 TimerHandle을 반환하는 함수입니다.
+	 *
+	 * @param ParticleEffectToFind TimerHandle을 찾을 ParticleEffect입니다.
+	 * @return TimerHandle을 찾았을 경우 TimerHandle을 반환합니다. 못 찾았을 경우 nullptr을 반환합니다.
+	 */
+	FTimerHandle* FindTimerHandleForParticleEffect(const APRParticleEffect& ParticleEffectToFind)
+	{
+		if(!IsValid(&ParticleEffectToFind))
+		{
+			return nullptr;
+		}
+
+		FPRDynamicDestroyObject* DestroyObjects = List.Find(ParticleEffectToFind.GetParticleEffectAsset());
+		if(DestroyObjects)
+		{
+			FTimerHandle* FoundTimerHandle = DestroyObjects->TimerHandles.Find(ParticleEffectToFind);
+			if(FoundTimerHandle)
+			{
+				return FoundTimerHandle;
+			}
+		}
+
+		return nullptr;
+	}
 };
 #pragma endregion 
 
@@ -373,20 +611,121 @@ public:
 
 #pragma region NiagaraSystem
 public:
+	/** 기존의 NiagaraPool을 제거하고, 새로 NiagaraPool을 생성하여 초기화하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraSystem")
 	void InitializeNiagaraPool();
 
+	/** 모든 NiagaraPool을 제거하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraSystem")
-	void ClearNiagaraPool();
+	void ClearAllNiagaraPool();
+
+	/**
+	 * NiagaraEffect를 지정한 위치에 Spawn하는 함수입니다.
+	 *
+	 * @param SpawnEffect Spawn할 NiagaraEffect
+	 * @param Location NiagaraEffect를 생성할 위치
+	 * @param Rotation NiagaraEffect에 적용한 회전 값
+	 * @param Scale NiagaraEffect에 적용할 크기
+	 * @param bEffectAutoActivate true일 경우 NiagaraEffect를 Spawn하자마다 NiagaraEffect를 실행합니다. false일 경우 NiagaraEffect를 실행하지 않습니다.
+	 * @param bReset 처음부터 다시 재생할지 여부
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
+	APRNiagaraEffect* SpawnNiagaraEffectAtLocation(UNiagaraSystem* SpawnEffect, FVector Location, FRotator Rotation = FRotator::ZeroRotator, FVector Scale = FVector(1.0f), bool bEffectAutoActivate = true, bool bReset = false);
+
+	
+	/**
+	 * NiagaraEffect를 지정한 Component에 부착하여 Spawn하는 함수입니다.
+	 *
+	 * @param SpawnEffect Spawn할 NiagaraEffect
+	 * @param Parent NiagaraEffect를 부착할 Component
+	 * @param AttachSocketName 부착할 소켓의 이름
+	 * @param Location NiagaraEffect를 생성할 위치
+	 * @param Rotation NiagaraEffect에 적용한 회전 값
+	 * @param Scale NiagaraEffect에 적용할 크기
+	 * @param bEffectAutoActivate true일 경우 NiagaraEffect를 Spawn하자마다 NiagaraEffect를 실행합니다. false일 경우 NiagaraEffect를 실행하지 않습니다.
+	 * @param bReset 처음부터 다시 재생할지 여부
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
+	APRNiagaraEffect* SpawnNiagaraEffectAttached(UNiagaraSystem* SpawnEffect, USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate = true, bool bReset = false);
+
+	/**
+	 * 주어진 NiagaraEffect가 활성화되어 있는지 확인하는 함수입니다.
+	 * 
+	 * @param NiagaraEffect 확인할 NiagaraEffect입니다.
+	 * @return NiagaraEffect가 활성화되어 있으면 true를 반환합니다. 그렇지 않으면 false를 반환합니다. 
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraSystem")
+	bool IsActivateNiagaraEffect(APRNiagaraEffect* NiagaraEffect) const;
+
+	/**
+	 * 주어진 NiagaraSystem에 해당하는 ActivateNiagaraIndexList가 생성되어 있는지 확인하는 함수입니다.
+	 * 
+	 * @param NiagaraSystem 확인할 UNiagaraSystem입니다.
+	 * @return ActivateNiagaraIndexList가 생성되어 있으면 true를 반환합니다. 그렇지 않으면 false를 반환합니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraSystem")
+	bool IsCreateActivateNiagaraIndexList(UNiagaraSystem* NiagaraSystem) const;
+
+	/**
+	 * 주어진 NiagaraSystem에 해당하는 UsedNiagaraIndexList가 생성되어 있는지 확인하는 함수입니다.
+	 * 
+	 * @param NiagaraSystem 확인할 UNiagaraSystem입니다.
+	 * @return UsedNiagaraIndexList가 생성되어 있으면 true를 반환합니다. 그렇지 않으면 false를 반환합니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraSystem")
+	bool IsCreateUsedNiagaraIndexList(UNiagaraSystem* NiagaraSystem) const;
 
 private:
+	/**
+	 * 주어진 NiagaraPool을 제거하는 함수입니다.
+	 * 
+	 * @param TargetNiagaraPool 제거할 NiagaraPool입니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PRObjectPoolSystem|NiagaraSystem")
+	void ClearNiagaraPool(FPRNiagaraEffectObjectPool& TargetNiagaraPool);
+	
 	/**
 	 * 주어진 NiagaraPool의 설정 값을 바탕으로 NiagaraPool을 생성하는 함수입니다.
 	 *
 	 * @param NiagaraPoolSettings NiagaraPool을 생성할 설정 값입니다.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "PRObjectPoolSystem")
-	void CreateNiagaraPool(const FPRNiagaraSystemPoolSettings& NiagaraPoolSettings);
+	UFUNCTION(BlueprintCallable, Category = "PRObjectPoolSystem|NiagaraSystem")
+	void CreateNiagaraPool(const FPRNiagaraEffectPoolSettings& NiagaraPoolSettings);
+
+	/**
+	 * 주어진 NiagaraSystem의 ActivateNiagaraIndexList를 생성하는 함수입니다.
+	 *
+	 * @param NiagaraSystem ActivateNiagaraIndexList를 생성할 NiagaraSystem입니다. 
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PRObjectPoolSystem|NiagaraSystem")
+	void CreateActivateNiagaraIndexList(UNiagaraSystem* NiagaraSystem);
+
+	/**
+	 * 주어진 NiagaraSystem의 UsedNiagaraIndexList를 생성하는 함수입니다.
+	 *
+	 * @param NiagaraSystem UsedNiagaraIndexList를 생성할 NiagaraSystem입니다. 
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PRObjectPoolSystem|NiagaraSystem")
+	void CreateUsedNiagaraIndexList(UNiagaraSystem* NiagaraSystem);	
+
+	/**
+	 * 주어진 NiagaraSystem를 월드에 APRNiagaraEffect로 Spawn하는 함수입니다.
+	 *
+	 * @param NiagaraSystem 월드에 Spawn할 NiagaraSystem입니다.
+	 * @param PoolIndex 월드에 Spawn한 NiagaraSystem이 NiagaraPool에서 사용하는 Index 값입니다. 
+	 * @param Lifespan PRNiagaraEffect의 수명입니다.
+	 * @return 월드에 Spawn PRNiagaraEffect입니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PRObjectPoolSystem|NiagaraSystem")
+	APRNiagaraEffect* SpawnNiagaraEffectInWorld(UNiagaraSystem* NiagaraSystem, int32 PoolIndex, float Lifespan);
+
+	/**
+	 * 주어진 동적으로 생성한 NiagaraEffect를 제거하는 함수입니다.
+	 * 
+	 * @param TargetDynamicDestroyNiagaraEffectList 제거할 동적으로 생성한 NiagaraEffect의 목록입니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PRObjectPoolSystem|NiagaraSystem")
+	void ClearDynamicDestroyNiagaraList(FPRDynamicDestroyNiagaraEffectList& TargetDynamicDestroyNiagaraEffectList);
 	
 private:
 	/** NiagaraObjectPool의 설정 값을 가진 데이터 테이블입니다. */
@@ -395,29 +734,29 @@ private:
 	
 	/** NiagaraSystem ObjectPool입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffectSystem|NiagaraSystem", meta = (AllowPrivateAccess = "true"))
-	FPRNiagaraSystemObjectPool NiagaraPool;
+	FPRNiagaraEffectObjectPool NiagaraPool;
 
 	/** 활성화된 NiagaraSystem의 Index 목록입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffectSystem|NiagaraSystem", meta = (AllowPrivateAccess = "true"))
-	FPRActivateObjectIndexList ActivateNiagaraIndexList;
+	FPRActivateNiagaraEffectIndexList ActivateNiagaraIndexList;
 
 	/**
 	 * 이전에 사용된 NiagaraSystem들의 Index 목록입니다.
 	 * 동적으로 생성하는 NiagaraSystem의 Index에 오류가 생기지 않도록 합니다.
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffectSystem|NiagaraSystem", meta = (AllowPrivateAccess = "true"))
-	FPRUsedObjectIndexList UsedNiagaraIndexList;
+	FPRUsedNiagaraEffectIndexList UsedNiagaraIndexList;
 
 	/** 동적으로 제거할 NiagaraSystem의 목록입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffectSystem|NiagaraSystem", meta = (AllowPrivateAccess = "true"))
-	FPRDynamicDestroyObjectList DynamicDestroyNiagaraList;
+	FPRDynamicDestroyNiagaraEffectList DynamicDestroyNiagaraList;
 #pragma endregion
 
 #pragma region ParticleSystem
 public:
 	void InitializeParticlePool();
 
-	void ClearParticlePool();
+	void ClearAllParticlePool();
 	
 private:
 	/** ParticlePool의 설정 값을 가진 데이터 테이블입니다. */
@@ -426,22 +765,22 @@ private:
 	
 	/** ParticleSystem ObjectPool입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffectSystem|ParticleSystem", meta = (AllowPrivateAccess = "true"))
-	FPRParticleSystemObjectPool ParticlePool;	
+	FPRParticleEffectObjectPool ParticlePool;	
 
 	/** 활성화된 ParticleSystem의 Index 목록입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffectSystem|ParticleSystem", meta = (AllowPrivateAccess = "true"))
-	FPRActivateObjectIndexList ActivateParticleIndexList;
+	FPRActivateParticleEffectIndexList ActivateParticleIndexList;
 
 	/**
 	 * 이전에 사용된 ParticleSystem들의 Index 목록입니다.
 	 * 동적으로 생성하는 ParticleSystem의 Index에 오류가 생기지 않도록 합니다.
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffectSystem|ParticleSystem", meta = (AllowPrivateAccess = "true"))
-	FPRUsedObjectIndexList UsedParticleIndexList;
+	FPRUsedParticleEffectIndexList UsedParticleIndexList;
 
 	/** 동적으로 제거할 ParticleSystem의 목록입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffectSystem|ParticleSystem", meta = (AllowPrivateAccess = "true"))
-	FPRDynamicDestroyObjectList DynamicDestroyParticleList;
+	FPRDynamicDestroyParticleEffectList DynamicDestroyParticleList;
 #pragma endregion 
 
 
@@ -459,16 +798,6 @@ private:
 
 	
 
-	/**
-	 * 모든 EffectPool, DynamicEffectPool,
-	 * ActivateEffectIndexList, UsedEffectIndexList를 비우는 함수입니다. */
-	UFUNCTION(BlueprintCallable, Category = "PREffectSystem")
-	void EmptyAllEffectPool();
-
-private:
-	/** 동적으로 생성한 Effect의 수명입니다. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PREffectSystem", meta = (AllowPrivateAccess = "true"))
-	float DynamicLifespan;
 
 #pragma region NiagaraEffect
 public:
@@ -490,36 +819,7 @@ public:
 	/** 인자로 받은 NiagaraEffect가 동적으로 생성한 NiagaraEffect인지 판별하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
 	bool IsDynamicNiagaraEffect(APRNiagaraEffect* NiagaraEffect) const;
-
-	/**
-	 * 이펙트를 지정한 위치에 Spawn하는 함수입니다.
-	 *
-	 * @param SpawnEffect Spawn할 이펙트
-	 * @param Location 이펙트를 생성할 위치
-	 * @param Rotation 이펙트에 적용한 회전 값
-	 * @param Scale 이펙트에 적용할 크기
-	 * @param bEffectAutoActivate true일 경우 이펙트를 Spawn하자마다 이펙트를 실행합니다. false일 경우 이펙트를 실행하지 않습니다.
-	 * @param bReset 처음부터 다시 재생할지 여부
-	 */
-	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
-	APRNiagaraEffect* SpawnNiagaraEffectAtLocation(UNiagaraSystem* SpawnEffect, FVector Location, FRotator Rotation = FRotator::ZeroRotator, FVector Scale = FVector(1.0f), bool bEffectAutoActivate = true, bool bReset = false);
-
 	
-	/**
-	 * 이펙트를 지정한 Component에 부착하여 Spawn하는 함수입니다.
-	 *
-	 * @param SpawnEffect Spawn할 이펙트
-	 * @param Parent 이펙트를 부착할 Component
-	 * @param AttachSocketName 부착할 소켓의 이름
-	 * @param Location 이펙트를 생성할 위치
-	 * @param Rotation 이펙트에 적용한 회전 값
-	 * @param Scale 이펙트에 적용할 크기
-	 * @param bEffectAutoActivate true일 경우 이펙트를 Spawn하자마다 이펙트를 실행합니다. false일 경우 이펙트를 실행하지 않습니다.
-	 * @param bReset 처음부터 다시 재생할지 여부
-	 */
-	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
-	APRNiagaraEffect* SpawnNiagaraEffectAttached(UNiagaraSystem* SpawnEffect, USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate = true, bool bReset = false);
-
 private:
 	/** 인자에 해당하는 활성화할 수 있는 NiagaraSystem을 반환하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")

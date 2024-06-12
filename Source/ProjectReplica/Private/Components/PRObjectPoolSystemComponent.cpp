@@ -67,8 +67,8 @@ APRPooledObject* UPRObjectPoolSystemComponent::ActivatePooledObject(APRPooledObj
 	}
 	
 	// 동적으로 생성한 오브젝트일 경우 DynamicObjectDestroyTimer가 작동 중이라면 DynamicObjectDestroyTimer를 정지합니다.
-	FTimerHandle* DynamicObjectDestroyTimer = DynamicDestroyObjectList.FindTimerHandleForObject(PooledObject);
-	if(DynamicObjectDestroyTimer != nullptr)
+	FTimerHandle* DynamicObjectDestroyTimer = DynamicDestroyObjectList.FindTimerHandleForObject(*PooledObject);
+	if(DynamicObjectDestroyTimer)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(*DynamicObjectDestroyTimer);
 	}
@@ -83,8 +83,8 @@ APRPooledObject* UPRObjectPoolSystemComponent::ActivatePooledObject(APRPooledObj
 		CreateActivateObjectIndexList(PooledObject->GetClass());
 	}
 
-	// 활성화된 오브젝트의 Index를 ActivateObjectIndexList에 추가합니다.
-	int32 PoolIndex = GetPoolIndex(PooledObject);
+	// 활성화된 오브젝트의 Index를 ActivateObjectIndexList에 저장합니다.
+	const int32 PoolIndex = GetPoolIndex(PooledObject);
 	ActivateObjectIndexList.GetIndexesForObject(PooledObject)->Add(PoolIndex);
 	
 	return PooledObject;
@@ -164,7 +164,7 @@ bool UPRObjectPoolSystemComponent::IsActivatePooledObject(APRPooledObject* Poole
 	{
 		// 객체의 PoolIndex를 가져오고 객체가 활성화된 상태인지 확인합니다.
 		const int32 PooledIndex = GetPoolIndex(PooledObject);
-		const bool bIsPooledObjectActivated = IsActivatePooledObject(PooledObject);
+		const bool bIsPooledObjectActivated = IsActivateObject(PooledObject);
 
 		// Index 목록에 해당 Index가 포함되어 있고, 객체가 활성화된 상태이면 true를 반환합니다.
 		return IndexList->Indexes.Contains(PooledIndex) && bIsPooledObjectActivated;
@@ -335,8 +335,7 @@ void UPRObjectPoolSystemComponent::CreateObjectPool(const FPRObjectPoolSettings&
 
 void UPRObjectPoolSystemComponent::CreateActivateObjectIndexList(TSubclassOf<APRPooledObject> ObjectClass)
 {
-	// ObjectClass의 ActivateObjectIndexList를 생성합니다.
-	if(ObjectClass)
+	if(IsPoolableObjectClass(ObjectClass))
 	{
 		ActivateObjectIndexList.List.Emplace(ObjectClass);
 	}
@@ -387,25 +386,25 @@ void UPRObjectPoolSystemComponent::OnDynamicObjectDeactivate(APRPooledObject* Po
 		return;
 	}
 	
-	if(DynamicDestroyDelay > 0.0f)
+	if(DynamicLifespan > 0.0f)
 	{
 		// 딜레이 시간이 0보다 클 경우, 즉 딜레이 시간이 지난 후 동적으로 생성한 오브젝트를 제거할 경우
 
 		// 타이머를 설정합니다.
-		FTimerHandle DynamicDestroyDelayTimerHandle;
-		FTimerDelegate DynamicDestroyDelayDelegate = FTimerDelegate::CreateUObject(this, &UPRObjectPoolSystemComponent::OnDynamicObjectDestroy, PooledObject);
-		GetWorld()->GetTimerManager().SetTimer(DynamicDestroyDelayTimerHandle, DynamicDestroyDelayDelegate, DynamicDestroyDelay, false);
+		FTimerHandle DynamicLifespanTimerHandle;
+		FTimerDelegate DynamicLifespanDelegate = FTimerDelegate::CreateUObject(this, &UPRObjectPoolSystemComponent::OnDynamicObjectDestroy, PooledObject);
+		GetWorld()->GetTimerManager().SetTimer(DynamicLifespanTimerHandle, DynamicLifespanDelegate, DynamicLifespan, false);
 
 		// TimerHandle을 추가합니다.
 		FPRDynamicDestroyObject* DynamicDestroyObject = DynamicDestroyObjectList.List.Find(PooledObject->GetClass());
 		if(DynamicDestroyObject)
 		{
-			DynamicDestroyObject->TimerHandles.Emplace(PooledObject, DynamicDestroyDelayTimerHandle);
+			DynamicDestroyObject->TimerHandles.Emplace(PooledObject, DynamicLifespanTimerHandle);
 		}
 		else
 		{
 			FPRDynamicDestroyObject NewDynamicDestroyObject;
-			NewDynamicDestroyObject.TimerHandles.Emplace(PooledObject, DynamicDestroyDelayTimerHandle);
+			NewDynamicDestroyObject.TimerHandles.Emplace(PooledObject, DynamicLifespanTimerHandle);
 			DynamicDestroyObjectList.List.Emplace(PooledObject->GetClass(), NewDynamicDestroyObject);
 		}
 	}

@@ -5,7 +5,7 @@
 
 UPRBaseObjectPoolSystemComponent::UPRBaseObjectPoolSystemComponent()
 {
-	DynamicDestroyDelay = 60.0f;
+	DynamicLifespan = 60.0f;
 	DynamicPoolSize = 3;
 }
 
@@ -72,11 +72,6 @@ void UPRBaseObjectPoolSystemComponent::SetLifespan(UObject* PoolableObject, floa
 	}
 }
 
-bool UPRBaseObjectPoolSystemComponent::IsActivateObject(UObject* PoolableObject) const
-{
-	return IsPoolableObject(PoolableObject) && IPRPoolableInterface::Execute_IsActivate(PoolableObject);
-}
-
 int32 UPRBaseObjectPoolSystemComponent::GetPoolIndex(UObject* PoolableObject) const
 {
 	if(IsPoolableObject(PoolableObject))
@@ -99,29 +94,38 @@ int32 UPRBaseObjectPoolSystemComponent::FindAvailableIndex(const TSet<int32>& Us
 	return NewIndex;
 }
 
-void UPRBaseObjectPoolSystemComponent::ClearDynamicDestroyObjectList(FPRDynamicDestroyObjectList& NewDynamicDestroyObjectList)
+bool UPRBaseObjectPoolSystemComponent::IsActivateObject(UObject* PoolableObject) const
 {
-	// DynamicDestroyObjectList의 모든 클래스에 대해 반복합니다.
-	for(auto& ListEntry : NewDynamicDestroyObjectList.List)
-	{
-		FPRDynamicDestroyObject& DynamicDestroyObject = ListEntry.Value;
-		
-		// DynamicDestroyObject의 모든 타이머를 해제하고 오브젝트를 제거합니다.
-		for(auto& TimerEntry : DynamicDestroyObject.TimerHandles)
-		{
-			if(IsValid(TimerEntry.Key))
-			{
-				// 타이머를 해제합니다.
-				GetWorld()->GetTimerManager().ClearTimer(TimerEntry.Value);
+	return IsPoolableObject(PoolableObject) && IPRPoolableInterface::Execute_IsActivate(PoolableObject);
+}
 
-				// 오브젝트를 제거합니다.
-				TimerEntry.Key->ConditionalBeginDestroy();		// 오브젝트를 안전하게 제거하는 함수입니다. 가비지 컬렉션 대상이 되기 전에 수동으로 메모리에서 해제합니다.
-				TimerEntry.Key = nullptr;
-			}
-		}
-
-		DynamicDestroyObject.TimerHandles.Empty();
-	}
-
-	NewDynamicDestroyObjectList.List.Empty();
+void UPRBaseObjectPoolSystemComponent::ClearDynamicDestroyObjectList(FPRDynamicDestroyObjectList& TargetDynamicDestroyObjectList)
+{
+	ClearDynamicDestroyObjects(TargetDynamicDestroyObjectList.List);
+	
+	// // DynamicDestroyObjectList의 모든 클래스에 대해 반복합니다.
+	// for(auto& ListEntry : NewDynamicDestroyObjectList.List)
+	// {
+	// 	FPRDynamicDestroyObject& DynamicDestroyObject = ListEntry.Value;
+	// 	if(&DynamicDestroyObject != nullptr)
+	// 	{
+	// 		// DynamicDestroyObject의 모든 타이머를 해제하고 오브젝트를 제거합니다.
+	// 		for(auto& TimerEntry : DynamicDestroyObject.TimerHandles)
+	// 		{
+	// 			if(IsValid(TimerEntry.Key))
+	// 			{
+	// 				// 타이머를 해제합니다.
+	// 				GetWorld()->GetTimerManager().ClearTimer(TimerEntry.Value);
+	//
+	// 				// 오브젝트를 제거합니다.
+	// 				TimerEntry.Key->ConditionalBeginDestroy();		// 오브젝트를 안전하게 제거하는 함수입니다. 가비지 컬렉션 대상이 되기 전에 수동으로 메모리에서 해제합니다.
+	// 				TimerEntry.Key = nullptr;
+	// 			}
+	// 		}
+	//
+	// 		DynamicDestroyObject.TimerHandles.Empty();
+	// 	}
+	// }
+	//
+	// NewDynamicDestroyObjectList.List.Empty();
 }

@@ -143,7 +143,7 @@ public:
 	APRPooledObject* GetActivateablePooledObject(TSubclassOf<APRPooledObject> PooledObjectClass);
 
 	/**
-	 * 주어진 객체가 현재 활성화되어 있는지 확인하는 함수입니다.
+	 * 주어진 객체가 활성화되어 있는지 확인하는 함수입니다.
 	 * 
 	 * @param PooledObject 확인할 객체입니다.
 	 * @return 객체가 유효하고, 풀링 가능하며, 현재 활성화된 경우 true를 반환합니다. 그렇지 않으면 false를 반환합니다.
@@ -160,7 +160,7 @@ public:
 	bool IsCreateObjectPool(TSubclassOf<APRPooledObject> PooledObjectClass) const;
 
 	/**
-	 * 주어진 오브젝트 클래스의 ActivateObjectIndexList가 생성되었는지 확인하는 함수입니다.
+	 * 주어진 오브젝트 클래스의 ActivateObjectIndexList가 생성되어 있는지 확인하는 함수입니다.
 	 * 
 	 * @param PooledObjectClass 확인할 오브젝트 클래스입니다.
 	 * @return ActivateObjectIndexList가 생성되었으면 true를 반환합니다. 그렇지 않으면 false를 반환합니다.
@@ -169,7 +169,7 @@ public:
 	virtual bool IsCreateActivateObjectIndexList(TSubclassOf<APRPooledObject> PooledObjectClass) const;
 
 	/**
-	 * 주어진 오브젝트 클래스의 UsedObjectIndexList가 생성되었는지 확인하는 함수입니다. 
+	 * 주어진 오브젝트 클래스의 UsedObjectIndexList가 생성되어 있는지 확인하는 함수입니다. 
 	 * 
 	 * @param PooledObjectClass 확인할 오브젝트 클래스입니다.
 	 * @return UsedObjectIndexList가 생성되었으면 true를 반환합니다. 그렇지 않으면 false를 반환합니다.
@@ -218,7 +218,7 @@ private:
 	 * 주어진 오브젝트 클래스를 바탕으로 Object를 월드에 Spawn한 후 초기화하는 함수입니다.
 	 * 
 	 * @param ObjectClass 월드에 Spawn할 오브젝트의 클래스입니다.
-	 * @param Index 월드에 Spawn한 오브젝트의 ObjectPool에서 사용하는 Index 값입니다.
+	 * @param Index 월드에 Spawn한 오브젝트가 ObjectPool에서 사용하는 Index 값입니다.
 	 * @return 월드에 Spawn한 후 초기화한 오브젝트입니다.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PRObjectPoolSystem")
