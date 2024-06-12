@@ -19,7 +19,11 @@ public class ProjectReplica : ModuleRules
 			"Niagara",
 			"NavigationSystem",
 			"AIModule",
-			"GameplayTasks"
+			"GameplayTasks",
+			"AnimationLocomotionLibraryRuntime",
+			"AnimGraphRuntime",
+			"MotionWarping",
+			"NiagaraAnimNotifies"
 		});
 	}
 }
