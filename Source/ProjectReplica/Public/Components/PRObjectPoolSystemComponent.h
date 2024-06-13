@@ -206,10 +206,10 @@ private:
 
 	/**
 	 * 주어진 오브젝트 클래스를 월드에 동적으로 Spawn하는 함수입니다.
-	 * 돟적으로 Spawn한 오브젝트는 비활성화된 후 일정시간이 지나면 제거됩니다.
+	 * 동적으로 Spawn한 오브젝트는 비활성화된 후 일정시간이 지나면 제거됩니다.
 	 * 
 	 * @param ObjectClass 월드에 동적으로 Spawn할 오브젝트의 클래스입니다.
-	 * @return 월드가 유효하고 주어진 오브젝트 클래스가 PRPoolableInterface를 구현하는 경우 월드에 동적으로 Spawn한 오브젝트를 반환합니다. 그렇지 않으면 nullptr을 반환합니다.
+	 * @return 월드가 유효하고 주어진 오브젝트 클래스가 PoolableInterface를 구현하는 경우 월드에 동적으로 Spawn한 오브젝트를 반환합니다. 그렇지 않으면 nullptr을 반환합니다.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PRObjectPoolSystem")
 	APRPooledObject* SpawnDynamicObjectInWorld(TSubclassOf<APRPooledObject> ObjectClass);

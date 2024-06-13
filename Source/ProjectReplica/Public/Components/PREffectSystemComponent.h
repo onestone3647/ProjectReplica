@@ -90,6 +90,33 @@ public:
 	/** 이펙트의 수명입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PRNiagaraEffectPoolSettings")
 	float EffectLifespan;
+
+public:
+	/**
+	 * 주어진 NiagaraEffectPoolSettings와 같은지 확인하는 ==연산자 오버로딩입니다.
+	 * 
+	 * @param TargetNiagaraEffectPoolSettings 비교하는 NiagaraEffectPoolSettings와 같은지 확인할 NiagaraEffectPoolSettings입니다.
+	 * @return 주어진 NiagaraEffectPoolSettings와 같을 경우 true를 반환합니다. 그렇지 않을 경우 false를 반환합니다.
+	 */
+	FORCEINLINE bool operator==(const FPRNiagaraEffectPoolSettings& TargetNiagaraEffectPoolSettings) const
+	{
+		return this->NiagaraSystem == TargetNiagaraEffectPoolSettings.NiagaraSystem
+				&& this->PoolSize == TargetNiagaraEffectPoolSettings.PoolSize
+				&& this->EffectLifespan == TargetNiagaraEffectPoolSettings.EffectLifespan;
+	}
+
+	/**
+	 * 주어진 NiagaraEffectPoolSettings와 같지 않은지 확인하는 !=연산자 오버로딩입니다.
+	 * 
+	 * @param TargetNiagaraEffectPoolSettings 비교하는 NiagaraEffectPoolSettings와 같지 않은지 확인할 NiagaraEffectPoolSettings입니다.
+	 * @return 주어진 NiagaraEffectPoolSettings와 같지 않을 경우 true를 반환합니다. 그렇지 않을 경우 false를 반환합니다.
+	 */
+	FORCEINLINE bool operator!=(const FPRNiagaraEffectPoolSettings& TargetNiagaraEffectPoolSettings) const
+	{
+		return this->NiagaraSystem != TargetNiagaraEffectPoolSettings.NiagaraSystem
+				|| this->PoolSize != TargetNiagaraEffectPoolSettings.PoolSize
+				|| this->EffectLifespan != TargetNiagaraEffectPoolSettings.EffectLifespan;
+	}
 };
 
 /**
@@ -628,10 +655,10 @@ public:
 	 * @param Scale NiagaraEffect에 적용할 크기
 	 * @param bEffectAutoActivate true일 경우 NiagaraEffect를 Spawn하자마다 NiagaraEffect를 실행합니다. false일 경우 NiagaraEffect를 실행하지 않습니다.
 	 * @param bReset 처음부터 다시 재생할지 여부
+	 * @return 지정한 위치에 Spawn한 NiagaraEffect입니다.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
 	APRNiagaraEffect* SpawnNiagaraEffectAtLocation(UNiagaraSystem* SpawnEffect, FVector Location, FRotator Rotation = FRotator::ZeroRotator, FVector Scale = FVector(1.0f), bool bEffectAutoActivate = true, bool bReset = false);
-
 	
 	/**
 	 * NiagaraEffect를 지정한 Component에 부착하여 Spawn하는 함수입니다.
@@ -644,10 +671,20 @@ public:
 	 * @param Scale NiagaraEffect에 적용할 크기
 	 * @param bEffectAutoActivate true일 경우 NiagaraEffect를 Spawn하자마다 NiagaraEffect를 실행합니다. false일 경우 NiagaraEffect를 실행하지 않습니다.
 	 * @param bReset 처음부터 다시 재생할지 여부
+	 * @return 지정한 Component에 부착하여 Spawn한 NiagaraEffect입니다.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
 	APRNiagaraEffect* SpawnNiagaraEffectAttached(UNiagaraSystem* SpawnEffect, USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate = true, bool bReset = false);
 
+	/**
+	 * 주어진 NiagaraSystem에 해당하는 활성화할 수 있는 NiagaraEffect를 반환하는 함수입니다.
+	 *
+	 * @param NiagaraSystem 활성화할 수 있는 NiagaraEffect를 찾을 NiagaraSystem입니다.
+	 * @return 활성화할 수 있는 NiagaraEffect입니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
+	APRNiagaraEffect* GetActivateableNiagaraEffect(UNiagaraSystem* NiagaraSystem);
+	
 	/**
 	 * 주어진 NiagaraEffect가 활성화되어 있는지 확인하는 함수입니다.
 	 * 
@@ -658,9 +695,18 @@ public:
 	bool IsActivateNiagaraEffect(APRNiagaraEffect* NiagaraEffect) const;
 
 	/**
+	 * 주어진 NiagaraSystem에 해당하는 NiagaraPool이 생성되어 있는지 확인하는 함수입니다.
+	 * 
+	 * @param NiagaraSystem 확인할 NiagaraSystem입니다.
+	 * @return NiagaraPool이 생성되어 있으면 true를 반환합니다. 그렇지 않으면 false를 반환합니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraSystem")
+	bool IsCreateNiagaraPool(UNiagaraSystem* NiagaraSystem) const;	
+
+	/**
 	 * 주어진 NiagaraSystem에 해당하는 ActivateNiagaraIndexList가 생성되어 있는지 확인하는 함수입니다.
 	 * 
-	 * @param NiagaraSystem 확인할 UNiagaraSystem입니다.
+	 * @param NiagaraSystem 확인할 NiagaraSystem입니다.
 	 * @return ActivateNiagaraIndexList가 생성되어 있으면 true를 반환합니다. 그렇지 않으면 false를 반환합니다.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraSystem")
@@ -669,11 +715,20 @@ public:
 	/**
 	 * 주어진 NiagaraSystem에 해당하는 UsedNiagaraIndexList가 생성되어 있는지 확인하는 함수입니다.
 	 * 
-	 * @param NiagaraSystem 확인할 UNiagaraSystem입니다.
+	 * @param NiagaraSystem 확인할 NiagaraSystem입니다.
 	 * @return UsedNiagaraIndexList가 생성되어 있으면 true를 반환합니다. 그렇지 않으면 false를 반환합니다.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraSystem")
 	bool IsCreateUsedNiagaraIndexList(UNiagaraSystem* NiagaraSystem) const;
+
+	/**
+	 * 주어진 NiagaraEffect가 동적으로 생성되었는지 확인하는 함수입니다.
+	 * 
+	 * @param NiagaraEffect 확인할 NiagaraEffect입니다.
+	 * @return NiagaraEffect가 동적으로 생성되었으면 true를 반환합니다. 그렇지 않으면 false를 반환합니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraSystem")
+	bool IsDynamicNiagaraEffect(APRNiagaraEffect* NiagaraEffect) const;
 
 private:
 	/**
@@ -709,7 +764,7 @@ private:
 	void CreateUsedNiagaraIndexList(UNiagaraSystem* NiagaraSystem);	
 
 	/**
-	 * 주어진 NiagaraSystem를 월드에 APRNiagaraEffect로 Spawn하는 함수입니다.
+	 * 주어진 NiagaraSystem을 월드에 PRNiagaraEffect로 Spawn하는 함수입니다.
 	 *
 	 * @param NiagaraSystem 월드에 Spawn할 NiagaraSystem입니다.
 	 * @param PoolIndex 월드에 Spawn한 NiagaraSystem이 NiagaraPool에서 사용하는 Index 값입니다. 
@@ -720,12 +775,52 @@ private:
 	APRNiagaraEffect* SpawnNiagaraEffectInWorld(UNiagaraSystem* NiagaraSystem, int32 PoolIndex, float Lifespan);
 
 	/**
+	 * 주어진 NiagaraSystem을 월드에 동적으로 Spawn하는 함수입니다.
+	 * 동적으로 Spawn한 NiagaraSystem은 비활성화된 후 일정시간이 지나면 제거됩니다.
+	 * 
+	 * @param NiagaraSystem 월드에 동적으로 Spawn할 NiagaraSystem입니다.
+	 * @return 월드에 동적으로 Spawn한 NiagaraEffect입니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
+	APRNiagaraEffect* SpawnDynamicNiagaraEffectInWorld(UNiagaraSystem* NiagaraSystem);	
+
+	/**
+	 * 주어진 NiagaraSystem에 해당하는 NiagaraEffect를 초기화한 후 반환하는 함수입니다.
+	 * 
+	 * @param SpawnEffect 초기화할 NiagaraEffect의 NiagaraSystem입니다.
+	 * @return 초기화된 NiagaraEffect입니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PRObjectPoolSystem|NiagaraSystem")
+	APRNiagaraEffect* InitializeNiagaraEffect(UNiagaraSystem* SpawnEffect);
+
+	/**
 	 * 주어진 동적으로 생성한 NiagaraEffect를 제거하는 함수입니다.
 	 * 
 	 * @param TargetDynamicDestroyNiagaraEffectList 제거할 동적으로 생성한 NiagaraEffect의 목록입니다.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PRObjectPoolSystem|NiagaraSystem")
 	void ClearDynamicDestroyNiagaraList(FPRDynamicDestroyNiagaraEffectList& TargetDynamicDestroyNiagaraEffectList);
+
+	/**
+	 * 주어진 NiagaraSystem에 해당하는 NiagaraEffect의 설정 값을 데이터 테이블에서 가져오는 함수입니다.
+	 *
+	 * @param NiagaraSystem 데이터 테이블에서 설정 값을 가져올 NiagaraSystem입니다.
+	 * @return 데이터 테이블에 해당하는 NiagaraEffect의 설정 값이 있으면 반환합니다. 그렇지 않으면 기본 값을 반환합니다.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
+	FPRNiagaraEffectPoolSettings GetNiagaraEffectPoolSettingsFromDataTable(UNiagaraSystem* NiagaraSystem) const; 
+
+	/** 인자로 받은 NiagaraEffect가 비활성화될 때 실행하는 함수입니다. */
+	UFUNCTION()
+	void OnNiagaraEffectDeactivate(APREffect* Effect);
+
+	/** 동적으로 생성한 NiagaraEffect가 비활성화될 때 실행하는 함수입니다. */
+	UFUNCTION()
+	void OnDynamicNiagaraEffectDeactivate(APREffect* Effect);
+
+	/** 동적으로 생성한 NiagaraEffect를 제거하는 함수입니다. */
+	UFUNCTION()
+	void DynamicNiagaraEffectDestroy(APRNiagaraEffect* NiagaraEffect);
 	
 private:
 	/** NiagaraObjectPool의 설정 값을 가진 데이터 테이블입니다. */
@@ -815,15 +910,8 @@ public:
 	/** 인자로 받은 NiagaraEffect의 Pool이 생성되었는지 판별하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
 	bool IsCreateNiagaraEffectPool(UNiagaraSystem* NiagaraSystem) const;
-
-	/** 인자로 받은 NiagaraEffect가 동적으로 생성한 NiagaraEffect인지 판별하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
-	bool IsDynamicNiagaraEffect(APRNiagaraEffect* NiagaraEffect) const;
 	
 private:
-	/** 인자에 해당하는 활성화할 수 있는 NiagaraSystem을 반환하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
-	APRNiagaraEffect* GetActivateableNiagaraEffect(UNiagaraSystem* NiagaraSystem);
 	
 	/** 인자로 받은 NiagaraEffectSettings를 기반으로 NiagaraEffectPool을 생성하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
@@ -840,22 +928,6 @@ private:
 	/** 인자로 받은 NiagaraSystem를 월드에 APRNiagaraEffect로 Spawn하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
 	APRNiagaraEffect* SpawnNiagaraEffectInWorld(UNiagaraSystem* NiagaraSystem, int32 PoolIndex = -1, float Lifespan = 0.0f);
-
-	/** 인자로 받은 NiagaraSystem를 월드에 APRNiagaraEffect로 동적 Spawn하는 함수입니다. */
-	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
-	APRNiagaraEffect* SpawnDynamicNiagaraEffectInWorld(UNiagaraSystem* NiagaraSystem);	
-
-	/** 인자로 받은 NiagaraEffect가 비활성화될 때 실행하는 함수입니다. */
-	UFUNCTION()
-	void OnNiagaraEffectDeactivate(APREffect* Effect);
-
-	/** 동적으로 생성한 NiagaraEffect가 비활성화될 때 실행하는 함수입니다. */
-	UFUNCTION()
-	void OnDynamicNiagaraEffectDeactivate(APREffect* Effect);
-
-	/** 동적으로 생성한 NiagaraEffect를 제거하는 함수입니다. */
-	UFUNCTION()
-	void DynamicNiagaraEffectDestroy(APRNiagaraEffect* NiagaraEffect);
 
 	/** 인자로 받은 NiagaraEffect의 설정 값을 데이터 테이블에서 가져오는 함수입니다. */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")

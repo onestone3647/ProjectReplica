@@ -65,81 +65,94 @@ void UPREffectSystemComponent::ClearAllNiagaraPool()
 
 APRNiagaraEffect* UPREffectSystemComponent::SpawnNiagaraEffectAtLocation(UNiagaraSystem* SpawnEffect, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate, bool bReset)
 {
-	APRNiagaraEffect* ActivateableNiagaraEffect = GetActivateableNiagaraEffect(SpawnEffect);
-	
-	// 유효하지 않는 NiagaraEffect이거나 풀링 가능한 객체가 아니면 nullptr를 반환합니다.
-	if(!IsValid(ActivateableNiagaraEffect) || !IsPoolableObject(ActivateableNiagaraEffect))
+	APRNiagaraEffect* ActivateableNiagaraEffect = InitializeNiagaraEffect(SpawnEffect);
+	if(IsValid(ActivateableNiagaraEffect))
 	{
 		return nullptr;
-	}
-
-	// 동적으로 생성한 NiagaraEffect일 경우 DynamicObjectDestroyTimer가 작동 중이라면 DynamicObjectDestroyTimer를 정지합니다.
-	FTimerHandle* DynamicObjectDestroyTimer = DynamicDestroyNiagaraList.FindTimerHandleForNiagaraEffect(*ActivateableNiagaraEffect);
-	if(DynamicObjectDestroyTimer)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(*DynamicObjectDestroyTimer);
 	}
 	
 	// NiagaraEffect를 활성화하고 Spawn할 위치와 회전값, 크기, 자동실행 여부를 적용합니다.
 	ActivateableNiagaraEffect->SpawnEffectAtLocation(Location, Rotation, Scale, bEffectAutoActivate, bReset);
-
-	// 해당 NiagaraSystem를 처음 활성화하는 경우 ActivateNiagaraEffectIndexList를 생성합니다.
-	if(!IsCreateActivateNiagaraIndexList(SpawnEffect))
-	{
-		CreateActivateNiagaraIndexList(SpawnEffect);
-	}
-
-	// 활성화된 NiagaraEffect의 Index를 ActivateNiagaraIndexList에 저장합니다.
-	const int32 PoolIndex = GetPoolIndex(ActivateableNiagaraEffect);
-	ActivateNiagaraIndexList.GetIndexesForNiagaraSystem(*SpawnEffect)->Add(PoolIndex);
 	
 	return ActivateableNiagaraEffect;
 }
 
 APRNiagaraEffect* UPREffectSystemComponent::SpawnNiagaraEffectAttached(UNiagaraSystem* SpawnEffect,	USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate, bool bReset)
 {
-	APRNiagaraEffect* ActivateableNiagaraEffect = GetActivateableNiagaraEffect(SpawnEffect);
-	
-	// 유효하지 않는 NiagaraEffect이거나 풀링 가능한 객체가 아니면 nullptr를 반환합니다.
-	if(!IsValid(ActivateableNiagaraEffect) || !IsPoolableObject(ActivateableNiagaraEffect))
+	APRNiagaraEffect* ActivateableNiagaraEffect = InitializeNiagaraEffect(SpawnEffect);
+	if(IsValid(ActivateableNiagaraEffect))
 	{
 		return nullptr;
 	}
 
-	// 동적으로 생성한 NiagaraEffect일 경우 DynamicObjectDestroyTimer가 작동 중이라면 DynamicObjectDestroyTimer를 정지합니다.
-	FTimerHandle* DynamicObjectDestroyTimer = DynamicDestroyNiagaraList.FindTimerHandleForNiagaraEffect(*ActivateableNiagaraEffect);
-	if(DynamicObjectDestroyTimer)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(*DynamicObjectDestroyTimer);
-	}
-	
 	// NiagaraEffect를 활성화하고 Spawn하여 부착할 Component와 위치, 회전값, 크기, 자동실행 여부를 적용합니다.
 	ActivateableNiagaraEffect->SpawnEffectAttached(Parent, AttachSocketName, Location, Rotation, Scale, EAttachLocation::KeepWorldPosition, bEffectAutoActivate, bReset);
+	
+	return ActivateableNiagaraEffect;
+}
 
-	// 해당 NiagaraSystem를 처음 활성화하는 경우 ActivateNiagaraEffectIndexList를 생성합니다.
-	if(!IsCreateActivateNiagaraIndexList(SpawnEffect))
+APRNiagaraEffect* UPREffectSystemComponent::GetActivateableNiagaraEffect(UNiagaraSystem* NiagaraSystem)
+{
+	// NiagaraSystem이 유효하지 않을 경우 nullptr을 반환합니다.
+	if(!NiagaraSystem)
 	{
-		CreateActivateNiagaraIndexList(SpawnEffect);
+		return nullptr;
 	}
 
-	// 활성화된 NiagaraEffect의 Index를 ActivateNiagaraIndexList에 저장합니다.
-	const int32 PoolIndex = GetPoolIndex(ActivateableNiagaraEffect);
-	ActivateNiagaraIndexList.GetIndexesForNiagaraSystem(*SpawnEffect)->Add(PoolIndex);
+	// 해당 NiagaraSystem에 해당하는 Pool이 생성되었는지 확인하고, 없으면 생성합니다.
+	if(!IsCreateNiagaraPool(NiagaraSystem))
+	{
+		FPRNiagaraEffectPoolSettings NiagaraPoolSettings = FPRNiagaraEffectPoolSettings(NiagaraSystem, DynamicPoolSize, DynamicLifespan);
+		CreateNiagaraPool(NiagaraPoolSettings);
+	}
+
+	// NiagaraPool에서 해당 NiagaraSystem의 Pool을 얻습니다.
+	FPRNiagaraEffectPool* PoolEntry = NiagaraPool.Pool.Find(NiagaraSystem);
+	if(!PoolEntry)
+	{
+		// 지정된 NiagaraSystem가 없으면 nullptr을 반환합니다.
+		return nullptr;
+	}
+
+	// 활성화할 NiagaraEffect입니다.	
+	APRNiagaraEffect* ActivateableNiagaraEffect = nullptr;
+
+	// PoolEntry에서 활성화되지 않은 NiagaraEffect를 찾습니다.
+	for(const auto& NiagaraEffect : PoolEntry->PooledEffects)
+	{
+		if(!IsActivateNiagaraEffect(NiagaraEffect))
+		{
+			ActivateableNiagaraEffect = NiagaraEffect;
+
+			break;
+		}
+	}
+
+	// PoolEntry의 모든 NiagaraEffect가 활성화되었을 경우 새로운 NiagaraEffect를 생성합니다.
+	if(!ActivateableNiagaraEffect)
+	{
+		ActivateableNiagaraEffect = SpawnDynamicNiagaraEffectInWorld(NiagaraSystem);
+	}
+	
+	// 동적으로 생성된 NiagaraEffect일 경우 DynamicEffectDestroyTimer를 정지합니다.
+	if(IsDynamicNiagaraEffect(ActivateableNiagaraEffect))
+	{
+		FPRDynamicDestroyObject* DynamicNiagaraList = DynamicDestroyNiagaraList.List.Find(ActivateableNiagaraEffect->GetNiagaraEffectAsset());
+		if(DynamicNiagaraList)
+		{
+			FTimerHandle* DynamicDestroyTimer = DynamicNiagaraList->TimerHandles.Find(ActivateableNiagaraEffect);
+			if(DynamicDestroyTimer)
+			{
+				GetWorld()->GetTimerManager().ClearTimer(*DynamicDestroyTimer);
+			}
+		}
+	}
 	
 	return ActivateableNiagaraEffect;
 }
 
 bool UPREffectSystemComponent::IsActivateNiagaraEffect(APRNiagaraEffect* NiagaraEffect) const
 {
-	// if(IsValid(NiagaraEffect))
-	// {
-	// 	const FPRActivateIndexList* ActivateIndexList = ActivateNiagaraEffectIndexList.Find(NiagaraEffect->GetNiagaraEffectAsset());
-	// 	if(ActivateIndexList != nullptr)
-	// 	{
-	// 		return IPRPoolableInterface::Execute_IsActivate(NiagaraEffect) && ActivateIndexList->Indexes.Contains(IPRPoolableInterface::Execute_GetPoolIndex(NiagaraEffect));
-	// 	}
-	// }
-
 	// 유효하지 않는 NiagaraEffect이거나 풀링 가능한 객체가 아니면 false를 반환합니다.
 	if(!IsValid(NiagaraEffect) || !IsPoolableObject(NiagaraEffect))
 	{
@@ -162,6 +175,11 @@ bool UPREffectSystemComponent::IsActivateNiagaraEffect(APRNiagaraEffect* Niagara
 	return false;
 }
 
+bool UPREffectSystemComponent::IsCreateNiagaraPool(UNiagaraSystem* NiagaraSystem) const
+{
+	return NiagaraPool.Pool.Contains(NiagaraSystem);
+}
+
 bool UPREffectSystemComponent::IsCreateActivateNiagaraIndexList(UNiagaraSystem* NiagaraSystem) const
 {
 	return ActivateNiagaraIndexList.List.Contains(NiagaraSystem);
@@ -170,6 +188,23 @@ bool UPREffectSystemComponent::IsCreateActivateNiagaraIndexList(UNiagaraSystem* 
 bool UPREffectSystemComponent::IsCreateUsedNiagaraIndexList(UNiagaraSystem* NiagaraSystem) const
 {
 	return UsedNiagaraIndexList.List.Contains(NiagaraSystem);
+}
+
+bool UPREffectSystemComponent::IsDynamicNiagaraEffect(APRNiagaraEffect* NiagaraEffect) const
+{
+	// 주어진 객체가 유효한 풀링 가능한 객체인지 확인합니다.
+	if(!IsPoolableObject(NiagaraEffect))
+	{
+		return false;
+	}
+
+	const FPRDynamicDestroyObject* DynamicNiagaraList = DynamicDestroyNiagaraList.List.Find(NiagaraEffect->GetNiagaraEffectAsset());
+	if(DynamicNiagaraList)
+	{
+		return DynamicNiagaraList->TimerHandles.Contains(NiagaraEffect);
+	}
+	
+	return false;
 }
 
 void UPREffectSystemComponent::ClearNiagaraPool(FPRNiagaraEffectObjectPool& TargetNiagaraPool)
@@ -227,7 +262,20 @@ void UPREffectSystemComponent::CreateUsedNiagaraIndexList(UNiagaraSystem* Niagar
 {
 	if(NiagaraSystem)
 	{
-		FPRNiagaraEffectPool* NiagaraEffectPool = NiagaraPool.Pool.Find(NiagaraSystem);
+		FPRNiagaraEffectPool* PoolEntry = NiagaraPool.Pool.Find(NiagaraSystem);
+		if(PoolEntry)
+		{
+			FPRUsedIndexList UsedIndexList;
+			for(const auto& PooledEffect : PoolEntry->PooledEffects)
+			{
+				if(IsValid(PooledEffect))
+				{
+					UsedIndexList.Indexes.Add(GetPoolIndex(PooledEffect));
+				}
+			}
+			
+			UsedNiagaraIndexList.List.Emplace(NiagaraSystem, UsedIndexList);	
+		}
 	}
 }
 
@@ -255,281 +303,126 @@ APRNiagaraEffect* UPREffectSystemComponent::SpawnNiagaraEffectInWorld(UNiagaraSy
 	return NiagaraEffect;
 }
 
-void UPREffectSystemComponent::ClearDynamicDestroyNiagaraList(FPRDynamicDestroyNiagaraEffectList& TargetDynamicDestroyNiagaraEffectList)
-{
-	ClearDynamicDestroyObjects(TargetDynamicDestroyNiagaraEffectList.List);
-}
-#pragma endregion 
-
-#pragma region ParticleSystem
-void UPREffectSystemComponent::InitializeParticlePool()
-{
-}
-
-void UPREffectSystemComponent::ClearAllParticlePool()
-{
-}
-#pragma endregion 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#pragma region NiagaraEffect
-void UPREffectSystemComponent::EmptyAllNiagaraEffectPool()
-{
-	// NiagaraEffectPool 비우기
-	if(NiagaraEffectPool.Num() > 0)
-	{
-		for(auto& Pair : NiagaraEffectPool)
-		{
-			// 각 항목의 NiagaraEffect에 대한 탐색
-			for(auto& NiagaraEffect : Pair.Value.Effects)
-			{
-				// NiagaraEffect가 유효한지 확인하고, 유효한 경우 제거
-				if(IsValid(NiagaraEffect))
-				{
-					NiagaraEffect->Destroy();
-				}
-			}
-
-			// NiagaraEffect를 제거한 후 풀의 항목을 비웁니다.
-			Pair.Value.Effects.Empty();
-		}
-
-		// 모든 항목을 제거한 후 풀을 비웁니다.
-		NiagaraEffectPool.Empty();
-	}
-
-	// DynamicNiagaraEffectPool 비우기
-	if(DynamicNiagaraEffectPool.Num() > 0)
-	{
-		for(auto& Pair : DynamicNiagaraEffectPool)
-		{
-			// 각 항목의 동적으로 생성한 NiagaraEffect에 대한 탐색
-			for(auto& DynamicNiagaraEffect : Pair.Value.Effects)
-			{
-				// 동적으로 생성한 NiagaraEffect가 유효한지 확인하고, 유효한 경우 제거
-				if(IsValid(DynamicNiagaraEffect.Key))
-				{
-					DynamicNiagaraEffect.Key->Destroy();
-				}
-
-				// TimerHandle이 유효한지 확인하고, 유효한 경우 제거
-				if(DynamicNiagaraEffect.Value.IsValid())
-				{
-					// TimerHandle 제거
-					GetWorld()->GetTimerManager().ClearTimer(DynamicNiagaraEffect.Value);
-				}
-			}
-
-			// 동적으로 생성한 NiagaraEffect를 제거한 후 풀의 항목을 비웁니다.
-			Pair.Value.Effects.Empty();
-		}
-
-		// 모든 항목을 제거한 후 풀을 비웁니다.
-		DynamicNiagaraEffectPool.Empty();
-	}
-
-	// ActivateNiagaraEffectIndexList와 UsedNiagaraEffectIndexList 비우기
-	ActivateNiagaraEffectIndexList.Empty();
-	UsedNiagaraEffectIndexList.Empty();
-}
-
-bool UPREffectSystemComponent::IsCreateNiagaraEffectPool(UNiagaraSystem* NiagaraSystem) const
-{
-	return NiagaraEffectPool.Contains(NiagaraSystem);
-}
-
-bool UPREffectSystemComponent::IsDynamicNiagaraEffect(APRNiagaraEffect* NiagaraEffect) const
-{
-	if(IsValid(NiagaraEffect))
-	{
-		const FPRDynamicNiagaraEffectPool* DynamicEffectPool = DynamicNiagaraEffectPool.Find(NiagaraEffect->GetNiagaraEffectAsset());
-		if(DynamicEffectPool != nullptr)
-		{
-			return DynamicEffectPool->Effects.Contains(NiagaraEffect);
-		}
-	}
-	
-	return false;
-}
-
-APRNiagaraEffect* UPREffectSystemComponent::GetActivateableNiagaraEffect(UNiagaraSystem* NiagaraSystem)
-{
-	// 해당 NiagaraEffect에 해당하는 Pool이 생성되었는지 확인하고, 없으면 생성합니다.
-	if(!IsCreateNiagaraEffectPool(NiagaraSystem))
-	{
-		FPRNiagaraEffectSettings NiagaraEffectSettings = FPRNiagaraEffectSettings(NiagaraSystem, 1, DynamicLifespan);
-		CreateNiagaraEffectPool(NiagaraEffectSettings);
-	}
-
-	// NiagaraEffectPool에서 해당 NiagaraEffect의 Pool을 얻습니다.
-	FPRNiagaraEffectPool* Pair = NiagaraEffectPool.Find(NiagaraSystem);
-	if(Pair == nullptr)
-	{
-		// 지정된 NiagaraEffect가 업습니다.
-		return nullptr;
-	}
-
-	APRNiagaraEffect* ActivateableNiagaraEffect = nullptr;
-
-	// Pair에서 활성화되지 않은 NiagaraEffect를 찾아 활성화합니다.
-	for(const auto& NiagaraEffect : Pair->Effects)
-	{
-		if(IsValid(NiagaraEffect) && !IsActivateNiagaraEffect(NiagaraEffect))
-		{
-			ActivateableNiagaraEffect = NiagaraEffect;
-			break;
-		}
-	}
-
-	// Pair의 모든 NiagaraEffect가 활성화되었을 경우 새로운 NiagaraEffect를 생성합니다.
-	if(ActivateableNiagaraEffect == nullptr)
-	{
-		ActivateableNiagaraEffect = SpawnDynamicNiagaraEffectInWorld(NiagaraSystem);
-	}
-	
-	// 동적으로 생성된 NiagaraEffect일 경우 DynamicEffectDestroyTimer를 정지합니다.
-	FPRDynamicNiagaraEffectPool* DynamicEffectPool = DynamicNiagaraEffectPool.Find(ActivateableNiagaraEffect->GetNiagaraEffectAsset());
-	if(DynamicEffectPool != nullptr)
-	{
-		FTimerHandle* DynamicDestroyTimer = DynamicEffectPool->Effects.Find(ActivateableNiagaraEffect);
-		if(DynamicDestroyTimer != nullptr)
-		{
-			GetWorld()->GetTimerManager().ClearTimer(*DynamicDestroyTimer);			
-		}
-	}
-	
-	return ActivateableNiagaraEffect;
-}
-
-void UPREffectSystemComponent::CreateNiagaraEffectPool(FPRNiagaraEffectSettings NiagaraEffectSettings)
-{
-	if(GetWorld() != nullptr && NiagaraEffectSettings.NiagaraSystem != nullptr)
-	{
-		// NiagaraEffectPool에 저장할 Pair를 초기화하고 NiagaraEffect를 생성하여 저장합니다.
-		FPRNiagaraEffectPool Pair;
-		for(int32 Index = 0; Index < NiagaraEffectSettings.PoolSize; Index++)
-		{
-			APRNiagaraEffect* SpawnNiagaraEffect = SpawnNiagaraEffectInWorld(NiagaraEffectSettings.NiagaraSystem, Index, NiagaraEffectSettings.Lifespan);
-			if(IsValid(SpawnNiagaraEffect))
-			{
-				Pair.Effects.Emplace(SpawnNiagaraEffect);
-			}
-		}
-
-		// 초기화된 Pair를 NiagaraEffectPool에 저장하고 ActivateNiagaraEffectIndexList와 UsedNiagaraEffectIndexList를 생성합니다.
-		NiagaraEffectPool.Emplace(NiagaraEffectSettings.NiagaraSystem, Pair);
-		CreateActivateNiagaraEffectIndexList(NiagaraEffectSettings.NiagaraSystem);
-		CreateUsedNiagaraEffectIndexList(NiagaraEffectSettings.NiagaraSystem);
-	}
-}
-
-void UPREffectSystemComponent::CreateActivateNiagaraEffectIndexList(UNiagaraSystem* NiagaraSystem)
-{
-	ActivateNiagaraEffectIndexList.Emplace(NiagaraSystem);
-}
-
-void UPREffectSystemComponent::CreateUsedNiagaraEffectIndexList(UNiagaraSystem* NiagaraSystem)
-{
-	FPRNiagaraEffectPool* Pair = NiagaraEffectPool.Find(NiagaraSystem);
-	if(Pair == nullptr)
-	{
-		// 지정된 NiagaraEffect가 업습니다.
-		return;
-	}
-	
-	FPRUsedIndexList UsedEffectIndexList;
-	for(const auto& NiagaraEffect : Pair->Effects)
-	{
-		UsedEffectIndexList.Indexes.Add(IPRPoolableInterface::Execute_GetPoolIndex(NiagaraEffect));
-	}
-
-	UsedNiagaraEffectIndexList.Emplace(NiagaraSystem, UsedEffectIndexList);
-}
-
 APRNiagaraEffect* UPREffectSystemComponent::SpawnDynamicNiagaraEffectInWorld(UNiagaraSystem* NiagaraSystem)
 {
-	APRNiagaraEffect* ActivateableNiagaraEffect = nullptr;
-
-	FPRUsedIndexList* UsedEffectIndexList = UsedNiagaraEffectIndexList.Find(NiagaraSystem);
-	if(UsedEffectIndexList == nullptr)
+	if(!NiagaraSystem)
 	{
-		// 지정된 NiagaraEffect가 없습니다.
+		return nullptr;
+	}
+	
+	APRNiagaraEffect* DynamicNiagaraEffect = nullptr;
+	
+	// Critical Section 시작
+	FCriticalSection CriticalSection;
+	CriticalSection.Lock();
+
+	// 해당 NiagaraSystem의 UsedNiagaraIndexList가 생성되었는지 확인하고, 없으면 생성합니다.
+	if(!IsCreateUsedNiagaraIndexList(NiagaraSystem))
+	{
+		CreateUsedNiagaraIndexList(NiagaraSystem);
+	}
+
+	// UsedNiagaraIndexList에서 해당 NiagaraSystem의 UsedIndexList를 얻습니다.
+	FPRUsedIndexList* UsedIndexList = UsedNiagaraIndexList.List.Find(NiagaraSystem);
+	if(UsedIndexList == nullptr)
+	{
+		// 지정된 NiagaraSystem이 없습니다.
 		return nullptr;
 	}
 
 	// 사용 가능한 Index를 구합니다.
-	const int32 NewIndex = FindAvailableIndex(UsedEffectIndexList->Indexes);
+	const int32 NewIndex = FindAvailableIndex(UsedIndexList->Indexes);
+	// 사용 가능한 Index를 UsedIndexList에 추가합니다.
+	UsedIndexList->Indexes.Add(NewIndex);
 
-	// 사용 가능한 Index를 UsedEffectIndexList에 저장합니다.
-	UsedEffectIndexList->Indexes.Add(NewIndex);
+	// Critical Section 끝
+	CriticalSection.Unlock();
 
 	// 새로운 NiagaraEffect를 생성하고 초기화합니다.
-	const FPRNiagaraEffectSettings NiagaraEffectSettings = GetNiagaraEffectSettingsFromDataTable(NiagaraSystem);
-	if(NiagaraEffectSettings != FPRNiagaraEffectSettings())
+	const FPRNiagaraEffectPoolSettings NiagaraEffectSettings = GetNiagaraEffectPoolSettingsFromDataTable(NiagaraSystem);
+	if(NiagaraEffectSettings != FPRNiagaraEffectPoolSettings())
 	{
 		// 데이터 테이블에 NiagaraEffect의 설정 값을 가지고 있을 경우 설정 값의 Lifespan을 적용합니다.
-		ActivateableNiagaraEffect = SpawnNiagaraEffectInWorld(NiagaraSystem, NewIndex, NiagaraEffectSettings.Lifespan);
+		DynamicNiagaraEffect = SpawnNiagaraEffectInWorld(NiagaraSystem, NewIndex, NiagaraEffectSettings.EffectLifespan);
 	}
 	else
 	{
 		// 데이터 테이블에 NiagaraEffect의 설정 값을 가지고 있지 않을 경우 DynamicLifespan을 적용합니다.
-		ActivateableNiagaraEffect = SpawnNiagaraEffectInWorld(NiagaraSystem, NewIndex, DynamicLifespan);
+		DynamicNiagaraEffect = SpawnNiagaraEffectInWorld(NiagaraSystem, NewIndex, DynamicLifespan);
 	}
 		
-	if(!IsValid(ActivateableNiagaraEffect))
-	{
-		// 지정된 NiagaraEffect가 없습니다.
-		return nullptr;
-	}
-		
-	// ActivateableNiagaraEffect의 OnNiagaraEffectDeactivate 이벤트에 대한 콜백 함수를 바인딩합니다.
-	// 동적으로 생성된 NiagaraEffect에 대한 추가로 비활성화하는 함수입니다.
-	ActivateableNiagaraEffect->OnEffectDeactivateDelegate.AddDynamic(this, &UPREffectSystemComponent::OnDynamicNiagaraEffectDeactivate);
+	// OnDynamicNiagaraEffectDeactivate 함수를 바인딩합니다.
+	DynamicNiagaraEffect->OnEffectDeactivateDelegate.AddDynamic(this, &UPREffectSystemComponent::OnDynamicNiagaraEffectDeactivate);
 
-	// NiagaraEffectPool에서 해당 NiagaraEffect의 Pool을 얻습니다.
-	FPRNiagaraEffectPool* Pair = NiagaraEffectPool.Find(NiagaraSystem);
-	if(Pair == nullptr)
+	// NiagaraPool에서 해당 NiagaraSystem의 Pool을 얻습니다.
+	FPRNiagaraEffectPool* PoolEntry = NiagaraPool.Pool.Find(NiagaraSystem);
+	if(!PoolEntry)
 	{
-		// 지정된 NiagaraEffect가 업습니다.
+		// Pool이 없을 경우 생성한 NiagaraEffect를 제거하고 nullptr을 반환합니다.
+		DynamicNiagaraEffect->ConditionalBeginDestroy();
+		
 		return nullptr;
+	}
+
+	// 새로 생성한 NiagaraEffect를 PoolEntry에 추가합니다.
+	PoolEntry->PooledEffects.Emplace(DynamicNiagaraEffect);
+
+	return DynamicNiagaraEffect;
+}
+
+APRNiagaraEffect* UPREffectSystemComponent::InitializeNiagaraEffect(UNiagaraSystem* SpawnEffect)
+{
+	APRNiagaraEffect* ActivateableNiagaraEffect = GetActivateableNiagaraEffect(SpawnEffect);
+	
+	// 유효하지 않는 NiagaraEffect이거나 풀링 가능한 객체가 아니면 nullptr를 반환합니다.
+	if(!IsValid(ActivateableNiagaraEffect) || !IsPoolableObject(ActivateableNiagaraEffect))
+	{
+		return nullptr;
+	}
+
+	// 동적으로 생성한 NiagaraEffect일 경우 DynamicObjectDestroyTimer가 작동 중이라면 DynamicObjectDestroyTimer를 정지합니다.
+	FTimerHandle* DynamicObjectDestroyTimer = DynamicDestroyNiagaraList.FindTimerHandleForNiagaraEffect(*ActivateableNiagaraEffect);
+	if(DynamicObjectDestroyTimer)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(*DynamicObjectDestroyTimer);
 	}
 	
-	// 새로 생성한 NiagaraEffect를 Pair에 저장합니다.
-	Pair->Effects.Emplace(ActivateableNiagaraEffect);
+	// 해당 NiagaraSystem를 처음 활성화하는 경우 ActivateNiagaraEffectIndexList를 생성합니다.
+	if(!IsCreateActivateNiagaraIndexList(SpawnEffect))
+	{
+		CreateActivateNiagaraIndexList(SpawnEffect);
+	}
 
+	// 활성화된 NiagaraEffect의 Index를 ActivateNiagaraIndexList에 저장합니다.
+	const int32 PoolIndex = GetPoolIndex(ActivateableNiagaraEffect);
+	ActivateNiagaraIndexList.GetIndexesForNiagaraSystem(*SpawnEffect)->Add(PoolIndex);
+	
 	return ActivateableNiagaraEffect;
 }
 
+void UPREffectSystemComponent::ClearDynamicDestroyNiagaraList(FPRDynamicDestroyNiagaraEffectList& TargetDynamicDestroyNiagaraEffectList)
+{
+	ClearDynamicDestroyObjects(TargetDynamicDestroyNiagaraEffectList.List);
+}
+
+FPRNiagaraEffectPoolSettings UPREffectSystemComponent::GetNiagaraEffectPoolSettingsFromDataTable(UNiagaraSystem* NiagaraSystem) const
+{
+	if(NiagaraPoolSettingsDataTable != nullptr)
+	{
+		TArray<FName> RowNames = NiagaraPoolSettingsDataTable->GetRowNames();
+		for(const FName& RowName: RowNames)
+		{
+			FPRNiagaraEffectPoolSettings* NiagaraEffectPoolSettings = NiagaraPoolSettingsDataTable->FindRow<FPRNiagaraEffectPoolSettings>(RowName, FString(""));
+			if(NiagaraEffectPoolSettings
+				&& NiagaraEffectPoolSettings->NiagaraSystem == NiagaraSystem)
+			{
+				return *NiagaraEffectPoolSettings;
+			}
+		}
+	}
+
+	return FPRNiagaraEffectPoolSettings();
+}
 void UPREffectSystemComponent::OnNiagaraEffectDeactivate(APREffect* Effect)
 {
 	APRNiagaraEffect* NiagaraEffect = Cast<APRNiagaraEffect>(Effect);
@@ -601,25 +494,48 @@ void UPREffectSystemComponent::DynamicNiagaraEffectDestroy(APRNiagaraEffect* Nia
 		NiagaraEffect->Destroy();
 	}
 }
+#pragma endregion 
 
-FPRNiagaraEffectSettings UPREffectSystemComponent::GetNiagaraEffectSettingsFromDataTable(UNiagaraSystem* NiagaraSystem) const
+#pragma region ParticleSystem
+void UPREffectSystemComponent::InitializeParticlePool()
 {
-	if(NiagaraEffectSettingsDataTable != nullptr)
-	{
-		TArray<FName> RowNames = NiagaraEffectSettingsDataTable->GetRowNames();
-		for(const FName& RowName: RowNames)
-		{
-			FPRNiagaraEffectSettings* NiagaraEffectSettings = NiagaraEffectSettingsDataTable->FindRow<FPRNiagaraEffectSettings>(RowName, FString(""));
-			if(NiagaraEffectSettings != nullptr && NiagaraEffectSettings->NiagaraSystem == NiagaraSystem)
-			{
-				return *NiagaraEffectSettings;
-			}
-		}
-	}
+}
 
-	return FPRNiagaraEffectSettings();
+void UPREffectSystemComponent::ClearAllParticlePool()
+{
 }
 #pragma endregion 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #pragma region ParticleEffect
 void UPREffectSystemComponent::EmptyAllParticleEffectPool()

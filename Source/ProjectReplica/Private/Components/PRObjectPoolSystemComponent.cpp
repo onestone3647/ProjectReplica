@@ -116,10 +116,10 @@ APRPooledObject* UPRObjectPoolSystemComponent::GetActivateablePooledObject(TSubc
 	// 활성화할 오브젝트입니다.
 	APRPooledObject* ActivateablePooledObject = nullptr;
 
-	// PooledObjectArray에서 활성화 되지 않은 오브젝트를 찾습니다.
+	// PoolEntry에서 활성화되지 않은 오브젝트를 찾습니다.
 	for(const auto& PooledObject : PoolEntry->PooledObjects)
 	{
-		if(IsValid(PooledObject) && !IsActivatePooledObject(PooledObject))
+		if(!IsActivatePooledObject(PooledObject))
 		{
 			ActivateablePooledObject = PooledObject;
 		
@@ -127,7 +127,7 @@ APRPooledObject* UPRObjectPoolSystemComponent::GetActivateablePooledObject(TSubc
 		}
 	}
 
-	// PoolEntry의 모든 오브젝트가 활성화 되었을 경우 새로운 오브젝트를 생성합니다.
+	// PoolEntry의 모든 오브젝트가 활성화되었을 경우 새로운 오브젝트를 생성합니다.
 	if(!ActivateablePooledObject)
 	{
 		ActivateablePooledObject = SpawnDynamicObjectInWorld(PooledObjectClass);
@@ -191,8 +191,8 @@ bool UPRObjectPoolSystemComponent::IsCreateUsedObjectIndexList(TSubclassOf<APRPo
 
 bool UPRObjectPoolSystemComponent::IsDynamicPooledObject(APRPooledObject* PooledObject) const
 {
-	// 유효한 오브젝트인지 확인합니다.
-	if(!IsValid(PooledObject))
+	// 주어진 객체가 유효한 풀링 가능한 객체인지 확인합니다.
+	if(!IsPoolableObject(PooledObject))
 	{
 		return false;
 	}
@@ -247,6 +247,11 @@ APRPooledObject* UPRObjectPoolSystemComponent::SpawnObjectInWorld(TSubclassOf<AP
 
 APRPooledObject* UPRObjectPoolSystemComponent::SpawnDynamicObjectInWorld(TSubclassOf<APRPooledObject> PooledObjectClass)
 {
+	if(!PooledObjectClass)
+	{
+		return nullptr;
+	}
+	
 	APRPooledObject* DynamicObject = nullptr;
 
 	// Critical Section 시작
@@ -285,7 +290,9 @@ APRPooledObject* UPRObjectPoolSystemComponent::SpawnDynamicObjectInWorld(TSubcla
 	FPRPool* PoolEntry = ObjectPool.Pool.Find(PooledObjectClass);
 	if(!PoolEntry)
 	{
+		// Pool이 없을 경우 생성한 Object를 제거하고 nullptr을 반환합니다.
 		DynamicObject->ConditionalBeginDestroy();
+		
 		return nullptr;
 	}
 	
@@ -346,16 +353,19 @@ void UPRObjectPoolSystemComponent::CreateUsedObjectIndexList(TSubclassOf<APRPool
 	if(IsPoolableObjectClass(ObjectClass))
 	{
 		FPRPool* PoolEntry = ObjectPool.Pool.Find(ObjectClass);
-		FPRUsedIndexList UsedIndexList;
-		for(const auto& PooledObject : PoolEntry->PooledObjects)
+		if(PoolEntry)
 		{
-			if(IsValid(PooledObject))
+			FPRUsedIndexList UsedIndexList;
+			for(const auto& PooledObject : PoolEntry->PooledObjects)
 			{
-				UsedIndexList.Indexes.Add(GetPoolIndex(PooledObject));
+				if(IsValid(PooledObject))
+				{
+					UsedIndexList.Indexes.Add(GetPoolIndex(PooledObject));
+				}
 			}
-		}
 			
-		UsedObjectIndexList.List.Emplace(ObjectClass, UsedIndexList);
+			UsedObjectIndexList.List.Emplace(ObjectClass, UsedIndexList);	
+		}
 	}
 }
 
