@@ -523,7 +523,7 @@ public:
 	 * @return 지정한 Component에 부착하여 Spawn한 NiagaraEffect입니다.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|NiagaraEffect")
-	APRNiagaraEffect* SpawnNiagaraEffectAttached(UNiagaraSystem* SpawnEffect, USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate = true, bool bReset = false);
+	APRNiagaraEffect* SpawnNiagaraEffectAttached(UNiagaraSystem* SpawnEffect, USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale = FVector(1.0f), bool bEffectAutoActivate = true, bool bReset = false);
 
 	/**
 	 * 주어진 NiagaraSystem에 해당하는 활성화할 수 있는 NiagaraEffect를 반환하는 함수입니다.
@@ -748,7 +748,7 @@ public:
 	 * @return 지정한 Component에 부착하여 Spawn한 ParticleEffect입니다.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "PREffectSystem|ParticleEffect")
-	APRParticleEffect* SpawnParticleEffectAttached(UParticleSystem* SpawnEffect, USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale, bool bEffectAutoActivate = true, bool bReset = false);
+	APRParticleEffect* SpawnParticleEffectAttached(UParticleSystem* SpawnEffect, USceneComponent* Parent, FName AttachSocketName, FVector Location, FRotator Rotation, FVector Scale = FVector(1.0f), bool bEffectAutoActivate = true, bool bReset = false);
 
 	/**
 	 * 주어진 ParticleSystem에 해당하는 활성화할 수 있는 ParticleEffect를 반환하는 함수입니다.
