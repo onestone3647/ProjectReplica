@@ -17,7 +17,7 @@ class PROJECTREPLICA_API UAN_PRSetActorRotation : public UAnimNotify
 public:
 	UAN_PRSetActorRotation(const FObjectInitializer& ObjectInitializer);
 
-protected:
+public:
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 
 protected:

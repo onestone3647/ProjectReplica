@@ -14,7 +14,7 @@ class PROJECTREPLICA_API UANS_PRVault : public UAnimNotifyState
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 };

@@ -95,6 +95,8 @@ void APREffect::DeactivateEffect()
 
 UFXSystemComponent* APREffect::GetFXSystemComponent() const
 {
+	// 자식 클래스에서 오버라이딩합니다.
+	
 	return nullptr;
 }
 

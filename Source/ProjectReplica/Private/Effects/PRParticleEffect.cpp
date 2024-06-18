@@ -18,6 +18,7 @@ void APRParticleEffect::InitializeParticleEffect(UParticleSystem* ParticleSystem
 	if(IsValid(ParticleEffect))
 	{
 		ParticleEffect->SetTemplate(ParticleSystem);
+		ParticleEffect->Deactivate();
 	}
 }
 

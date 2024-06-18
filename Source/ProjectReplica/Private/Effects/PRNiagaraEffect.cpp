@@ -18,6 +18,7 @@ void APRNiagaraEffect::InitializeNiagaraEffect(UNiagaraSystem* NiagaraSystem, AA
 	if(IsValid(NiagaraSystem))
 	{
 		NiagaraEffect->SetAsset(NiagaraSystem);
+		NiagaraEffect->Deactivate();
 	}
 }
 

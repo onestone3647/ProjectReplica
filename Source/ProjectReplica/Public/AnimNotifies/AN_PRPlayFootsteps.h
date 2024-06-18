@@ -17,7 +17,7 @@ class PROJECTREPLICA_API UAN_PRPlayFootsteps : public UAnimNotify
 public:
 	UAN_PRPlayFootsteps(const FObjectInitializer& ObjectInitializer);
 
-protected:
+public:
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 
 private:

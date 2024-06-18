@@ -41,7 +41,14 @@ UParticleSystemComponent* UAN_PRPlayParticleEffect::SpawnParticleSystem(USkeleta
 					SpawnParticleEffect = EffectSystem->SpawnParticleEffectAtLocation(PSTemplate, MeshTransform.TransformPosition(LocationOffset), (MeshTransform.GetRotation() * FQuat(RotationOffset)).Rotator(), Scale, true);
 				}
 
-				return ReturnComp;
+				if(IsValid(SpawnParticleEffect))
+				{
+					ReturnComp = SpawnParticleEffect->GetParticleEffect();
+					if(ReturnComp)
+					{
+						return ReturnComp;
+					}
+				}
 			}
 		}
 

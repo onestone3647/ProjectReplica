@@ -14,7 +14,7 @@ class PROJECTREPLICA_API UAN_PRDisableRootLock : public UAnimNotify
 {
 	GENERATED_BODY()
 	
-protected:
+public:
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 
 protected:
