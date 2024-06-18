@@ -19,7 +19,7 @@ class PROJECTREPLICA_API UANS_PRTimedNiagaraEffect : public UAnimNotifyState_Tim
 public:
 	UANS_PRTimedNiagaraEffect(const FObjectInitializer& ObjectInitializer);
 
-protected:
+public:
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
 	virtual void NotifyEnd(class USkeletalMeshComponent * MeshComp, class UAnimSequenceBase * Animation, const FAnimNotifyEventReference& EventReference) override;
 
