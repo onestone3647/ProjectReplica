@@ -94,7 +94,7 @@ void APRBaseCharacter::PostInitializeComponents()
 	GetObjectPoolSystem()->InitializeObjectPool();
 
 	// EffectSystem
-	GetEffectSystem()->InitializeEffectPool();
+	GetEffectSystem()->InitializeObjectPool();
 
 	// MovementSystem
 	GetMovementSystem()->SetAllowGait(EPRGait::Gait_Run);

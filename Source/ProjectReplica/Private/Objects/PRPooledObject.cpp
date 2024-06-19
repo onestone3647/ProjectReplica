@@ -10,8 +10,7 @@ APRPooledObject::APRPooledObject()
 	bActivate = false;
 	ObjectLifespan = 0.0f;
 	ObjectOwner = nullptr;
-	PoolIndex = -1;
-	bDynamicObject = false;
+	PoolIndex = INDEX_NONE;
 }
 
 void APRPooledObject::BeginPlay()
@@ -32,7 +31,7 @@ void APRPooledObject::Activate_Implementation()
 	SetActorTickEnabled(bActivate);
 
 	// 오브젝트의 수명을 설정합니다. 오브젝트의 수명이 끝나면 오브젝트를 비활성화합니다.
-	SetLifespan(ObjectLifespan);
+	IPRPoolableInterface::Execute_SetLifespan(this, ObjectLifespan);
 }
 
 void APRPooledObject::Deactivate_Implementation()
@@ -53,14 +52,19 @@ int32 APRPooledObject::GetPoolIndex_Implementation() const
 	return PoolIndex;
 }
 
-bool APRPooledObject::IsDynamicObject_Implementation() const
+void APRPooledObject::SetLifespan_Implementation(float NewLifespan)
 {
-	return bDynamicObject;
-}
-
-void APRPooledObject::SetIsDynamicObject_Implementation(bool bIsDynamicObject)
-{
-	bDynamicObject = bIsDynamicObject;
+	ObjectLifespan = NewLifespan;
+	if(NewLifespan > 0.0f)
+	{
+		// 수명이 0보다 클 경우, 즉 새로운 수명이 설정된 경우 타이머를 설정합니다.
+		GetWorldTimerManager().SetTimer(LifespanTimerHandle, this, &APRPooledObject::OnDeactivate, NewLifespan);
+	}
+	else
+	{
+		// 수명이 0보다 작거나 같을 경우, 즉 오브젝트의 수명이 무한대인 경우 이전에 설정된 타이머를 지워 제한된 수명을 가지지 않게 합니다.
+		GetWorldTimerManager().ClearTimer(LifespanTimerHandle);
+	}
 }
 #pragma endregion
 
@@ -84,21 +88,6 @@ void APRPooledObject::ActivateAndSetLocation(const FVector& NewLocation)
 {
 	IPRPoolableInterface::Execute_Activate(this);
 	SetActorLocation(NewLocation);
-}
-
-void APRPooledObject::SetLifespan(float NewLifespan)
-{
-	ObjectLifespan = NewLifespan;
-	if(NewLifespan > 0.0f)
-	{
-		// 수명이 0보다 클 경우, 즉 새로운 수명이 설정된 경우 타이머를 설정합니다.
-		GetWorldTimerManager().SetTimer(LifespanTimerHandle, this, &APRPooledObject::OnDeactivate, NewLifespan);
-	}
-	else
-	{
-		// 수명이 0보다 작거나 같을 경우, 즉 오브젝트의 수명이 무한대인 경우 이전에 설정된 타이머를 지워 제한된 수명을 가지지 않게 합니다.
-		GetWorldTimerManager().ClearTimer(LifespanTimerHandle);
-	}
 }
 
 void APRPooledObject::OnDeactivate()

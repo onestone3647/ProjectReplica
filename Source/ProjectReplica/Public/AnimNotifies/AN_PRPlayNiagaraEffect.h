@@ -14,7 +14,7 @@ class PROJECTREPLICA_API UAN_PRPlayNiagaraEffect : public UAnimNotify_PlayNiagar
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	/** NiagaraSystemComponent를 Spawn하는 함수입니다. Notify에서 호출됩니다. */
 	virtual UFXSystemComponent* SpawnEffect(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
 };

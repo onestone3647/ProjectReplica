@@ -18,12 +18,13 @@ void APRParticleEffect::InitializeParticleEffect(UParticleSystem* ParticleSystem
 	if(IsValid(ParticleEffect))
 	{
 		ParticleEffect->SetTemplate(ParticleSystem);
+		ParticleEffect->Deactivate();
 	}
 }
 
-void APRParticleEffect::Activate(bool bReset)
+void APRParticleEffect::ActivateEffect(bool bReset)
 {
-	Super::Activate();
+	Super::ActivateEffect();
 
 	if(IsValid(ParticleEffect))
 	{
@@ -31,9 +32,9 @@ void APRParticleEffect::Activate(bool bReset)
 	}
 }
 
-void APRParticleEffect::Deactivate()
+void APRParticleEffect::DeactivateEffect()
 {
-	Super::Deactivate();
+	Super::DeactivateEffect();
 
 	if(IsValid(ParticleEffect))
 	{

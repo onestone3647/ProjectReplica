@@ -11,7 +11,7 @@ APREffect::APREffect()
 	bActivate = false;
 	EffectLifespan = 0.0f;
 	EffectOwner = nullptr;
-	PoolIndex = -1;
+	PoolIndex = INDEX_NONE;
 }
 
 void APREffect::BeginPlay()
@@ -20,13 +20,35 @@ void APREffect::BeginPlay()
 	
 }
 
+#pragma region PooledableInterface
+bool APREffect::IsActivate_Implementation() const
+{
+	return bActivate;
+}
+
+void APREffect::Activate_Implementation()
+{
+	ActivateEffect();
+}
+
+void APREffect::Deactivate_Implementation()
+{
+	DeactivateEffect();
+}
+
+int32 APREffect::GetPoolIndex_Implementation() const
+{
+	return PoolIndex;
+}
+#pragma endregion 
+
 void APREffect::SpawnEffectAtLocation(FVector Location, FRotator Rotation, FVector Scale, bool bAutoActivate, bool bReset)
 {
 	SetActorLocationAndRotation(Location, Rotation);
 	SetActorScale3D(Scale);
 	if(bAutoActivate)
 	{
-		Activate(bReset);
+		ActivateEffect(bReset);
 	}
 }
 
@@ -46,16 +68,11 @@ void APREffect::SpawnEffectAttached(USceneComponent* Parent, FName AttachSocketN
 	SetActorScale3D(Scale);
 	if(bAutoActivate)
 	{
-		Activate(bReset);
+		ActivateEffect(bReset);
 	}
 }
 
-bool APREffect::IsActivate() const
-{
-	return bActivate;
-}
-
-void APREffect::Activate(bool bReset)
+void APREffect::ActivateEffect(bool bReset)
 {
 	bActivate = true;
 	SetActorHiddenInGame(!bActivate);
@@ -64,7 +81,7 @@ void APREffect::Activate(bool bReset)
 	SetEffectLifespan(EffectLifespan);
 }
 
-void APREffect::Deactivate()
+void APREffect::DeactivateEffect()
 {
 	bActivate = false;
 	SetActorHiddenInGame(!bActivate);
@@ -78,6 +95,8 @@ void APREffect::Deactivate()
 
 UFXSystemComponent* APREffect::GetFXSystemComponent() const
 {
+	// 자식 클래스에서 오버라이딩합니다.
+	
 	return nullptr;
 }
 
@@ -106,7 +125,7 @@ void APREffect::SetEffectLifespan(float NewLifespan)
 		if(NewLifespan > 0.0f)
 		{
 			// 수명이 0보다 클 경우, 즉 새로운 수명이 설정된 경우 타이머를 설정합니다.
-			GetWorldTimerManager().SetTimer(EffectLifespanTimerHandle, this, &APREffect::Deactivate, NewLifespan);
+			GetWorldTimerManager().SetTimer(EffectLifespanTimerHandle, this, &APREffect::OnDeactivate, NewLifespan);
 		}
 		else
 		{
@@ -116,13 +135,13 @@ void APREffect::SetEffectLifespan(float NewLifespan)
 	}
 }
 
+void APREffect::OnDeactivate()
+{
+	IPRPoolableInterface::Execute_Deactivate(this);
+}
+
 float APREffect::GetEffectLifespan() const
 {
 	return EffectLifespan;
-}
-
-int32 APREffect::GetPoolIndex() const
-{
-	return PoolIndex;
 }
 

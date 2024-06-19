@@ -14,7 +14,7 @@ class PROJECTREPLICA_API UAN_PRPlayParticleEffect : public UAnimNotify_PlayParti
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	/** ParticleSystemComponent를 Spawn하는 함수입니다. Notify에서 호출됩니다. */
 	virtual UParticleSystemComponent* SpawnParticleSystem(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
 };

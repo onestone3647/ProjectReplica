@@ -17,7 +17,7 @@ class PROJECTREPLICA_API UAN_PRSetRootLock : public UAnimNotify
 public:
 	UAN_PRSetRootLock(const FObjectInitializer& ObjectInitializer);
 
-protected:
+public:
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 	virtual FString GetNotifyName_Implementation() const override;
 
