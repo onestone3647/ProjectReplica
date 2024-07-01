@@ -60,8 +60,7 @@ float UPRBaseObjectPoolSystemComponent::GetLifespan(UObject* PoolableObject) con
 		return IPRPoolableInterface::Execute_GetLifespan(PoolableObject);
 	}
 	
-	// 유효하지 않은 float 값을 나타내기 위해 NAN을 반환합니다.
-	return NAN;
+	return INDEX_NONE;
 }
 
 void UPRBaseObjectPoolSystemComponent::SetLifespan(UObject* PoolableObject, float NewLifespan)
@@ -102,30 +101,4 @@ bool UPRBaseObjectPoolSystemComponent::IsActivateObject(UObject* PoolableObject)
 void UPRBaseObjectPoolSystemComponent::ClearDynamicDestroyObjectList(FPRDynamicDestroyObjectList& TargetDynamicDestroyObjectList)
 {
 	ClearDynamicDestroyObjects(TargetDynamicDestroyObjectList.List);
-	
-	// // DynamicDestroyObjectList의 모든 클래스에 대해 반복합니다.
-	// for(auto& ListEntry : NewDynamicDestroyObjectList.List)
-	// {
-	// 	FPRDynamicDestroyObject& DynamicDestroyObject = ListEntry.Value;
-	// 	if(&DynamicDestroyObject != nullptr)
-	// 	{
-	// 		// DynamicDestroyObject의 모든 타이머를 해제하고 오브젝트를 제거합니다.
-	// 		for(auto& TimerEntry : DynamicDestroyObject.TimerHandles)
-	// 		{
-	// 			if(IsValid(TimerEntry.Key))
-	// 			{
-	// 				// 타이머를 해제합니다.
-	// 				GetWorld()->GetTimerManager().ClearTimer(TimerEntry.Value);
-	//
-	// 				// 오브젝트를 제거합니다.
-	// 				TimerEntry.Key->ConditionalBeginDestroy();		// 오브젝트를 안전하게 제거하는 함수입니다. 가비지 컬렉션 대상이 되기 전에 수동으로 메모리에서 해제합니다.
-	// 				TimerEntry.Key = nullptr;
-	// 			}
-	// 		}
-	//
-	// 		DynamicDestroyObject.TimerHandles.Empty();
-	// 	}
-	// }
-	//
-	// NewDynamicDestroyObjectList.List.Empty();
 }

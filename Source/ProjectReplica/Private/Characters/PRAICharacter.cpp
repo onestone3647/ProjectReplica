@@ -29,6 +29,7 @@ void APRAICharacter::BeginPlay()
 	SpawnDefaultController();
 }
 
+#pragma region PooledableInterface
 bool APRAICharacter::IsActivate_Implementation() const
 {
 	return bActivate;
@@ -47,6 +48,21 @@ void APRAICharacter::Deactivate_Implementation()
 	SetActorHiddenInGame(!bActivate);
 	SetActorTickEnabled(bActivate);
 }
+
+int32 APRAICharacter::GetPoolIndex_Implementation() const
+{
+	return INDEX_NONE;
+}
+
+float APRAICharacter::GetLifespan_Implementation() const
+{
+	return INDEX_NONE;
+}
+
+void APRAICharacter::SetLifespan_Implementation(float NewLifespan)
+{
+}
+#pragma endregion 
 
 void APRAICharacter::CreateHealthBarWidget()
 {

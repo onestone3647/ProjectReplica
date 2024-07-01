@@ -21,17 +21,32 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-#pragma region Activate
-public:
-	/** AI 캐릭터가 활성화되었는지 판별하는 함수입니다. */
-	virtual bool IsActivate_Implementation() const override;	
+#pragma region PooledableInterface
+protected:
+	/** 오브젝트가 활성화 되었는지 확인하는 함수입니다. */
+	virtual bool IsActivate_Implementation() const override;
 	
-	/** AI 캐릭터를 활성화하는 함수입니다. */
+	/** 오브젝트를 활성화하는 함수입니다. */
 	virtual void Activate_Implementation() override;
 
-	/** AI 캐릭터를 비활성화 하는 함수입니다. */
+	/** 오브젝트를 비활성화하는 함수입니다. */
 	virtual void Deactivate_Implementation() override;
+	
+	/** 오브젝트의 PoolIndex를 반환하는 함수입니다. */
+	virtual int32 GetPoolIndex_Implementation() const override;
 
+	/** 수명을 반환하는 함수입니다. */
+	virtual float GetLifespan_Implementation() const override;
+
+	/**
+	 * 수명을 설정하는 함수입니다.
+	 * 
+	 * @param NewLifespan 설정할 수명입니다.
+	 */	
+	virtual void SetLifespan_Implementation(float NewLifespan) override;
+#pragma endregion
+
+#pragma region Activate
 protected:
 	/** AI 캐릭터의 활성화를 나타내는 변수입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Activate")

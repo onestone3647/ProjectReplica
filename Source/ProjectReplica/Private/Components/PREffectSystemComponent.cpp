@@ -99,11 +99,13 @@ APRNiagaraEffect* UPREffectSystemComponent::GetActivateableNiagaraEffect(UNiagar
 		return nullptr;
 	}
 
-	// 해당 NiagaraSystem에 해당하는 Pool이 생성되었는지 확인하고, 없으면 생성합니다.
+	// 해당 NiagaraSystem에 해당하는 Pool이 생성되었는지 확인합니다.
 	if(!IsCreateNiagaraPool(NiagaraSystem))
 	{
-		FPRNiagaraEffectPoolSettings NiagaraPoolSettings = FPRNiagaraEffectPoolSettings(NiagaraSystem, DynamicPoolSize, DynamicLifespan);
-		CreateNiagaraPool(NiagaraPoolSettings);
+		// 지정된 NiagaraSystem에 해당하는 Pool이 없으면 nullptr을 반환합니다.
+		// FPRNiagaraEffectPoolSettings NiagaraPoolSettings = FPRNiagaraEffectPoolSettings(NiagaraSystem, DynamicPoolSize, DynamicLifespan);
+		// CreateNiagaraPool(NiagaraPoolSettings);
+		return nullptr;
 	}
 
 	// NiagaraPool에서 해당 NiagaraSystem의 Pool을 얻습니다.
@@ -134,19 +136,19 @@ APRNiagaraEffect* UPREffectSystemComponent::GetActivateableNiagaraEffect(UNiagar
 		ActivateableNiagaraEffect = SpawnDynamicNiagaraEffectInWorld(NiagaraSystem);
 	}
 	
-	// 동적으로 생성된 NiagaraEffect일 경우 DynamicEffectDestroyTimer를 정지합니다.
-	if(IsDynamicNiagaraEffect(ActivateableNiagaraEffect))
-	{
-		FPRDynamicDestroyObject* DynamicNiagaraList = DynamicDestroyNiagaraList.List.Find(ActivateableNiagaraEffect->GetNiagaraEffectAsset());
-		if(DynamicNiagaraList)
-		{
-			FTimerHandle* DynamicDestroyTimer = DynamicNiagaraList->TimerHandles.Find(ActivateableNiagaraEffect);
-			if(DynamicDestroyTimer)
-			{
-				GetWorld()->GetTimerManager().ClearTimer(*DynamicDestroyTimer);
-			}
-		}
-	}
+	// // 동적으로 생성된 NiagaraEffect일 경우 DynamicEffectDestroyTimer를 정지합니다.
+	// if(IsDynamicNiagaraEffect(ActivateableNiagaraEffect))
+	// {
+	// 	FPRDynamicDestroyObject* DynamicNiagaraList = DynamicDestroyNiagaraList.List.Find(ActivateableNiagaraEffect->GetNiagaraEffectAsset());
+	// 	if(DynamicNiagaraList)
+	// 	{
+	// 		FTimerHandle* DynamicDestroyTimer = DynamicNiagaraList->TimerHandles.Find(ActivateableNiagaraEffect);
+	// 		if(DynamicDestroyTimer)
+	// 		{
+	// 			GetWorld()->GetTimerManager().ClearTimer(*DynamicDestroyTimer);
+	// 		}
+	// 	}
+	// }
 	
 	return ActivateableNiagaraEffect;
 }
@@ -583,11 +585,13 @@ APRParticleEffect* UPREffectSystemComponent::GetActivateableParticleEffect(UPart
 		return nullptr;
 	}
 
-	// 해당 ParticleSystem에 해당하는 Pool이 생성되었는지 확인하고, 없으면 생성합니다.
+	// 해당 ParticleSystem에 해당하는 Pool이 생성되었는지 확인합니다.
 	if(!IsCreateParticlePool(ParticleSystem))
 	{
-		FPRParticleEffectPoolSettings ParticlePoolSettings = FPRParticleEffectPoolSettings(ParticleSystem, DynamicPoolSize, DynamicLifespan);
-		CreateParticlePool(ParticlePoolSettings);
+		// 지정된 ParticleSystem에 해당하는 Pool이 없으면 nullptr을 반환합니다.
+		// FPRParticleEffectPoolSettings ParticlePoolSettings = FPRParticleEffectPoolSettings(ParticleSystem, DynamicPoolSize, DynamicLifespan);
+		// CreateParticlePool(ParticlePoolSettings);
+		return nullptr;
 	}
 
 	// ParticlePool에서 해당 ParticleSystem의 Pool을 얻습니다.
@@ -618,19 +622,19 @@ APRParticleEffect* UPREffectSystemComponent::GetActivateableParticleEffect(UPart
 		ActivateableParticleEffect = SpawnDynamicParticleEffectInWorld(ParticleSystem);
 	}
 	
-	// 동적으로 생성된 ParticleEffect일 경우 DynamicEffectDestroyTimer를 정지합니다.
-	if(IsDynamicParticleEffect(ActivateableParticleEffect))
-	{
-		FPRDynamicDestroyObject* DynamicParticleList = DynamicDestroyParticleList.List.Find(ActivateableParticleEffect->GetParticleEffectAsset());
-		if(DynamicParticleList)
-		{
-			FTimerHandle* DynamicDestroyTimer = DynamicParticleList->TimerHandles.Find(ActivateableParticleEffect);
-			if(DynamicDestroyTimer)
-			{
-				GetWorld()->GetTimerManager().ClearTimer(*DynamicDestroyTimer);
-			}
-		}
-	}
+	// // 동적으로 생성된 ParticleEffect일 경우 DynamicEffectDestroyTimer를 정지합니다.
+	// if(IsDynamicParticleEffect(ActivateableParticleEffect))
+	// {
+	// 	FPRDynamicDestroyObject* DynamicParticleList = DynamicDestroyParticleList.List.Find(ActivateableParticleEffect->GetParticleEffectAsset());
+	// 	if(DynamicParticleList)
+	// 	{
+	// 		FTimerHandle* DynamicDestroyTimer = DynamicParticleList->TimerHandles.Find(ActivateableParticleEffect);
+	// 		if(DynamicDestroyTimer)
+	// 		{
+	// 			GetWorld()->GetTimerManager().ClearTimer(*DynamicDestroyTimer);
+	// 		}
+	// 	}
+	// }
 	
 	return ActivateableParticleEffect;
 }

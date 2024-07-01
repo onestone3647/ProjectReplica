@@ -223,7 +223,7 @@ public:
 protected:
 	/** 더블 점프 Niagara 이펙트입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DoubleJump")
-	TObjectPtr<UNiagaraComponent> DoubleJumpNiagaraEffect;
+	TObjectPtr<UNiagaraSystem> DoubleJumpNiagaraEffect;
 
 	/** Root 본 소켓 이름입니다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DoubleJump")

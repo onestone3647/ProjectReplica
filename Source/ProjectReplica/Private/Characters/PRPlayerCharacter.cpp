@@ -14,8 +14,11 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/PRMovementSystemComponent.h"
 #include "MotionWarpingComponent.h"
+#include "NiagaraComponent.h"
+#include "Components/PREffectSystemComponent.h"
 #include "Components/PRWeaponSystemComponent.h"
 #include "Controllers/PRPlayerController.h"
+#include "Effects/PRNiagaraEffect.h"
 
 APRPlayerCharacter::APRPlayerCharacter()
 {
@@ -512,16 +515,13 @@ void APRPlayerCharacter::DoubleJump()
 		const FVector LeftFootLocation = GetMesh()->GetSocketLocation(FName("foot_l"));
 		const FVector RightFootLocation = GetMesh()->GetSocketLocation(FName("foot_r"));
 		const FVector NewSpawnEffectLocation = FVector(CenterLocation.X, CenterLocation.Y, UKismetMathLibrary::Min(LeftFootLocation.Z, RightFootLocation.Z));
-		// UNiagaraComponent* SpawnNiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DoubleJumpNiagaraEffect, NewSpawnEffectLocation);
-		// SpawnNiagaraComponent->SetVariableLinearColor("EffectColor", SignatureEffectColor);
 
-		// UPRNiagaraEffect* DoubleJumpEffect = GetEffectSystem()->SpawnNiagaraEffectAtLocation(DoubleJumpNiagaraEffect, NewSpawnEffectLocation);
-		// if(DoubleJumpEffect != nullptr)
+		APRNiagaraEffect* DoubleJumpEffect = GetEffectSystem()->SpawnNiagaraEffectAtLocation(DoubleJumpNiagaraEffect, NewSpawnEffectLocation);
+		// if(DoubleJumpEffect)
 		// {
-		// 	DoubleJumpEffect->GetNiagaraEffect()->SetVariableLinearColor("EffectColor", SignatureEffectColor);
+		// 	DoubleJumpEffect->GetNiagaraEffect()->SetVariableLinearColor(EffectColor, Signaturecolor)
 		// }
 	}
-	
 
 	// 처음 더블점프를 하게 되면 전방속도를 제대로 받지 못함
 	// 두번째부터는 정상적으로 속도를 받음

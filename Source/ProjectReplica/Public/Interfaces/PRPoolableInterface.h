@@ -24,22 +24,27 @@ public:
 	/** 활성화 되었는지 확인하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
 	bool IsActivate() const;
+	virtual bool IsActivate_Implementation() const = 0;
 	
 	/** 활성화하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
 	void Activate();
+	virtual void Activate_Implementation() = 0;
 
 	/** 비활성화하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
 	void Deactivate();
+	virtual void Deactivate_Implementation() = 0;
 	
 	/** PoolIndex를 반환하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
 	int32 GetPoolIndex() const;
+	virtual int32 GetPoolIndex_Implementation() const = 0;
 
 	/** 수명을 반환하는 함수입니다. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
 	float GetLifespan() const;
+	virtual float GetLifespan_Implementation() const = 0;
 
 	/**
 	 * 수명을 설정하는 함수입니다.
@@ -48,4 +53,5 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Poolable")
 	void SetLifespan(float NewLifespan);
+	virtual void SetLifespan_Implementation(float NewLifespan) = 0;
 };

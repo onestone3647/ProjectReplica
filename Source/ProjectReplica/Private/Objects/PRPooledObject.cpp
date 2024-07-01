@@ -52,6 +52,11 @@ int32 APRPooledObject::GetPoolIndex_Implementation() const
 	return PoolIndex;
 }
 
+float APRPooledObject::GetLifespan_Implementation() const
+{
+	return ObjectLifespan;
+}
+
 void APRPooledObject::SetLifespan_Implementation(float NewLifespan)
 {
 	ObjectLifespan = NewLifespan;

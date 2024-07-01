@@ -40,6 +40,16 @@ int32 APREffect::GetPoolIndex_Implementation() const
 {
 	return PoolIndex;
 }
+
+float APREffect::GetLifespan_Implementation() const
+{
+	return GetEffectLifespan();
+}
+
+void APREffect::SetLifespan_Implementation(float NewLifespan)
+{
+	SetEffectLifespan(NewLifespan);
+}
 #pragma endregion 
 
 void APREffect::SpawnEffectAtLocation(FVector Location, FRotator Rotation, FVector Scale, bool bAutoActivate, bool bReset)
@@ -76,6 +86,8 @@ void APREffect::ActivateEffect(bool bReset)
 {
 	bActivate = true;
 	SetActorHiddenInGame(!bActivate);
+
+	UKismetSystemLibrary::DrawDebugSphere(GetWorld(), GetActorLocation(), 50.0f, 12, FLinearColor::White, 3.0f);
 
 	// 이펙트의 수명을 설정합니다. 이펙트의 수명이 끝나면 이펙트를 비활성화합니다.
 	SetEffectLifespan(EffectLifespan);

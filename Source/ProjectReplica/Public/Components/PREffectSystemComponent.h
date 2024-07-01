@@ -708,8 +708,6 @@ private:
 	FPRDynamicDestroyNiagaraEffectList DynamicDestroyNiagaraList;
 #pragma endregion
 
-
-
 #pragma region ParticleSystem
 public:
 	/** 기존의 ParticlePool을 제거하고, 새로 ParticlePool을 생성하여 초기화하는 함수입니다. */
@@ -931,4 +929,5 @@ private:
 	/** 동적으로 제거할 ParticleSystem의 목록입니다. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PREffectSystem|ParticleSystem", meta = (AllowPrivateAccess = "true"))
 	FPRDynamicDestroyParticleEffectList DynamicDestroyParticleList;
+#pragma endregion 
 };

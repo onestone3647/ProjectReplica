@@ -277,8 +277,9 @@ protected:
 #pragma region Template
 protected:
 	/**
-	 * Template를 사용한 동적으로 생성한 오브젝트들을 제거하는 함수입니다.
+	 * Template 함수를 사용하여 동적으로 생성한 오브젝트들을 제거하는 함수입니다.
 	 *
+	 * @tparam KeyType Map의 키 값의 유형입니다. ObjectPoolSystem마다 다를 수 있습니다.
 	 * @param List 동적으로 생성한 오브젝트의 목록입니다.
 	 */
 	template <typename KeyType>
